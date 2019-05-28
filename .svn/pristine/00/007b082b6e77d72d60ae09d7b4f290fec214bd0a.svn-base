@@ -1,0 +1,67 @@
+package com.cbt.service.impl;
+
+import java.util.Date;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cbt.dao.FactoryOrderMapper;
+import com.cbt.dao.OrderPayLogMapper;
+import com.cbt.dao.SourceSupportMapper;
+import com.cbt.entity.FactoryOrder;
+import com.cbt.entity.OrderPayLog;
+import com.cbt.entity.SourceSupport;
+import com.cbt.enums.OrderTypeEnum;
+import com.cbt.service.SourceSupportService;
+import com.cbt.util.IdGen;
+@Service
+public class SourceSupportServiceImpl implements SourceSupportService{
+   
+	@Autowired
+	private SourceSupportMapper sourceSupportMapper;
+	@Autowired
+	private FactoryOrderMapper factoryOrderMapper;
+	@Autowired
+	private OrderPayLogMapper orderPayLogMapper;
+    /**
+     * 采购支持生成订单toPay
+     */
+	@Override
+	@Transactional
+	public OrderPayLog addSourceSupportToPay(SourceSupport sourceSupport) {
+		//1.添加工厂信息
+		sourceSupportMapper.insertSelective(sourceSupport);
+		//2.创建客户订单
+		FactoryOrder factoryOrder=new FactoryOrder();
+		factoryOrder.setId(IdGen.uuid());
+		factoryOrder.setOrderId(sourceSupport.getOrderId());
+		factoryOrder.setUserId(sourceSupport.getUserId());
+		factoryOrder.setType(OrderTypeEnum.SOURCING_ASSISTANCE.getCode());
+		factoryOrder.setFileUrl(sourceSupport.getFileUrl());
+		factoryOrder.setMoney(sourceSupport.getPrice());
+		factoryOrder.setStatus(0);
+		factoryOrder.setCreateDate(new Date());
+		factoryOrderMapper.insertSelective(factoryOrder);
+		//3.创建订单日志
+		OrderPayLog payLog=new OrderPayLog();
+		payLog.setId(IdGen.uuid());
+		payLog.setUserId(sourceSupport.getUserId());
+		payLog.setOrderId(sourceSupport.getOrderId());
+		payLog.setType(factoryOrder.getType());
+		payLog.setOrderAmount(sourceSupport.getPrice());
+		payLog.setPaymentAmount(sourceSupport.getPrice());
+		payLog.setPayStatus(factoryOrder.getStatus());
+		payLog.setPaymentCc("美元");
+		payLog.setPayType("paypal");
+		payLog.setOperateTime(new Date());
+		payLog.setCreateDate(new Date());
+		payLog.setOrderDesc("");
+		payLog.setRemark("");
+		orderPayLogMapper.insertSelective(payLog);
+		OrderPayLog orderPayLog =orderPayLogMapper.selectByPrimaryKey(payLog.getId()); 
+		return orderPayLog;
+	}
+
+}

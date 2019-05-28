@@ -1,0 +1,68 @@
+package com.cbt.service.impl;
+
+import java.util.Date;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cbt.dao.FactoryOrderMapper;
+import com.cbt.dao.OrderPayLogMapper;
+import com.cbt.dao.QualityMapper;
+import com.cbt.entity.FactoryOrder;
+import com.cbt.entity.OrderPayLog;
+import com.cbt.entity.Quality;
+import com.cbt.enums.OrderTypeEnum;
+import com.cbt.service.QualityService;
+import com.cbt.util.IdGen;
+
+@Service
+public class QualityServiceImpl implements QualityService{
+    
+	@Autowired
+	private QualityMapper qualityMapper;
+	@Autowired
+	private FactoryOrderMapper factoryOrderMapper;
+	@Autowired
+	private OrderPayLogMapper orderPayLogMapper;
+	/**
+	 * 添加工厂质量去支付
+	 */
+	@Override
+	@Transactional
+	public OrderPayLog addQualityToPay(Quality quality) {
+		//1.保存客户需求质量信息
+		qualityMapper.insertSelective(quality);
+		//2.创建客户订单
+		FactoryOrder factoryOrder=new FactoryOrder();
+		factoryOrder.setId(IdGen.uuid());
+		factoryOrder.setOrderId(quality.getOrderId());
+		factoryOrder.setUserId(quality.getUserId());
+		factoryOrder.setType(OrderTypeEnum.QUALITY.getCode());
+		factoryOrder.setFileUrl(quality.getFileUrl());
+		factoryOrder.setMoney(quality.getPrice());
+		factoryOrder.setStatus(0);
+		factoryOrder.setCreateDate(new Date());
+		factoryOrderMapper.insertSelective(factoryOrder);
+		//3.创建订单日志
+		OrderPayLog payLog=new OrderPayLog();
+		payLog.setId(IdGen.uuid());
+		payLog.setUserId(quality.getUserId());
+		payLog.setOrderId(quality.getOrderId());
+		payLog.setType(factoryOrder.getType());
+		payLog.setOrderAmount(quality.getPrice());
+		payLog.setPaymentAmount(quality.getPrice());
+		payLog.setPayStatus(factoryOrder.getStatus());
+		payLog.setPaymentCc("美元");
+		payLog.setPayType("paypal");
+		payLog.setOperateTime(new Date());
+		payLog.setCreateDate(new Date());
+		payLog.setOrderDesc("");
+		payLog.setRemark("");
+		orderPayLogMapper.insertSelective(payLog);
+		OrderPayLog orderPayLog =orderPayLogMapper.selectByPrimaryKey(payLog.getId()); 
+		return orderPayLog;
+	}
+
+}

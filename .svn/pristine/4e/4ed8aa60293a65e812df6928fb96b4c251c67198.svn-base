@@ -1,0 +1,817 @@
+package com.cbt.controller;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.math.BigDecimal;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.cbt.entity.AmountUnit;
+import com.cbt.entity.ClientDrawings;
+import com.cbt.entity.ClientOrder;
+import com.cbt.entity.FactoryInfo;
+import com.cbt.entity.InvoiceInfo;
+import com.cbt.entity.RfqInfo;
+import com.cbt.entity.UserFactoryRelation;
+import com.cbt.entity.Milestone;
+import com.cbt.entity.ProductionPhotoTimeline;
+import com.cbt.entity.User;
+import com.cbt.service.AmountUnitService;
+import com.cbt.service.ClientDrawingsService;
+import com.cbt.service.ClientOrderService;
+import com.cbt.service.FactoryInfoService;
+import com.cbt.service.InvoiceInfoService;
+import com.cbt.service.RfqInfoService;
+import com.cbt.service.UserFactoryRelationService;
+import com.cbt.service.MilestoneService;
+import com.cbt.service.ProductionPhotoTimelineService;
+import com.cbt.service.UserService;
+import com.cbt.util.Base64Encode;
+import com.cbt.util.DateFormat;
+import com.cbt.util.JsonUtil;
+import com.cbt.util.Md5Util;
+import com.cbt.util.SecurityHelper;
+import com.cbt.util.SerializeUtil;
+import com.cbt.util.WebCookie;
+
+
+
+
+
+@Controller 
+
+public class ClientOrderController {
+  @Resource
+  private ClientOrderService clientOrderService;
+  @Resource
+  private UserService userService;
+  @Resource
+  private ClientDrawingsService clientDrawingsService;
+  @Resource
+  private UserFactoryRelationService userFactoryRelationService;
+  @Resource
+  private FactoryInfoService factoryInfoService;
+  @Resource
+  private MilestoneService milestoneService;
+  @Resource
+  private ProductionPhotoTimelineService productionPhotoTimelineService;	
+  @Resource
+  private RfqInfoService rfqInfoService;
+  @Resource
+  private InvoiceInfoService invoiceInfoService;
+  @Resource
+  private AmountUnitService amountUnitService;
+
+  
+  public static final Logger Log = Logger.getLogger(ClientOrderController.class);
+  
+   
+//   @RequestMapping("/queryAllClientOrder.do")
+//   public String queryAllClientOrder(HttpServletRequest request, HttpServletResponse response){
+//	   String result1 = "";
+//	   String loginEmail = request.getParameter("loginEmail");
+//	   User user = new User();
+//	   String userId = "";
+//	   String uid = request.getParameter("userId");
+//	   if(!(uid == null || "".equals(uid))){
+//		   userId = request.getParameter("userId");
+//		   user = userService.queryByUserId(userId);
+//	   }
+//	   
+//	   if(!(loginEmail == null || "".equals(loginEmail))){
+//	    user = userService.queryByLoginMail(loginEmail);
+//	    userId = user.getUserid();
+//	   } 	   
+//
+//
+//	   String str1 = request.getParameter("page");
+//	   String str2 = request.getParameter("pageSize");
+////	   String status = request.getParameter("orderStatus");
+//	   int orderStatus = 0;//(status:In Process)
+//	   int page = 1;
+//		if(str1 != null) {
+//			page = Integer.parseInt(str1);
+//		}
+//		int pageSize = 10;
+//		if(str2 != null) {
+//			pageSize = Integer.parseInt(str2);
+//		}
+//		int start = (page-1) * pageSize;	   
+//	   List<ClientOrder> clientOrders = clientOrderService.queryByUserId(userId, orderStatus, start, pageSize);	   
+//	   int total = clientOrderService.total(userId,orderStatus); 
+//       SplitPage.buildPager(request, total, pageSize, page);
+//	   request.setAttribute("clientOrder", clientOrders);
+//	   
+//	   orderStatus = 1; //(status:finished)
+//	   List<ClientOrder> clientOrders2 = clientOrderService.queryByUserId(userId, orderStatus, start, pageSize);	
+//	   int total2 = clientOrderService.total(userId,orderStatus); 
+//       SplitPage2.buildPager(request, total2, pageSize, page);
+//	   request.setAttribute("clientOrder2", clientOrders2);	   
+//	   request.setAttribute("user", user);
+//	   
+//	    PrintWriter out = null;		  
+//	    BufferedReader in = null;
+//	      
+//	      try {
+//	      	
+//	          //URL realUrl = new URL("http://112.64.174.34:43887/ERP-NBEmail/helpServlet?action=transAudit&className=ItCaseIdServlet");
+//	          URL realUrl = new URL("http://112.64.174.34:43887/NBEmail/helpServlet?action=getEmail&className=EmailReceiverServlet");
+//	          // 打开和URL之间的连接
+//	          URLConnection conn = realUrl.openConnection();
+//	          // 设置通用的请求属性
+//	         // conn.setRequestProperty("accept", "*/*");
+//	       conn.setRequestProperty("connection", "Keep-Alive");
+//	          conn.setRequestProperty("user-agent",
+//	                  "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+//	          // 发送POST请求必须设置如下两行
+//	          conn.setDoOutput(true);
+//	          conn.setDoInput(true);
+//	          // 获取URLConnection对象对应的输出流
+//	          out = new PrintWriter(conn.getOutputStream());
+//	          // 发送请求参数emaillAddress, sm,map,path
+//	          out.print("&eid="+user.getUserid());
+//	          // flush输出流的缓冲
+//	          out.flush();
+//	          // 定义BufferedReader输入流来读取URL的响应
+//	          in = new BufferedReader(
+//	                  new InputStreamReader(conn.getInputStream()));
+//	          String line;
+//	          while ((line = in.readLine()) != null) {
+//	              result1 += line;
+//	          }
+//	          result1 = new String(result1.getBytes("gbk"),"utf-8");
+//	          result1 = Base64Encode.getFromBase64(result1);
+////	          URLDecoder.decode("result1", "utf-8");
+////	          System.out.println(result1);
+//	          Map<Object, Object> cl = SerializeUtil.JsonToMap(result1);
+//		      //将json数据反序列化为map格式
+//			  String jsonStr1 = cl.get("EmailReceive").toString();
+//			  String jsonStr2 = cl.get("EmailInfo").toString();
+//			  
+////			  System.out.println(jsonStr);
+//			  List<Object> emailReceive = (List<Object>)JsonUtil.jsonToObject(jsonStr1, Object.class);
+////			  System.out.println(emailReceive);
+//			  List<Object> emailSend = (List<Object>)JsonUtil.jsonToObject(jsonStr2, Object.class);
+////			  System.out.println(emailSend);
+//			  request.setAttribute("emailReceive", emailReceive);
+//			  request.setAttribute("emailSend", emailSend);
+//	      } catch (Exception e) {
+//	    	 e.printStackTrace();	    	
+//	      }
+//		  
+//	   
+//	   return "index.jsp";
+//   }
+   
+   
+   
+   
+   /**
+    * 查询客户订单
+    * @param request
+    * @param response
+    * @return
+ * @throws Exception 
+    */
+   @RequestMapping("/queryAllClientOrder.do")
+   public String queryAllClientOrder(HttpServletRequest request, HttpServletResponse response) throws Exception{
+	   
+	   try {
+		   String loginEmail = request.getParameter("loginEmail");		   
+		   User user = new User();
+		   String userId = "";
+		   String uid = request.getParameter("userId");
+		   if(!(uid == null || "".equals(uid))){
+			   userId = request.getParameter("userId");
+			   user = userService.queryByUserId(userId);
+		   }
+		   
+		   if(!(loginEmail == null || "".equals(loginEmail))){
+		    user = userService.queryByLoginMail(loginEmail);
+		    userId = user.getUserid();
+		   } 	   	   
+		   
+//		   userId = WebCookie.getUserid(request);
+		   Cookie[] cookies = request.getCookies();
+		   Cookie u_cookie = null;
+			if(cookies != null){
+				for(Cookie cookie :cookies){
+					if(cookie.getName().equals("userCookie")){
+						u_cookie = cookie;
+						break;
+					}			
+				}
+			}
+			if(u_cookie == null){
+				 //如果没有找到，存入cookie
+				 //保存cookie token
+	    		  String now = String.valueOf(System.currentTimeMillis());
+	    		  String token = Md5Util.encoder(now);
+	    		  Cookie cookie = new Cookie("token",now+"|"+token);
+	    		  cookie.setPath("/");
+	    		  cookie.setMaxAge(60*60*24*365);
+	    		  response.addCookie(cookie);
+	    		  
+	    		  String pwd = user.getPwd();
+	  			  String encryptTxt = SecurityHelper.encrypt("token", pwd);
+	    		  
+	    		  String str = userId +"&" + user.getLoginEmail() +"&"+encryptTxt+"&"+(user.getTempUser() == null ? "1" : user.getTempUser()).toString();
+	    		  Cookie userCookie = new Cookie("user",str);           
+	    		  userCookie.setPath("/");
+	    		  userCookie.setMaxAge(60*60*24*365);
+	    		  response.addCookie(userCookie);
+				
+			}
+			
+	  
+		   
+		   String factoryName = request.getParameter("factoryName");
+		   
+		   int totalFactory = userFactoryRelationService.totalFactory(userId);
+		   List<UserFactoryRelation> factoryUserRelation = userFactoryRelationService.queryByUserid(userId);	   
+		   List<List<ClientOrder>> processClientOrder = new ArrayList<List<ClientOrder>>();	   
+		   List<List<RfqInfo>> rfqInfos = new ArrayList<List<RfqInfo>>();	   
+		   List<ClientOrder> finishedClientOrder = new ArrayList<ClientOrder>();	
+		   List<FactoryInfo> factoryInfos = new ArrayList<FactoryInfo>();
+		   FactoryInfo factoryInfo = new FactoryInfo();
+		   //获取每个厂家订单总金额、实际到账金额
+		   List<ClientOrder> list = new ArrayList<ClientOrder>();
+		   
+		   for (UserFactoryRelation factoryUserRelation2 : factoryUserRelation) { 		
+			   int orderStatus = 0; //(status:In Process)
+			   String factoryId = factoryUserRelation2.getFactoryId();
+			   List<ClientOrder> clientOrder1 = clientOrderService.queryByUserId(userId, orderStatus, factoryId);
+			   List<ClientOrder> clientOrder2 = clientOrderService.queryByFactoryId(userId, factoryId);
+			   if(clientOrder2.size() != 0){
+				   list.add(clientOrder2.get(0));
+			   }else{
+				   ClientOrder clientOrder3 = new ClientOrder();
+				   clientOrder3.setActualAmount(0.0);
+				   clientOrder3.setSumAmount(0.0);
+				   list.add(clientOrder3);
+			   }
+			   //将图纸添加到订单列表，前台显示
+			   for (ClientOrder clientOrder : clientOrder1) {
+				   String drawingNames = "";			  
+				   List<ClientDrawings> clientDrawings = clientDrawingsService.queryListByOrderId(clientOrder.getOrderId());
+				   int tl = clientDrawings.size();
+				   if(tl != 0){
+					   for (int i = 0; i < tl; i++) {											
+				            /*
+				             *去除时间节点，获取图纸名 
+				             */
+						     String dt = clientDrawings.get(i).getDrawingsName();
+						     if(!(dt == null || "".equals(dt.trim()))){
+						    	   String[] dts = dt.split("&");
+								   String drawingName = dts[0];			
+								   //获取图纸名显示、只显示两个，超过后以...显示
+		                           if(i <= 1){
+		                        	   drawingNames += drawingName+",";	  
+		                           }else{
+		                        	   drawingNames = drawingNames.substring(0,drawingNames.length()-1);
+		                        	   drawingNames = drawingNames + "...";
+		                           }
+				  
+						     }
+						     
+					    }
+				   }
+				   if(drawingNames.endsWith(",")){
+					 drawingNames = drawingNames.substring(0,drawingNames.length()-1);
+					}	 
+				   clientOrder.setDrawingNames(drawingNames);
+			    }
+
+			   factoryInfo = factoryInfoService.queryByFactoryId(factoryId);
+			   processClientOrder.add(clientOrder1);
+			   factoryInfos.add(factoryInfo);
+			   
+
+			   //客户新图纸询盘首页显示
+			   List<RfqInfo> rfqInfo = rfqInfoService.queryByUserId(userId, factoryId);
+				for (RfqInfo r : rfqInfo) {
+					 String dt = r.getDrawingName();
+				     String[] dts = dt.split("&");
+				     String drawingName = dts[0]+FilenameUtils.getExtension(dt);
+					 r.setDrawingName(drawingName);
+				}
+				rfqInfos.add(rfqInfo);		   
+			   
+		    }	
+		   
+		   //查询最近完成订单的厂家
+		   String factoryId = clientOrderService.queryLastFinishedFactoryId(userId);
+		   factoryInfo = factoryInfoService.queryByFactoryId(factoryId);
+		   //获取已结束的订单信息
+		   Integer orderStatus = 1;     //(status:finished)
+		   finishedClientOrder = clientOrderService.queryByUserId(userId, orderStatus, factoryId);
+		   for (ClientOrder c : finishedClientOrder) {
+			   String drawingNames = "";			  
+			   List<ClientDrawings> clientDrawings = clientDrawingsService.queryListByOrderId(c.getOrderId());
+			   int tl = clientDrawings.size();
+			   if(tl != 0){
+				   for (int i = 0; i < tl; i++) {											
+			            /*
+			             *去除时间节点，获取图纸名 
+			             */
+					     String dt = clientDrawings.get(i).getDrawingsName();
+					     if(!(dt == null || "".equals(dt))){
+					    	   String[] dts = dt.split("&");
+							   String drawingName = dts[0];			
+							   //获取图纸名显示、只显示两个，超过后以...显示
+		                       if(i <= 1){
+		                    	   drawingNames += drawingName+",";	  
+		                       }else{
+		                    	   drawingNames = drawingNames.substring(0,drawingNames.length()-1);
+		                    	   drawingNames = drawingNames + "...";
+		                       }
+			  
+					     }
+					     
+				    }
+			   }
+				   if(drawingNames.endsWith(",")){
+					 drawingNames = drawingNames.substring(0,drawingNames.length()-1);
+				}		 
+			   c.setDrawingNames(drawingNames);
+			   
+		    }
+		    //查询处理中订单数
+		   int total = clientOrderService.total(userId, 0);   
+		   
+		   
+		   request.setAttribute("amountClientOrders", list);
+		   request.setAttribute("processClientOrder", processClientOrder);
+		   request.setAttribute("finishedClientOrder", finishedClientOrder);
+		   request.setAttribute("factoryUserRelation",factoryUserRelation);
+		   request.setAttribute("factoryInfo",factoryInfo);
+		   request.setAttribute("factoryInfos",factoryInfos);
+		   request.setAttribute("total",total);
+		   request.setAttribute("totalFactory",totalFactory);
+		   request.setAttribute("factoryName",factoryName);
+		   request.setAttribute("rfqInfo", rfqInfos);
+		   
+		   //查询处理中订单个数
+		   orderStatus = 0; 
+		   int totalProcess = clientOrderService.total(userId, orderStatus);
+		   orderStatus = 1;  
+		   int finishedProcess = clientOrderService.total(userId, orderStatus);
+		   
+		   int totalDelay = clientOrderService.totalDelay(userId);
+		   int totalOnTime = finishedProcess - totalDelay;
+		   /*
+		    *显示处理中、已结束饼状图  
+		    *显示按时完成、延期的饼状图
+		    */       
+		   request.setAttribute("totalProcess", totalProcess);
+		   request.setAttribute("finishedProcess", finishedProcess);
+		   request.setAttribute("totalOnTime", totalOnTime);
+		   request.setAttribute("totalDelay", totalDelay);
+		   
+		   
+		    /*
+		     *获取NBmail邮件数据（两封收件、两封发件）
+		     */
+		    String result1 = "";
+		    PrintWriter out = null;		  
+		    BufferedReader in = null;
+		      
+		      try {
+		      	
+		          //URL realUrl = new URL("http://112.64.174.34:43887/ERP-NBEmail/helpServlet?action=transAudit&className=ItCaseIdServlet");
+		          URL realUrl = new URL("http://112.64.174.34:43887/NBEmail/helpServlet?action=getEmail&className=EmailReceiverServlet");
+		          // 打开和URL之间的连接
+		          URLConnection conn = realUrl.openConnection();
+		          // 设置通用的请求属性
+		         // conn.setRequestProperty("accept", "*/*");
+		       conn.setRequestProperty("connection", "Keep-Alive");
+		          conn.setRequestProperty("user-agent",
+		                  "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+		          // 发送POST请求必须设置如下两行
+		          conn.setDoOutput(true);
+		          conn.setDoInput(true);
+		          // 获取URLConnection对象对应的输出流
+		          out = new PrintWriter(conn.getOutputStream());
+		          // 发送请求参数emaillAddress, sm,map,path
+		          out.print("&eid="+user.getUserid());
+		          // flush输出流的缓冲
+		          out.flush();
+		          // 定义BufferedReader输入流来读取URL的响应
+		          in = new BufferedReader(
+		                  new InputStreamReader(conn.getInputStream()));
+		          String line;
+		          while ((line = in.readLine()) != null) {
+		              result1 += line;
+		          }
+		          result1 = new String(result1.getBytes("gbk"),"utf-8");
+		          result1 = Base64Encode.getFromBase64(result1);
+//	          URLDecoder.decode("result1", "utf-8");
+		          Map<Object, Object> cl = SerializeUtil.JsonToMap(result1);
+			      //将json数据反序列化为map格式
+				  String jsonStr1 = cl.get("EmailReceive").toString();
+				  String jsonStr2 = cl.get("EmailInfo").toString();
+				  List<Object> emailReceive = (List<Object>)JsonUtil.jsonToObject(jsonStr1, Object.class);
+				  List<Object> emailSend = (List<Object>)JsonUtil.jsonToObject(jsonStr2, Object.class);
+				  request.setAttribute("emailReceive", emailReceive);
+				  request.setAttribute("emailSend", emailSend);
+		      } catch (Exception e) {
+		  		e.printStackTrace();
+				Log.error("===============ClientOrderController   sendMail==============="+e.getMessage());
+				throw new Exception(e.getMessage());    	
+		      }
+	} catch (Exception e) {
+		e.printStackTrace();
+		Log.error("===============ClientOrderController   queryAllClientOrder==============="+e.getMessage());
+		throw new Exception(e.getMessage());
+	}	            	         
+	         
+
+	   return "index.jsp";
+   }
+   
+   
+   /**
+    * 查询已结束的订单
+    * @param request
+    * @param response
+    * @return
+ * @throws Exception 
+    */
+   @ResponseBody
+   @RequestMapping("/queryFinishedOrder.do")
+   public List<ClientOrder> queryFinishedOrder(HttpServletRequest request, HttpServletResponse response) throws Exception{
+	  List<ClientOrder> clientOrders = null;
+	try {
+		String userid = request.getParameter("userid");
+		  if(userid == null || "".equals(userid)){
+			  throw new RuntimeException("Unable to get user id!");
+		  }
+		  String factoryName = request.getParameter("factoryName");
+		  FactoryInfo factoryInfo = factoryInfoService.queryByFactoryName(factoryName);
+		  String factoryId = "";
+		  if(factoryInfo == null || "".equals(factoryInfo)){
+			  throw new RuntimeException("Unable to get factory info!");
+		  }
+		  factoryId = factoryInfo.getFactoryId();
+		  int orderStatus = 1;
+		  clientOrders = clientOrderService.queryByUserId(userid, orderStatus, factoryId);
+	} catch (Exception e) {
+		e.printStackTrace();
+		Log.error("===============ClientOrderController   queryFinishedOrder==============="+e.getMessage());
+		throw new Exception(e.getMessage());
+	}
+	  return clientOrders;	   
+   }
+   
+
+   /**
+    * 查询订单详情
+    * @param request
+    * @param response
+    * @return
+ * @throws Exception 
+    */
+   @RequestMapping("/queryOrderDetails.do")
+   public String queryOrderDetails(HttpServletRequest request, HttpServletResponse response) throws Exception{
+	   try {
+		   String orderId = request.getParameter("orderId");
+		   if(orderId == null || "".equals(orderId)){
+			   throw new RuntimeException("orderId can not empty!");
+		   }
+		   ClientOrder clientOrder = clientOrderService.queryByOrderId(orderId);
+			if(clientOrder == null || "".equals(clientOrder)){
+				throw new RuntimeException("订单获取失败");
+			}
+			String factoryId = clientOrder.getFactoryId();
+			FactoryInfo factoryInfo = factoryInfoService.queryByFactoryId(factoryId);
+			List<Milestone> milestones = milestoneService.queryByOrderId(orderId);
+			List<List<ProductionPhotoTimeline>> list = new ArrayList<List<ProductionPhotoTimeline>>();
+			List<ProductionPhotoTimeline> list1 = productionPhotoTimelineService.queryByOrderIdGroupByDate(orderId);
+			for (ProductionPhotoTimeline p : list1) {
+				List<ProductionPhotoTimeline> productionPhotoTimeline = productionPhotoTimelineService.queryByUploadDate(orderId, p.getUploadDate());
+			    list.add(productionPhotoTimeline);
+			}	
+			
+			
+			//获取发票信息
+			List<InvoiceInfo> invoiceInfos = invoiceInfoService.queryInvoiceByOrderId(orderId);			
+			Double total = 0.00;		
+			List<AmountUnit> amountUnits = new ArrayList<AmountUnit>();
+			for (InvoiceInfo invoiceInfo : invoiceInfos) {
+				
+				AmountUnit amountUnit = amountUnitService.queryById(invoiceInfo.getAmountUnit());
+				Double exchangeRate = amountUnit.getExchangeRate();
+				
+				Double productPrice = invoiceInfo.getProductPrice();
+				if(productPrice == null || "".equals(productPrice)){
+				   productPrice = 0.00;
+				   invoiceInfo.setProductPrice(productPrice);
+				}
+
+				Double otherPrice = invoiceInfo.getOtherPrice();
+				if(otherPrice == null || "".equals(otherPrice)){
+					otherPrice = 0.00;
+					invoiceInfo.setOtherPrice(otherPrice);
+					}
+				Double shippingFee = invoiceInfo.getShippingFee();
+				if(shippingFee == null || "".equals(shippingFee)){
+					shippingFee = 0.00;
+					invoiceInfo.setShippingFee(shippingFee);
+					}
+				Double moldPrice = invoiceInfo.getMoldPrice();
+				if(moldPrice == null || "".equals(moldPrice)){
+					moldPrice = 0.00;
+					invoiceInfo.setMoldPrice(moldPrice);
+					}
+				Double sum = invoiceInfo.getAmount() / exchangeRate;
+				sum = new BigDecimal(sum).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();				
+				total +=  sum;
+				amountUnits.add(amountUnit);
+			}
+			Double f1 = new BigDecimal(total).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+      
+			request.setAttribute("amountUnit", amountUnits);
+			request.setAttribute("invoiceInfos", invoiceInfos);
+			request.setAttribute("total", f1);
+			
+			
+			   //获取订单图纸信息		  
+			   List<ClientDrawings> clientDrawings = clientDrawingsService.queryListByOrderId(orderId);
+			   int tl = clientDrawings.size();
+			   if(tl != 0){
+				   for (int i = 0; i < tl; i++) {											
+			            /*
+			             *去除时间节点，获取图纸名 
+			             */
+					     String dt = clientDrawings.get(i).getDrawingsName();
+					     if(!(dt == null || "".equals(dt))){
+					    	   String[] dts = dt.split("&");
+							   String drawingName = dts[0];			
+							   //获取图纸名显示		                     
+							   clientDrawings.get(i).setDrawingsName(drawingName);
+					     }					     
+				    }
+			   }
+			
+			
+		   request.setAttribute("clientDrawings", clientDrawings);	
+		   request.setAttribute("invoiceInfos", invoiceInfos);	
+		   request.setAttribute("productionPhotoTimeline", list1);
+		   request.setAttribute("productionPhotoTimelines", list);
+		   request.setAttribute("milestones", milestones);
+		   request.setAttribute("factoryInfo", factoryInfo);
+		   request.setAttribute("clientOrder", clientOrder);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.error("===============ClientOrderController  queryOrderDetails==============="+e.getMessage());
+			throw new Exception(e.getMessage());
+		}
+	   
+	   return "orderDetails.jsp";
+   }
+   
+   
+   /**
+    * 根据订单和上传时间查询图片
+    * @param request
+    * @param response
+    * @return
+    */
+   @ResponseBody
+   @RequestMapping("/queryPhotoByUploadDate.do")
+   public List<ProductionPhotoTimeline> queryPhotoByUploadDate(HttpServletRequest request, HttpServletResponse response){   
+	   List<ProductionPhotoTimeline> productionPhotoTimelines = null;
+	try {
+		if(request.getParameter("uploadDate") == null || "".equals(request.getParameter("uploadDate"))){
+			   throw new RuntimeException("upload date can not empty!");
+		   }
+		   if(request.getParameter("orderId") == null || "".equals(request.getParameter("orderId"))){
+			   throw new RuntimeException("orderId date can not empty!");
+		   }
+		   String uploadDate = request.getParameter("uploadDate");
+		   String orderId = request.getParameter("orderId");
+		   productionPhotoTimelines = productionPhotoTimelineService.queryByUploadDate(orderId, uploadDate);
+	} catch (Exception e) {
+		e.printStackTrace();
+		Log.error("===============ClientOrderController  queryPhotoByUploadDate==============="+e.getMessage());
+	}
+	   
+	   return productionPhotoTimelines;
+   }
+   
+   
+   /**
+    * 根据订单号查询weekly report
+    * @param request
+    * @param response
+    * @return
+   * @throws Exception 
+    */
+   @ResponseBody
+   @RequestMapping("/queryPhotoByOrderId.do")
+   public JsonResult<Map<Object,Object>> queryPhotoByOrderId(HttpServletRequest request, HttpServletResponse response){   
+	   List<ProductionPhotoTimeline> productionPhotoTimelines = null;
+		try {
+			   if(request.getParameter("orderId") == null || "".equals(request.getParameter("orderId"))){
+				   throw new RuntimeException("orderId date can not empty!");
+			   }
+			   String orderId = request.getParameter("orderId");
+			   productionPhotoTimelines = productionPhotoTimelineService.queryByOrderIdGroupByDate(orderId);
+			   
+			    Map<Object,Object> map = new HashMap<Object, Object>();
+		        List<List<ProductionPhotoTimeline>> list2 = new ArrayList<List<ProductionPhotoTimeline>>();
+		        for (ProductionPhotoTimeline productionPhotoTimeline : productionPhotoTimelines) {
+		        	List<ProductionPhotoTimeline> productionPhoto = productionPhotoTimelineService.queryByUploadDate(orderId, productionPhotoTimeline.getUploadDate());
+		        	list2.add(productionPhoto);
+				}
+		        map.put("productionPhotoes", productionPhotoTimelines);       
+		        map.put("productionPhotoTimelines", list2);       
+			   
+			   return new JsonResult<Map<Object,Object>>(map);			   
+		} catch (NumberFormatException e) {
+			Log.error("======ClientOrderController  queryPhotoByMilestoneId======="+e.getMessage());
+			e.printStackTrace();
+			return new JsonResult<Map<Object,Object>>(1,"查询失败");
+		}
+	   
+   }
+   
+   
+   
+   @RequestMapping("/querySupplier.do")
+   public String querySupplier(HttpServletRequest request, HttpServletResponse response) throws Exception{	   
+	   
+	   
+	   try {
+		String userId = request.getParameter("userId");
+		   if(userId == null || "".equals(userId)){
+			  throw new RuntimeException("未获取到用户信息"); 
+		   }
+		   int total = clientOrderService.total1(userId);
+		   List<UserFactoryRelation> factoryUserRelation = userFactoryRelationService.queryByUserid(userId);
+		   List<Double> factoryAmounts = new ArrayList<Double>();
+		   List<Integer> factoryTotals = new ArrayList<Integer>();
+		   List<String> lastOrderDates = new ArrayList<String>();
+		   List<FactoryInfo> factoryInfos = new ArrayList<FactoryInfo>();
+		   Double totalPrice = 0.0;
+		   FactoryInfo factoryInfo = new FactoryInfo();
+		   
+		   
+		   for (UserFactoryRelation factoryUserRelation2 : factoryUserRelation) { 	
+			   Double factoryAmount = 0.0;
+			   Integer orderStatus = null; 
+			   String factoryId = factoryUserRelation2.getFactoryId();
+			   int factoryTotal = clientOrderService.totalFinished(userId, orderStatus, factoryId);
+			   String lastOrderDate = clientOrderService.queryLastOrder(userId, factoryId);
+			   if(lastOrderDate != null && !"".equals(lastOrderDate)){
+				   lastOrderDate = DateFormat.formatDate1(lastOrderDate); 
+			   }
+			   
+			   List<ClientOrder> list = clientOrderService.queryByFactoryId(userId, factoryId);
+			   factoryInfo = factoryInfoService.queryByFactoryId(factoryId);
+			   for (ClientOrder clientOrder : list) {
+				   Double amount = clientOrder.getAmount();
+				   factoryAmount += new BigDecimal(amount).doubleValue();				   
+			   }
+			   factoryAmount = new BigDecimal(factoryAmount).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+			   factoryAmounts.add(factoryAmount);
+			   factoryTotals.add(factoryTotal);
+			   lastOrderDates.add(lastOrderDate);
+			   factoryInfos.add(factoryInfo);
+			   totalPrice += new BigDecimal(factoryAmount).doubleValue();
+
+		    }	   
+		   totalPrice = new BigDecimal(totalPrice).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();	   
+		   request.setAttribute("totalPrice", totalPrice);
+		   request.setAttribute("total", total);
+		   request.setAttribute("factoryAmounts", factoryAmounts);
+		   request.setAttribute("factoryTotals", factoryTotals);
+		   request.setAttribute("lastOrderDates", lastOrderDates);
+		   request.setAttribute("factoryInfos", factoryInfos);
+	} catch (Exception e) {
+		e.printStackTrace();
+		Log.error("===============ClientOrderController  querySupplier==============="+e.getMessage());
+		throw new Exception(e.getMessage());
+
+	}
+	   
+	   
+	   
+	   return "supplier.jsp";
+   }
+   
+   
+   /**
+    * 查询工厂信息
+    * @param request
+    * @param response
+    * @return
+ * @throws Exception 
+    */
+   @RequestMapping("/querySupplierInfo.do")
+   public String querySupplierInfo(HttpServletRequest request, HttpServletResponse response) throws Exception{	
+	   try {
+		String userId = request.getParameter("userId");
+		   if(userId == null || "".equals(userId)){
+			  throw new RuntimeException("未获取到用户信息"); 
+		   }
+		   String factoryId = request.getParameter("factoryId");
+		   if(factoryId == null || "".equals(factoryId)){
+			  throw new RuntimeException("未获取到工厂信息"); 
+		   }
+		   Integer orderStatus = null; 
+		   Double factoryAmount = 0.0;
+		   
+		   FactoryInfo factoryInfo = factoryInfoService.queryByFactoryId(factoryId);
+		   //查询工厂所有订单
+		   int factoryTotal = clientOrderService.totalFactoryOrder(userId, factoryId);
+		   List<ClientOrder> list = clientOrderService.queryByFactoryId(userId, factoryId);
+		   for (ClientOrder clientOrder : list) {
+			   Double amount = clientOrder.getAmount();
+			   factoryAmount += new BigDecimal(amount).doubleValue();	
+		    }
+		   factoryAmount = new BigDecimal(factoryAmount).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+		   
+		   request.setAttribute("factoryAmount", factoryAmount);
+		   request.setAttribute("factoryTotal", factoryTotal);
+		   request.setAttribute("factoryInfo", factoryInfo);
+		   request.setAttribute("userId", userId);
+		   
+		   orderStatus = 0;
+		   int totalProcess = clientOrderService.totalFinished(userId, orderStatus, factoryId);
+		   orderStatus = 1;
+		   int totalFinished = clientOrderService.totalFinished(userId, orderStatus, factoryId);
+		   
+//	      Font font = new Font("宋体", Font.BOLD, 15);
+//          Map<String, Double> map=new HashMap<String, Double>();
+//          map.put("In Process", (double)totalProcess);
+//          map.put("Finished", (double)totalFinished);       
+//          PieChart.createPort("Factory Order Chart", map, font,userId,factoryId);    
+		   
+		   request.setAttribute("totalProcess", totalProcess);
+		   request.setAttribute("totalFinished", totalFinished);
+	   
+		   
+	} catch (Exception e) {
+		e.printStackTrace();
+		Log.error("===============ClientOrderController  querySupplierInfo==============="+e.getMessage());
+		throw new Exception(e.getMessage());
+	}
+	   
+	 return "supplier_info.jsp";  
+   }
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   /**
+    * 展示最近收发的各5封邮件
+    * @param request
+    * @param response
+    * @return
+    */
+   @RequestMapping(value="/queryMailsByUserId.do",method = RequestMethod.POST)
+   public String queryMailsByUserId(@RequestParam Map<String,String> map,HttpServletRequest request){
+	      //将json数据反序列化为map格式
+		  String jsonStr1 = map.get("EmailReceive");
+		  String jsonStr2 = map.get("EmailInfo");
+		  
+//		  System.out.println(jsonStr);
+		  List<Object> emailReceive = (List<Object>)JsonUtil.jsonToObject(jsonStr1, Object.class);
+		  List<Object> emailSend = (List<Object>)JsonUtil.jsonToObject(jsonStr2, Object.class);
+		  request.setAttribute("emailReceive", emailReceive);
+		  request.setAttribute("emailSend", emailSend);
+	   
+	      return "index.jsp";
+   }
+   
+   
+   
+}

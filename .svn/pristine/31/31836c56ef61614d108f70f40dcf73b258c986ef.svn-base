@@ -1,0 +1,17 @@
+package com.cbt.dao;
+
+import com.cbt.entity.OrderPayLog;
+
+public interface OrderPayLogMapper {
+    int deleteByPrimaryKey(String id);
+
+    int insert(OrderPayLog record);
+
+    int insertSelective(OrderPayLog record);
+
+    OrderPayLog selectByPrimaryKey(String id);
+
+    int updateByPrimaryKeySelective(OrderPayLog record);
+
+    int updateByPrimaryKey(OrderPayLog record);
+}

@@ -1,0 +1,55 @@
+.shuru{width: 50%;float:left;}
+.shuru .shuruming{padding: 10px 0;}
+.shuru .shuruming .bianhao{    font-size: 14px;
+    padding-left: 20px;
+    margin-bottom: 0;
+    width: 220px;
+    line-height: 30px;
+    float: left;
+}
+.w-top .w-two .control-label {
+    float: left;
+    line-height: 30px;
+    margin-left: 20px;
+}
+.w-top{height:50px;}
+.w-top .w-two{padding-top:10px;position: absolute;right: 20px;}
+.w-two .controls{float:left;}
+.shuru .shuruming .bianhao2{    font-size: 14px;
+    margin-bottom: 0;
+    line-height: 30px;}
+.control-group .control-label{float: left;line-height: 30px;margin-left: 20px;}
+.control-group{margin-top: 10px;}
+.xiala_select{margin-bottom: 0;margin-left: 20px;}
+/* .table tbody tr td{text-align: center;} */
+.table tbody tr .w-a3 a{color: #08c;text-decoration: underline;}
+.nopadding .table-bordered{border-bottom: 1px solid #ddd;}
+.w-box {
+    margin-left: 20px;
+    margin-right: 20px;
+    background: none repeat scroll 0 0 #F9F9F9;
+   /*  border-left: 1px solid #CDCDCD; */
+    border-top: 1px solid #CDCDCD;
+ /*    border-right: 1px solid #CDCDCD; */
+    clear: both;
+    /* margin-top: 16px; */
+    margin-bottom: 16px;
+    position: relative;
+}
+.widget-content .w-box .w-widget-title{
+	border-right: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+}
+#DataTables_Table_0_wrapper .w-table1{
+	border-right: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+}
+.table-bordered th:first-child, .table-bordered td:first-child {
+    border-left:none;
+}
+.widget-content {
+    border-bottom:none;
+}
+.w-state{width:16%;}
+.z-pie{float: left;
+    width: 50%;}

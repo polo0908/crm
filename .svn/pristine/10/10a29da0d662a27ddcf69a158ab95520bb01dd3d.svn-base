@@ -1,0 +1,115 @@
+package com.cbt;
+
+
+
+import java.util.List;
+
+import org.junit.Test;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
+
+import com.cbt.dao.ClientDrawingsDao;
+import com.cbt.dao.ClientOrderDao;
+import com.cbt.dao.FactoryOrderMapper;
+import com.cbt.dao.NbMailCountryDao;
+import com.cbt.dao.QuotationDao;
+import com.cbt.dao.ReOrderDao;
+import com.cbt.dao.ReOrderDrawingsDao;
+import com.cbt.dao.ShippingInfoDao;
+import com.cbt.dao.UpdateDrawingDao;
+import com.cbt.dao.UserDao;
+import com.cbt.dao.UserRelationEmailDao;
+import com.cbt.entity.ClientDrawings;
+import com.cbt.entity.ClientOrder;
+import com.cbt.entity.FactoryOrder;
+import com.cbt.entity.NbMailCountry;
+import com.cbt.entity.QuotationBean;
+import com.cbt.entity.ReOrder;
+import com.cbt.entity.ReOrderDrawings;
+import com.cbt.entity.ShippingInfo;
+import com.cbt.entity.UpdateDrawing;
+import com.cbt.entity.User;
+import com.cbt.service.ClientDrawingsService;
+import com.cbt.service.QuotationService;
+import com.cbt.service.UserRelationEmailService;
+import com.cbt.util.Base64Encode;
+import com.cbt.util.DateFormat;
+import com.cbt.util.Md5Util;
+import com.cbt.util.SecurityHelper;
+import com.cbt.util.UploadAndDownloadPathUtil;
+import com.sun.mail.util.BASE64EncoderStream;
+
+
+
+public class Test2 {
+
+	@Test
+	
+	public void queryClientOrder(){
+		
+		ClassPathXmlApplicationContext ac = new ClassPathXmlApplicationContext("spring-mybatis.xml");
+		
+		UpdateDrawingDao updateDrawingDao = ac.getBean(UpdateDrawingDao.class);
+		ClientDrawingsDao clientDrawingsDao = ac.getBean(ClientDrawingsDao.class);
+		
+		  UpdateDrawing updateDrawing = new UpdateDrawing();
+		  ClientDrawings clientDrawing = clientDrawingsDao.queryById(2);
+		  updateDrawing.setDrawingId(clientDrawing.getId());
+		  updateDrawing.setDrawingName(clientDrawing.getDrawingsName());
+		  updateDrawing.setDrawingPath(UploadAndDownloadPathUtil.getOldDrawingUpLoadAndDownLoadPath());
+		  updateDrawing.setUpdateTime(DateFormat.format());
+		  updateDrawingDao.insertUpdateDrawing(updateDrawing);
+		  System.out.println(updateDrawing);
+	}
+	
+	@Test
+	public void md5(){
+	
+		String encryptTxt = "";
+		  String plainTxt = "456@163.com&031BCD1F51DACB9DCC5C2B0B00586BC5";
+		  try {
+		   System.out.println(plainTxt);
+		   encryptTxt = SecurityHelper.encrypt("token", plainTxt);
+		   System.out.println(encryptTxt);
+		  } catch (Exception e) {
+		   e.printStackTrace();
+		   System.exit(-1);
+		  }
+		 }
+	@Test
+	public void md51(){
+	
+		String token = "NDU2QDE2My5jb20mMDMxQkNEMUY1MURBQ0I5RENDNUMyQjBCMDA1ODZCQzU=";
+		 
+
+//    	String base64 = Base64Encode.getBase64(token);
+//    	System.out.println(base64);
+    	String fromBase64 = Base64Encode.getFromBase64(token);
+    	System.out.println(fromBase64);
+
+	}
+	
+	
+	@Test
+	public void queryUserId(){		
+		ClassPathXmlApplicationContext ac = new ClassPathXmlApplicationContext("spring-mybatis.xml");
+		UserRelationEmailService userRelationEmailDao = ac.getBean(UserRelationEmailService.class); 
+		String userid = userRelationEmailDao.queryUseridByEmail("3333@qq.com");
+		System.out.println(userid);
+	}
+	
+	
+	@Test
+	public void insertOrder(){		
+		ClassPathXmlApplicationContext ac = new ClassPathXmlApplicationContext("spring-mybatis.xml");
+		FactoryOrderMapper f = ac.getBean(FactoryOrderMapper.class); 
+		FactoryOrder order = new FactoryOrder();
+		order.setOrderId("12345");
+		order.setId("512");
+		float money = 20.2f;
+		order.setMoney(money);
+		f.insertSelective(order);
+		
+		
+	}
+	
+}

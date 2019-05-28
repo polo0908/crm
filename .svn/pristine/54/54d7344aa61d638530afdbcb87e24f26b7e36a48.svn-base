@@ -1,0 +1,64 @@
+package com.cbt;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import com.cbt.entity.Factory;
+import com.cbt.entity.Quality;
+import com.cbt.service.FactoryService;
+import com.cbt.service.QualityService;
+import com.cbt.util.IdGen;
+@RunWith(SpringJUnit4ClassRunner.class)		//表示继承了SpringJUnit4ClassRunner类
+@ContextConfiguration(locations = {"classpath:spring-mybatis.xml"})
+public class TestMyBatis {
+
+	@Autowired
+	private FactoryService factoryService;
+    @Autowired
+    private QualityService qualityService;
+	@Test
+	public void addFactoryPay() {
+		Factory factory=new Factory();
+		factory.setId(IdGen.uuid());
+		factory.setOrderId(IdGen.uuid());
+		factory.setQuestionFile("D:\\upload\\93e40365-75c5-4c3a-bdb2-9868fd2d159b.jpg");
+		factory.setOrderValue("1");
+		factory.setProductName("点动机");
+		factory.setRemark("测试使用");
+		factory.setUserId("10001");
+		List<String> urlList=new ArrayList<String>();
+		urlList.add("https://www.yahoo.com");
+		urlList.add("https://www.sina.com");
+		factory.setUrlList(urlList);
+		factory.setCreateDate(new Date());
+		factoryService.addFactoryPay(factory);
+	}
+	
+	@Test
+	public void addQualityToPay() {
+		Quality quality=new Quality();
+		quality.setId(IdGen.uuid());
+		quality.setUserId("10001");
+		quality.setOrderId(IdGen.uuid());
+		quality.setProvince("上海市普陀区");
+		quality.setType(0);
+		quality.setCount(100);
+		quality.setPartsCount(100);
+		quality.setComplexity(1);
+		quality.setOther("1");
+		quality.setNumber(100);
+		quality.setComment("没有什么可说的");
+		quality.setFileUrl("9868fd2d159b.jpg");
+		quality.setAddress("云岭东路");
+		quality.setPhone("110");
+		quality.setEmail("demo@163.com");
+		quality.setPrice(100);
+		quality.setCreateDate(new Date());
+		qualityService.addQualityToPay(quality);
+	}
+}

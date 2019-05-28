@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.AddressMapper" >
+  <resultMap id="BaseResultMap" type="com.cbt.entity.Address" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="factory_audit_id" property="factoryAuditId" jdbcType="VARCHAR" />
+    <result column="province" property="province" jdbcType="VARCHAR" />
+    <result column="address" property="address" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="factory_url" property="factoryUrl" jdbcType="VARCHAR" />
+    <result column="file_url" property="fileUrl" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="VARCHAR" />
+    <result column="price" property="price" jdbcType="REAL" />
+    <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, factory_audit_id,factory_url,file_url,type,price,province, address, phone, email, create_date
+  </sql>
+  
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from address
+    where factory_audit_id = #{id,jdbcType=VARCHAR}
+  </select>
+
+  <insert id="insertSelective" parameterType="com.cbt.entity.Address" >
+    insert into address
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="factoryAuditId != null" >
+        factory_audit_id,
+      </if>
+      <if test="factoryUrl != null" >
+        factory_url,
+      </if>
+      <if test="fileUrl != null" >
+        file_url,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="price != null" >
+        price,
+      </if>
+      <if test="province != null" >
+        province,
+      </if>
+      <if test="address != null" >
+        address,
+      </if>
+      <if test="phone != null" >
+        phone,
+      </if>
+      <if test="email != null" >
+        email,
+      </if>
+      <if test="createDate != null" >
+        create_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="factoryAuditId != null" >
+        #{factoryAuditId,jdbcType=VARCHAR},
+      </if>
+      <if test="factoryUrl != null" >
+        #{factoryUrl,jdbcType=VARCHAR},
+      </if>
+       <if test="fileUrl != null" >
+        #{fileUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null" >
+        #{price,jdbcType=REAL},
+      </if>
+      <if test="province != null" >
+        #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null" >
+        #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cbt.entity.Address" >
+    update address
+    <set >
+      <if test="factoryAuditId != null" >
+        factory_audit_id = #{factoryAuditId,jdbcType=VARCHAR},
+      </if>
+      <if test="factory_url != null" >
+        factory_url = #{factoryUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="province != null" >
+        province = #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        address = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null" >
+        email = #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null" >
+        create_date = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cbt.entity.Address" >
+    update address
+    set factory_audit_id = #{factoryAuditId,jdbcType=VARCHAR},
+      province = #{province,jdbcType=VARCHAR},
+      address = #{address,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      email = #{email,jdbcType=VARCHAR},
+      create_date = #{createDate,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <!-- 批量添加工厂信息信息 -->
+  <select id="batchAddAddress" parameterType="java.util.List">
+      INSERT INTO address(id,factory_audit_id,factory_url,file_url,type,price,province,address,phone,email,create_date) VALUES
+      <foreach collection="list"  item="item" separator=",">
+        (#{item.id,jdbcType=VARCHAR},#{item.factoryAuditId,jdbcType=VARCHAR},#{item.factoryUrl,jdbcType=VARCHAR},#{item.fileUrl,jdbcType=VARCHAR},#{item.type,jdbcType=VARCHAR},#{item.price,jdbcType=REAL},#{item.province,jdbcType=VARCHAR},#{item.address,jdbcType=VARCHAR},#{item.phone,jdbcType=VARCHAR},#{item.email,jdbcType=VARCHAR},#{item.createDate,jdbcType=TIMESTAMP}
+        )
+     </foreach>
+  </select>
+</mapper>

@@ -1,0 +1,17 @@
+package com.cbt.dao;
+
+import com.cbt.entity.PaymentSuccessLog;
+
+public interface PaymentSuccessLogMapper {
+    int deleteByPrimaryKey(String id);
+
+    int insert(PaymentSuccessLog record);
+
+    int insertSelective(PaymentSuccessLog record);
+
+    PaymentSuccessLog selectByPrimaryKey(String id);
+
+    int updateByPrimaryKeySelective(PaymentSuccessLog record);
+
+    int updateByPrimaryKey(PaymentSuccessLog record);
+}

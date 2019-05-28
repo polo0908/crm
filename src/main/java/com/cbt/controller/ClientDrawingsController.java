@@ -1,0 +1,433 @@
+package com.cbt.controller;
+
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import com.cbt.entity.ClientDrawings;
+import com.cbt.entity.ClientOrder;
+import com.cbt.entity.FactoryInfo;
+import com.cbt.entity.UpdateDrawing;
+import com.cbt.service.ClientDrawingsService;
+import com.cbt.service.ClientOrderService;
+import com.cbt.service.FactoryInfoService;
+import com.cbt.service.UserFactoryRelationService;
+import com.cbt.service.RfqInfoService;
+import com.cbt.service.UpdateDrawingService;
+import com.cbt.util.Base64Encode;
+import com.cbt.util.DateFormat;
+import com.cbt.util.OperationFileUtil1;
+import com.cbt.util.SerializeUtil;
+import com.cbt.util.SplitPage;
+import com.cbt.util.UploadAndDownloadPathUtil;
+import com.cbt.util.WebCookie;
+
+
+
+@Controller 
+public class ClientDrawingsController {
+	
+  private  ClientDrawings clientDrawing;
+  @Resource
+  private ClientDrawingsService clientDrawingsService;
+  @Resource
+  private UpdateDrawingService updateDrawingService;
+  @Resource
+  private RfqInfoService rfqInfoService;
+  @Resource
+  private ClientOrderService clientOrderService;
+  @Resource
+  private UserFactoryRelationService factoryUserRelationService;
+  @Resource
+  private FactoryInfoService factoryInfoService;
+  
+  public static final Logger Log = Logger.getLogger(ClientDrawingsController.class);
+  /**
+   * 根据用户id查询所有的图纸信息并且分页显示
+   * @param queryAllClientOrder
+   * @return
+   * @throws ParseException 
+   * @throws UnsupportedEncodingException 
+   */
+  @RequestMapping("/queryAllDrawings.do")
+  public String queryAllClientOrder(HttpServletRequest request, HttpServletResponse response) throws Exception{
+	  
+	   try {
+		   String userId = WebCookie.getUserid(request);
+		   String str1 = request.getParameter("page");
+		   String str2 = request.getParameter("pageSize");
+		   
+		    int page = 1;
+			if(str1 != null) {
+				page = Integer.parseInt(str1);
+			}
+		    int pageSize = 10;   
+			if(str2 != null) {
+				pageSize = Integer.parseInt(str2);
+			}
+			int start = (page-1) * pageSize;  	   
+		   
+		   List<ClientDrawings> clientDrawings = clientDrawingsService.queryByUserId(userId, start, pageSize);
+		   
+		   for (ClientDrawings c : clientDrawings) {
+		        /*
+		         *去除时间节点，获取图纸名 
+		         */
+			     String dt = c.getDrawingsName();
+			     if(!(dt == null || "".equals(dt.trim()))){
+			    	   String[] dts = dt.split("&");
+					   String drawingName = dts[0]+"."+FilenameUtils.getExtension(dt);
+					   c.setDrawingsName(drawingName);
+					   if(!(c.getUpdateTime() == null || "".equals(c.getUpdateTime()))){
+					   c.setUpdateTime(DateFormat.formatDate1(c.getUpdateTime()));
+					   }
+			     }		  
+		     }	    
+
+		   request.setAttribute("clientDrawing", clientDrawings);
+		   int total = clientDrawingsService.total(userId); 
+		   SplitPage.buildPager(request, total, pageSize, page);
+	} catch (Exception e) {
+		e.printStackTrace();
+		Log.error("===============ClientDrawingsController  queryAllClientOrder==============="+e.getMessage());
+		throw new Exception(e.getMessage());
+	}
+	   return "drawings.jsp";
+  }
+  
+  
+  
+  
+  
+  /**
+   * 根据订单查询图纸信息并且分页显示
+   * @param queryListByOrderId
+   * @return
+   * @throws ParseException 
+   * @throws UnsupportedEncodingException 
+   */
+  @RequestMapping("/queryListByOrderId.do")
+  public String queryListByOrderId(HttpServletRequest request, HttpServletResponse response) throws Exception{
+	  
+	   try {
+		   String orderId = request.getParameter("orderId");
+		   String str1 = request.getParameter("page");
+		   String str2 = request.getParameter("pageSize");
+		   
+		    int page = 1;
+			if(str1 != null) {
+				page = Integer.parseInt(str1);
+			}
+		    int pageSize = 10;   
+			if(str2 != null) {
+				pageSize = Integer.parseInt(str2);
+			}
+			int start = (page-1) * pageSize;  	   
+		   
+		   List<ClientDrawings> clientDrawings = clientDrawingsService.queryByOrderId(orderId, start, pageSize);
+		   
+		   for (ClientDrawings c : clientDrawings) {
+		        /*
+		         *去除时间节点，获取图纸名 
+		         */
+			     String dt = c.getDrawingsName();
+			     if(!(dt == null || "".equals(dt))){
+			    	   String[] dts = dt.split("&");
+					   String drawingName = dts[0]+"."+FilenameUtils.getExtension(dt);
+					   c.setDrawingsName(drawingName);
+					   c.setUpdateTime(DateFormat.formatDate1(c.getUpdateTime()));
+			     }		  
+		     }	    
+		   request.setAttribute("clientDrawing", clientDrawings);
+		   int total = clientDrawingsService.totalByOrderId(orderId);
+		   SplitPage.buildPager(request, total, pageSize, page);
+	} catch (Exception e) {		
+		e.printStackTrace();
+		Log.error("===============ClientDrawingsController  queryListByOrderId==============="+e.getMessage());
+		throw new Exception(e.getMessage());
+	}
+	   return "drawings.jsp";
+  }
+  
+  
+
+  
+  /**
+   * 根据订单号查询图纸信息
+   * @param queryDrawingsByOrderId
+   * @return
+ * @throws Exception 
+   */
+  @RequestMapping("/queryDrawingsByOrderId.do")
+  public String queryDrawingsByOrderId(HttpServletRequest request, HttpServletResponse response) throws Exception{
+	  String orderId = request.getParameter("orderId");
+	  orderId = Base64Encode.getFromBase64(orderId);
+	  //userid从cookie获取
+	  try {
+          String userId = WebCookie.getUserid(request);
+		  if(userId == null || "".equals(userId)){
+			  throw new RuntimeException("未获取到用户信息！");
+		  }
+		  List<ClientDrawings> clientDrawings = clientDrawingsService.queryListByOrderId(orderId);	
+		  ClientOrder clientOrder = clientOrderService.queryByOrderId(orderId);
+		  FactoryInfo factoryInfo = factoryInfoService.queryByFactoryId(clientOrder.getFactoryId());
+//		  List<UserFactoryRelation> factoryUserRelation = factoryUserRelationService.queryByUserid(userId);	  
+//		  List<FactoryInfo> factoryInfos = new ArrayList<FactoryInfo>();
+//		  FactoryInfo factoryInfo = new FactoryInfo();
+//		  for (UserFactoryRelation factoryUserRelation2 : factoryUserRelation) { 
+//			  String factoryId = factoryUserRelation2.getFactoryId();
+//			  factoryInfo = factoryInfoService.queryByFactoryId(factoryId);
+//			  factoryInfos.add(factoryInfo);
+//		  }
+		  List<String> drawingsName = new ArrayList<String>();
+		  for (ClientDrawings c : clientDrawings) {
+		      /*
+		       *去除时间节点，获取图纸名 
+		       */
+			     String dt = c.getDrawingsName();
+			     if(!(dt == null || "".equals(dt))){
+			    	   String[] dts = dt.split("&");
+					   String drawingName = dts[0]+"."+FilenameUtils.getExtension(dt);
+					   c.setDrawingsName(drawingName);			  
+			     }	
+			     drawingsName.add(dt); 
+		     }	  
+		  
+		  
+		  request.setAttribute("drawingsName", drawingsName);
+		  request.setAttribute("clientDrawing", clientDrawings);
+		  request.setAttribute("factoryName",factoryInfo.getFactoryName());
+	} catch (Exception e) {
+		e.printStackTrace();
+		Log.error("=========ClientDrawingsController  queryDrawingsByOrderId========="+e.getMessage());
+		throw new Exception(e.getMessage());
+	}
+	  return "reOrder.jsp";
+  }
+  
+  /**
+   * 根据id号查询图纸信息
+   * @param queryById
+   * @return
+ * @throws Exception 
+   */
+  @RequestMapping("/queryById.do")
+ public String queryById(HttpServletRequest request, HttpServletResponse response) throws Exception{
+	  
+	    try {
+			Integer id = Integer.parseInt(request.getParameter("id"));
+			ClientDrawings clientDrawings = clientDrawingsService.queryById(id);
+			 //userid从cookie获取
+			  String[] userInfo = WebCookie.getUser(request);
+			  if(userInfo.length == 0){
+				  throw new RuntimeException("未获取到cookie！");  
+			  }
+			  String userId = userInfo[0];//cookie获取
+			  if(userId == null || "".equals(userId)){
+				  throw new RuntimeException("未获取到用户信息！");
+			  }
+//			List<UserFactoryRelation> factoryUserRelation = factoryUserRelationService.queryByUserid(userId);			  			  
+//			  List<FactoryInfo> factoryInfos = new ArrayList<FactoryInfo>();
+//			  FactoryInfo factoryInfo = new FactoryInfo();
+//			  for (UserFactoryRelation factoryUserRelation2 : factoryUserRelation) { 
+//				  String factoryId = factoryUserRelation2.getFactoryId();
+//				  factoryInfo = factoryInfoService.queryByFactoryId(factoryId);
+//				  factoryInfos.add(factoryInfo);
+//			  }
+			  ClientOrder clientOrder = clientOrderService.queryByOrderId(clientDrawings.getOrderId());			  
+			  FactoryInfo factoryInfo = factoryInfoService.queryByFactoryId(clientOrder.getFactoryId());   
+			  
+			  
+			 /*
+			  *去除时间节点，获取图纸名 
+			  */
+			     String dt = clientDrawings.getDrawingsName();
+			     if(!(dt == null || "".equals(dt))){
+			    	   String[] dts = dt.split("&");
+					   String drawingName = dts[0]+"."+FilenameUtils.getExtension(dt);
+					   clientDrawings.setDrawingsName(drawingName);				  
+			     }		  
+			//将对象数组转换成list集合，和jsp界面保持一致
+			List<Object> list = new ArrayList<Object>();	    
+			List<String> drawingsName = new ArrayList<String>();	    
+			Collections.addAll(list, clientDrawings);
+			Collections.addAll(drawingsName, dt);
+			
+			request.setAttribute("drawingsName", drawingsName);
+			request.setAttribute("clientDrawing", list);
+			request.setAttribute("factoryName",factoryInfo.getFactoryName());
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.error("=========ClientDrawingsController queryById========="+e.getMessage());
+			throw new Exception(e.getMessage());
+		}
+	    return "reOrder.jsp";
+   }
+  
+  /**
+   * 根据ids批量查询图纸信息
+ * @throws Exception 
+   * 
+   */
+  @RequestMapping("/queryDrawingsByIds.do")
+  public String queryDrawingsByIds(HttpServletRequest request, HttpServletResponse response) throws Exception{
+	  try {
+		  String drawingsIds = request.getParameter("ids");
+		  String jsonStr = drawingsIds.replace("\"", "");
+		  Integer[] ids = SerializeUtil.JsonToIntegerArray(jsonStr);
+		  //userid从cookie获取
+		  String[] userInfo = WebCookie.getUser(request);
+		  if(userInfo.length == 0){
+			  throw new RuntimeException("未获取到cookie！");  
+		  }
+		  String userId = userInfo[0];//cookie获取
+		  if(userId == null || "".equals(userId)){
+			  throw new RuntimeException("未获取到用户信息！");
+		  }
+	    
+//		    List<UserFactoryRelation> factoryUserRelation = factoryUserRelationService.queryByUserid(userId);
+//			  
+//			  
+//			  List<FactoryInfo> factoryInfos = new ArrayList<FactoryInfo>();
+//			  FactoryInfo factoryInfo = new FactoryInfo();
+//			  for (UserFactoryRelation factoryUserRelation2 : factoryUserRelation) { 
+//				  String factoryId = factoryUserRelation2.getFactoryId();
+//				  factoryInfo = factoryInfoService.queryByFactoryId(factoryId);
+//				  factoryInfos.add(factoryInfo);
+//			  }
+		    
+		    
+		    
+		  List<ClientDrawings> clientDrawings = clientDrawingsService.queryListByIds(ids);	
+		  List<String> drawingsName = new ArrayList<String>();
+		  List<FactoryInfo> factoryInfos = new ArrayList<FactoryInfo>();
+		  Boolean flag = true;
+		  for (ClientDrawings c : clientDrawings) {
+		      /*
+		       *去除时间节点，获取图纸名 
+		       */
+			     String dt = c.getDrawingsName();
+			     if(!(dt == null || "".equals(dt))){
+			    	   String[] dts = dt.split("&");
+					   String drawingName = dts[0]+"."+FilenameUtils.getExtension(dt);
+					   c.setDrawingsName(drawingName);
+					  
+			     }		
+			     drawingsName.add(dt); 
+			     
+			     
+			     //判断图纸工厂
+			     ClientOrder clientOrder = clientOrderService.queryByOrderId(c.getOrderId());			  				 
+				 for (FactoryInfo factoryInfo1 : factoryInfos) {
+					if(factoryInfo1.getFactoryId().equals(clientOrder.getFactoryId())){
+						flag = false;
+					}
+				 }
+				 FactoryInfo factoryInfo = factoryInfoService.queryByFactoryId(clientOrder.getFactoryId());
+				 if(flag){
+					 factoryInfos.add(factoryInfo); 
+				 }
+
+		   }	    
+		  
+		  request.setAttribute("drawingsName", drawingsName);
+		  request.setAttribute("clientDrawing", clientDrawings);
+		  request.setAttribute("factoryInfos",factoryInfos);
+	} catch (Exception e) {
+		e.printStackTrace();
+		Log.error("=========ClientDrawingsController queryDrawingsByIds========="+e.getMessage());
+		throw new Exception(e.getMessage());
+	}
+	  return "reOrder.jsp";
+  }
+ 
+
+  
+  /**
+   * 根据id更新图纸信息
+   * @throws IOException 
+   * @throws IllegalStateException 
+   */
+  @RequestMapping("/updateDrawingsById.do")
+  public String updateDrawingsById(HttpServletRequest request) throws Exception{
+	   
+      try {
+		  Integer id = Integer.parseInt(request.getParameter("id"));
+		  clientDrawing = clientDrawingsService.queryById(id);
+		  String drawingName = null;
+		  //调用保存文件的帮助类进行保存文件(文件上传，form表单提交)
+		  String path = UploadAndDownloadPathUtil.getOldDrawingUpLoadAndDownLoadPath();
+		  Map<String, String> multiFileUpload = OperationFileUtil1.multiFileUpload(request,path);
+		  if(!(request.getParameter("drawingName") == null || "".equals(request.getParameter("drawingName")))){
+		  drawingName = request.getParameter("drawingName");
+		  //图纸名通过&连接时间节点显示
+		  drawingName = multiFileUpload.get(drawingName);
+		  clientDrawing.setDrawingsName(drawingName);
+		  }
+		  
+		  clientDrawing.setUpdateTime(DateFormat.getDate());
+		  clientDrawing.setDrawingsPath(UploadAndDownloadPathUtil.getOldDrawingUpLoadAndDownLoadPath());
+		  clientDrawing.setDrawingState("YES");
+
+		  //上传图纸的同时，插入图纸更新记录表(update_drawing)
+		  UpdateDrawing updateDrawing = new UpdateDrawing();
+		  updateDrawing.setDrawingId(clientDrawing.getId());
+		  updateDrawing.setDrawingName(drawingName);
+		  updateDrawing.setDrawingPath(UploadAndDownloadPathUtil.getOldDrawingUpLoadAndDownLoadPath());
+		  updateDrawing.setUpdateTime(DateFormat.format());
+		  
+		  clientDrawingsService.updateClientDrawings(clientDrawing, updateDrawing);
+	} catch (Exception e) {
+		e.printStackTrace();
+		Log.error("=========ClientDrawingsController updateDrawingsById========="+e.getMessage());
+		throw new Exception(e.getMessage());
+	}
+	  
+	  return "drawings.jsp";
+  }
+  
+  
+  @ResponseBody
+  @RequestMapping("/listUpdateDrawing.do")
+  public JsonResult<List<UpdateDrawing>> listUpdateDrawing(HttpServletRequest request, HttpServletResponse response){
+	  List<UpdateDrawing> list = null;
+	try {
+		if(request.getParameter("id") == null || "".equals(request.getParameter("id"))){
+			  throw new RuntimeException("please select one drawing!");
+		  }
+		  Integer drawingId = Integer.parseInt(request.getParameter("id"));
+		  list = updateDrawingService.queryListByDrawingId(drawingId);
+		  for (UpdateDrawing updateDrawing : list) {
+			//去除时间节点
+			String dt = updateDrawing.getDrawingName();
+			if(!(dt == null || "".equals(dt))){
+		    	   String[] dts = dt.split("&");
+				   String drawingName = dts[0]+"."+FilenameUtils.getExtension(dt);
+				   updateDrawing.setDrawingName(drawingName);
+		     }
+		   
+		  }
+		  request.setAttribute("list", list);
+	} catch (Exception e) {
+		e.printStackTrace();
+		Log.error("=========ClientDrawingsController listUpdateDrawing========="+e.getMessage());
+	}
+	  
+	  return new JsonResult<List<UpdateDrawing>>(list);
+  }
+  
+  
+  
+}

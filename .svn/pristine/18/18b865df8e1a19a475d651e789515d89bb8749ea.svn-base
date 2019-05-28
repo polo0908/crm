@@ -1,0 +1,80 @@
+package com.cbt.entity;
+
+import java.io.Serializable;
+
+/**
+ * 报价单商品价格
+ * @author tb
+ * @time 2017.3.28
+ */
+public class QuotationProductionPriceBean implements Serializable{
+
+	private static final long serialVersionUID = 528634311012160360L;
+
+	private Integer id;//报价商品价格id
+	
+	private Integer productionInfoId;//报价商品id
+	
+	private String productName;//商品名
+	
+	private Double productPrice;//产品价格
+	
+	private Integer quantity;//商品最小定量
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+
+
+	public Integer getProductionInfoId() {
+		return productionInfoId;
+	}
+
+	public void setProductionInfoId(Integer productionInfoId) {
+		this.productionInfoId = productionInfoId;
+	}
+
+	public String getProductName() {
+		return productName;
+	}
+
+	public void setProductName(String productName) {
+		this.productName = productName;
+	}
+
+	public Double price() {
+		return productPrice;
+	}
+
+	public Double getProductPrice() {
+		return productPrice;
+	}
+
+	public void setProductPrice(Double productPrice) {
+		this.productPrice = productPrice;
+	}
+
+	public Integer getQuantity() {
+		return quantity;
+	}
+
+	public void setQuantity(Integer quantity) {
+		this.quantity = quantity;
+	}
+
+	@Override
+	public String toString() {
+		return "QuotationProductionPriceBean [id=" + id + ", productionId="
+				+ productionInfoId + ", productName=" + productName
+				+ ", productPrice=" + productPrice + ", quantity=" + quantity
+				+ "]";
+	}
+	
+	
+	
+}

@@ -1,0 +1,31 @@
+package com.cbt.dao;
+
+import java.util.List;
+
+import com.cbt.entity.FactoryOrder;
+
+public interface FactoryOrderMapper {
+    int deleteByPrimaryKey(String id);
+
+    int insert(FactoryOrder record);
+
+    int insertSelective(FactoryOrder record);
+
+    FactoryOrder selectByPrimaryKey(String id);
+
+    int updateByPrimaryKeySelective(FactoryOrder record);
+
+    int updateByPrimaryKey(FactoryOrder record);
+    
+    List<FactoryOrder> selectRequestList(String userId);
+    
+    FactoryOrder findSelectFactoryOrderDetail(String orderId);
+    
+    FactoryOrder findSourceAssistanceOrderDetail(String orderId);
+    
+    FactoryOrder findQualityOrderDetail(String orderId);
+    
+    FactoryOrder findAuditOrderDetail(String orderId);
+    
+    
+}

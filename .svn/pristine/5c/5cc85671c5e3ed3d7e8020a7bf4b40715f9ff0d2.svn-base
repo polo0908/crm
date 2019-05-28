@@ -1,0 +1,30 @@
+package com.cbt.service.impl;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cbt.dao.UrlInfoMapper;
+import com.cbt.entity.UrlInfo;
+import com.cbt.service.UrlInfoService;
+/**
+ * 工厂网址
+ * @author Administrator
+ *
+ */
+@Service
+public class UrlInfoServiceImpl implements UrlInfoService {
+     
+	@Autowired
+	private UrlInfoMapper urlInfoMapper;
+	/**
+     * 添加网址信息
+     */
+	@Override
+	@Transactional
+	public void addUrlInfo(UrlInfo urlInfo) {
+		urlInfoMapper.insertSelective(urlInfo);
+	}
+
+}

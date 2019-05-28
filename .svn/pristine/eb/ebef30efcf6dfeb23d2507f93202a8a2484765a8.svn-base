@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.ClientDrawingsDao">
+
+
+	<resultMap id="ClientDrawingsResultMap" type="com.cbt.entity.ClientDrawings">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="userid" property="userid" jdbcType="VARCHAR" />
+		<result column="order_id" property="orderId" jdbcType="INTEGER" />
+		<result column="project_name" property="projectName" jdbcType="VARCHAR" />
+		<result column="project_cname" property="projectCname" jdbcType="VARCHAR" />
+		<result column="drawings_name" property="drawingsName" jdbcType="VARCHAR" />
+		<result column="drawings_path" property="drawingsPath" jdbcType="VARCHAR" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="mold_price" property="moldPrice" jdbcType="DOUBLE" />
+		<result column="unit_price" property="unitPrice" jdbcType="DOUBLE" />
+		<result column="quote_time" property="quoteTime" jdbcType="TIMESTAMP" />
+		<result column="drawing_state" property="drawingState" jdbcType="VARCHAR" />
+		<result column="product_name" property="productName" jdbcType="VARCHAR" />
+		<result column="quantity" property="quantity" jdbcType="INTEGER" />
+		<result column="status" property="status" jdbcType="VARCHAR" />
+		
+		<result column="drawing_new_or_old" property="drawingNewOrOld" jdbcType="VARCHAR" />
+		
+	</resultMap>
+
+	<sql id="ClientDrawingsColumnList">
+		id, userid,order_id, project_name, 
+		drawings_name, project_cname, drawings_path,
+		update_time, mold_price, unit_price,
+		quote_time, drawing_state,product_name, quantity,status 
+
+	</sql>
+    <!-- 查询用户图纸分页显示 -->
+	<select id="queryListByUserId" resultMap="ClientDrawingsResultMap">
+		select
+		<include refid="ClientDrawingsColumnList" />
+		from client_drawings  
+		where product_name is not null and product_name != ''   
+		and userid = #{userid,jdbcType=VARCHAR}  
+        order by update_time desc limit #{start}, #{pageSize}
+	</select>
+	
+    <!-- 根据订单号查询用户图纸分页显示 -->
+	<select id="queryByOrderId" resultMap="ClientDrawingsResultMap">
+		select
+		<include refid="ClientDrawingsColumnList" />
+		from client_drawings  
+		where  
+		product_name is not null and product_name != ''
+		and 
+		order_id = #{orderId,jdbcType=VARCHAR}     
+        order by update_time desc limit #{start}, #{pageSize}
+	</select>
+	
+	<!-- 查询所有图纸数量 -->
+    <select id="total" resultType="int">
+			select count(*) from client_drawings  where userid = #{userid,jdbcType=VARCHAR} and product_name is not null and product_name != ''   
+	</select>
+	
+	<!-- 根据订单号查询用户图纸数量 -->
+    <select id="totalByOrderId" resultType="int">
+			select count(*) from client_drawings  where order_id = #{orderId,jdbcType=VARCHAR} and product_name is not null and product_name != ''  
+	</select>
+	
+	<!-- 根据订单号查询图纸 -->
+	<select id="queryListByOrderId" resultMap="ClientDrawingsResultMap"
+		parameterType="java.lang.String">
+		select
+		<include refid="ClientDrawingsColumnList" />
+		from client_drawings 
+		where 
+		product_name is not null and product_name != '' 
+		and
+		order_id = #{orderId,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 根据id查询图纸 -->
+	<select id="queryById" resultMap="ClientDrawingsResultMap"
+		parameterType="java.lang.Integer">
+		select 
+        <include refid="ClientDrawingsColumnList"/>
+        from client_drawings  
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	<!-- 多个id查询图纸 -->
+	<select id="queryListByIds" resultMap="ClientDrawingsResultMap"
+	    parameterType="java.lang.Integer">
+	    select
+	    <include refid="ClientDrawingsColumnList"/> 
+	    from client_drawings
+	    where id in
+	    <foreach collection="array" item="id" open="(" close=")" separator=",">
+			#{id}
+		</foreach>
+	</select>
+	
+	<!-- 更新图纸信息 -->
+	<update id="updateClientDrawings"  parameterType="com.cbt.entity.ClientDrawings">
+		update client_drawings 
+		<set> 
+	    <if test="drawingsName != null">
+			drawings_name = #{drawingsName,jdbcType=VARCHAR},
+		</if>
+	    <if test="drawingsPath != null">
+			drawings_path = #{drawingsPath,jdbcType=VARCHAR},
+		</if>
+	    <if test="updateTime != null">
+			update_time = #{updateTime,jdbcType=TIMESTAMP},
+		</if>
+	    <if test="drawingState != null">
+			drawing_state = #{drawingState,jdbcType=VARCHAR},
+		</if>
+	    </set>
+		 where id = #{id,jdbcType=INTEGER}
+	</update>       
+    
+    
+    <!-- 批量插入clientDrawings数据 -->
+	<insert id="insertClientDrawings" parameterType="java.util.List">
+	    insert into client_drawings 
+		    (
+         userid, order_id, project_name, project_cname, drawings_name, drawings_path, 
+		 update_time, mold_price, unit_price,quote_time, drawing_state, status
+            )
+	    values
+	    <foreach collection="list" item="item" index="index" separator=",">
+	      (           
+		    #{item.userid},#{item.orderId},#{item.projectName}, 
+		    #{item.projectCname}, 
+		    #{item.drawingsName}, 
+		    #{item.drawingsPath}, 
+		    #{item.updateTime},#{item.moldPrice}, 
+		    #{item.unitPrice},#{item.quoteTime},#{item.drawingState},#{item.status}
+	      )
+	    </foreach>
+	</insert>
+	
+	
+<!-- 	<select id="queryByDrawingsName" resultMap="ClientDrawingsResultMap" -->
+<!-- 		parameterType="java.lang.String"> -->
+<!-- 		select * from -->
+<!-- 		 ( -->
+<!-- 		  select -->
+<!-- 		  <include refid="ClientDrawingsColumnList" /> -->
+<!-- 		  from client_drawings -->
+<!-- 		  where userid = #{userid,jdbcType=VARCHAR} -->
+<!-- 		 ) t -->
+<!-- 		 <where> -->
+<!-- 		   <trim suffixOverrides=","> -->
+<!-- 			 <if test="drawingsName !=null and drawingsName !='' "> -->
+				
+<!-- 			  drawings_name like CONCAT('%',#{drawingsName},'%'), -->
+<!-- 			 </if> -->
+<!--         </trim> -->
+		 
+<!-- 		</where> -->
+		
+<!--      </select>			 -->
+
+</mapper>

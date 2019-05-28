@@ -1,0 +1,362 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%> 
+<%@page import="com.cbt.util.WebCookie"%>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>Request Sourcing Support</title>
+		<link rel="stylesheet" href="${ctx}/css/bootstrap.css">
+		<script src="${ctx}/js/jquery.min.js"></script>
+		<script src="${ctx}/js/bootstrap.min.js"></script>
+	    <script type="text/javascript" src="${ctx}/js/jquery-1.3.2.min.js"></script>
+	    <script type="text/javascript" src="${ctx}/js/progressBar.js"></script>
+	    <link type="text/css" rel="stylesheet" href="${ctx}/css/progressBar.css">
+	    <link type='image/x-ico' rel='icon' href='img/favicon.ico' />
+	    <script type="text/javascript" src="${ctx}/js/jquery-form.js"></script>
+		<script type="text/javascript">
+			$(function() {
+				$(".factory-audo ul li").eq(0).show();
+				$(".factory-audo p").click(function() {
+					var ind = $(".factory-audo p").index(this);
+					$(this).find('i').addClass('audo-check').end().siblings().find('i').removeClass('audo-check');
+					$(".factory-audo ul li").hide();
+					$(".factory-audo ul li").eq(ind).show();
+					$("#type").val($(this).find('i').text())
+					if($(this).find('i').text()==0){//$200
+						$(".supp-price1").show();
+						$(".supp-price2").hide();
+						$(".supp-price3").hide();
+						$("#price").val($(".supp-price1").text());
+					}
+					if($(this).find('i').text()==1){//$300
+						$(".supp-price1").hide();
+						$(".supp-price2").show();
+						$(".supp-price3").hide();	
+						$("#price").val($(".supp-price2").text());
+					}
+					if($(this).find('i').text()==2){//$400
+						$(".supp-price1").hide();
+						$(".supp-price2").hide();
+						$(".supp-price3").show();
+						$("#price").val($(".supp-price3").text());
+					}
+				})
+			})
+
+			function nexts() {
+				$(".next-cont").show();
+				$(".form-horizontal").hide();
+			}
+
+			function prevs() {
+				$(".next-cont").hide();
+				$(".form-horizontal").show();
+			}
+			
+		</script>
+		<style type="text/css">
+			ul,
+			li {
+				list-style: none;
+			}
+			
+			.container {
+				max-width: 970px;
+			}
+			
+			input {
+				color: #333
+			}
+			
+			#myquestion {
+				position: fixed;
+				left: 35%;
+				display: none;
+			}
+			
+			.wrap-bg {
+				width: 100%;
+				position: absolute;
+				background: url(${ctx}/img/project-6.jpg);
+				filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='${ctx}/img/project-6.jpg)', sizingMethod='scale');
+				background-size: cover;
+				height: auto;
+				left: 0;
+				bottom: 0px;
+				top: 0px;
+				right: 0px;
+				overflow: hidden;
+			}
+			
+			.factories_form {
+				list-style: none;
+				color: #fff;
+			}
+			
+			.factories_form li {
+				margin-bottom: 10px;
+			}
+			
+			.row,
+			.form-horizontal .form-group {
+				padding: 15px 0px 0;
+				margin: 0 0;
+			}
+			
+			.modal-dialog {
+				top: 25%;
+			}
+			
+			.btn-sel {
+				color: #333;
+				background-color: #fff;
+				border: 1px solid #ccc;
+				display: inline-block;
+				margin-bottom: 0;
+				font-weight: normal;
+				text-align: center;
+				vertical-align: middle;
+				touch-action: manipulation;
+				cursor: pointer;
+				white-space: nowrap;
+				padding: 10px 20px;
+				font-size: 14px;
+				line-height: 1.42857;
+				border-radius: 4px;
+			}
+			
+			.question {
+				background: #fff;
+				border-radius: 6px;
+				padding: 20px;
+				-webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+				box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+			}
+			
+			.col-md-3 {
+				padding-left: 0px;
+			}
+			
+			.green_btn {
+				background: #28b779;
+				color: #fff;
+				font-weight: bold;
+				border: 1px solid #16a768;
+			}
+			
+			.blue_btn {
+				background: #08c;
+				color: #fff;
+				font-weight: bold;
+				border: 1px solid #0272aa;
+			}
+			
+			.green_btn:hover {
+				background: #16a768;
+				color: #fff;
+				border: 1px solid #28b779;
+			}
+			
+			.blue_btn:hover {
+				background: #0272aa;
+				color: #fff;
+				border: 1px solid #08c;
+			}
+			
+			label {
+				color: #fff;
+				margin-right: 5px;
+			}
+			
+			.factory-audo,
+			.factory-audo2 {
+				color: #fff;
+			}
+			
+			.factory-audo p,
+			.factory-audo2 p {
+				cursor: pointer;
+			}
+			
+			.factory-audo p {
+				width: auto;
+				float: left;
+				margin-right: 10px;
+			}
+			
+			.factory-audo p i,
+			.factory-audo2 p i {
+				background: url(${ctx}/images/radius.png)no-repeat 0px 0px;
+				width: 20px;
+				height: 18px;
+				float: left;
+				text-indent: 9999em;
+			}
+			
+			.factory-audo .audo-check,
+			.factory-audo2 .audo-check {
+				background: url(${ctx}/images/radius.png)no-repeat -18px 0px;
+				cursor: pointer;
+			}
+			
+			.factory-audo ul {
+				padding-left: 20px;
+			}
+			.supp-price1,.supp-price2,.supp-price3{color:#ff5100;font-size: 20px;}
+            .supp-price2,.supp-price3{display: none;}
+            .ui-label{color:red;width:200px;display: inline-block;}
+			#upload_title h1{font-size: 1.5rem;margin-top: 10px;}
+			#file_upload_id{color:#fff}
+			.col-md-3  b{font-weight:300}
+			#alert{display:none;position:absolute;left:0;top:200px;right:0;margin:auto;width:300px;height:100px;line-height:100px;text-align:center;background:pink;z-index:999;border-radius:8px;}
+		</style>
+	</head>
+
+	<body>
+	    <div id="alert"></div>
+		<div class="wrap-bg">
+			<div class="container" style=" background:#2E363F;margin:0 0;padding:3% 4%;margin: 5% auto;">
+				<p style="color: #fff;">If you want ImportX to help you find a few suppliers and provide comparison reports and price quotes, please use services below.You can then deal with the suppliers by yourself, or commision us to help audit the suppliers.
+				</p>
+				<form id="file_upload_id"  onsubmit="return false;" method="post" enctype="multipart/form-data">
+				    <input type="hidden" name="userId" id="userId" value="${userId}">
+					<div class="row">
+						<div class="col-md-3 ">
+							<b style="color: #fff;">Your Requirement:</b>
+						</div>
+						<div class="col-md-8">
+							<textarea style="width: 100%;height: 80px;" class="form-control" name="requirement" id="requirement" value=""></textarea>
+						</div>
+						
+					</div>
+					<div class="row" style="margin-top:20px;">
+						<b class="col-md-3 " style="color: #fff;font-weight:300;">Upload Attachment:</b>
+						<div class="form-group col-md-4" style="padding-right:0px;margin-right:20px;">
+							<label class="sr-only" for="name">名称</label>
+							<input type="text" class="form-control" id="suppoertFileName" name="suppoertFileName" value="">
+						</div>
+						<input type="file" id="file_upload" name="file_upload"  onchange="uploadFileName(this)"class="a-file-style" style="opacity:0;position: absolute;width: 115px;height: 42px; cursor: pointer;">
+					    <button type="button" class="btn   green_btn" style="">Attach File</button>
+					    <input type="hidden" class="form-control" id="supportFile" name="supportFile" value="">
+					    <button type="button" class="btn  blue_btn" style="margin-left:10px;" onclick="doUploadFile()">Submit</button>
+					</div>
+					<div class="row">
+						<div class="col-md-3 ">
+							<b style="color: #fff;">What kind of product?</b>
+						</div>
+						<div class="col-md-8 factory-audo" style="color: #fff;padding-right:0px;">
+							<p class="supp-audo1"><i class="audo-check">0</i><em>Existing Products</em></p>
+							<p  class="supp-audo2"><i>1</i><em>Customized Products or Parts</em></p>
+							<p  class="supp-audo3"><i>2</i><em>New Invention</em></p>
+							<input type="hidden" name="type" id="type" value="0">
+						</div>
+						
+					</div>
+					<div class="row">
+						<div class="col-md-3 ">
+							<b style="color: #fff;font-weight:bold;font-size:20px;">Price:</b>
+						</div>
+						<div class="col-md-7" >
+							<p><b class="supp-price1" >$0</b>
+								<b class="supp-price2">$300</b>
+								<b class="supp-price3">$400</b>
+								<span style="color: #fff;margin-left: 10px;font-size:16px;font-weight:300">(3-5 Suppliers)</span></p>
+								<input type="hidden" name="price" id="price" value="$200">
+						</div>
+					
+						<div class="row" style=" text-align: center;width:100%;display:inline-block"><button type="button" class="btn  blue_btn" onclick="toSupportPayPage()">Submit</button></div>
+				</form>
+				</div>
+			</div>
+    <!-- 上传文件进度条div -->	
+	  <div class="w-out-box" id="show_upload_dialog" style="display:none;">
+	       <div class="weui_mask"></div>
+	       <div class="w-weui_dialog" style="width:510px;background:#fff;box-shadow: 1px 5px 5px  #A7A0A0;    border-radius: 3px;
+	         border: 1px solid #28b779;height:100px;top:40%;text-align: center;">
+	       <div id="container">
+		   <div class="content" id="upload_title">
+			<h1>Progress</h1>
+		   </div>
+		  <div id="progress_bar" class="ui-progress-bar ui-container">
+		     <div class="ui-progress" style="width: 0%;" id="ui-progress-upload">
+		     <span class="ui-label" style="display:none;">Uploading...<b class="value">0%</b></span>
+	      </div>
+		  </div>
+		  <div class="content" id="main_content" style="display: none;">
+			<p>Uploaded!</p>
+		  </div>
+	    </div>
+	   </div>
+	   </div>
+	 </body>
+	 <script type="text/javascript">
+	 //获取文件名
+	 function uploadFileName(){
+		 var path =  $("#file_upload").val();	
+		 sppath = path.split("\\");
+		 var suppoertFileName = sppath[sppath.length-1];	
+		 $('#suppoertFileName').val(suppoertFileName);	
+	}
+	 //上传文件
+	 function doUploadFile(){
+		  var path =  $("#file_upload").val();	
+		  sppath = path.split("\\");
+		  var supportFile = sppath[sppath.length-1];	
+		  $('#supportFile').val(supportFile);	
+		  autTime(); 
+         //发送ajax请求,提交form表单    
+		  $("#file_upload_id").ajaxSubmit({
+			type : "post",
+			url : "${ctx}/support/uploadFile.do",
+			dataType : "text",
+			success : function(result) {
+				$('#supportFile').val(result);
+			},
+			error : function() {
+				easyDialog.open({
+					container : {
+						content : '  Upload failed'
+					},
+					autoClose : 1000
+			  });
+			}
+		   });
+	 }
+	 
+    //保存信息支付页面
+    function toSupportPayPage(){
+    	 var supportFile=$("#supportFile").val();
+    	 if(supportFile==""){
+			 $("#alert").fadeIn();
+			 $("#alert").text("Please select a file upload");
+			 var t=setTimeout("alert_dialog()",1000)
+			 return false;
+		 }
+		 $("#file_upload_id").ajaxSubmit({
+			type : "post",
+			url : "${ctx}/support/addSupportToPay.do",
+			dataType : "text",
+			success : function(result) {
+				window.location.href = "${ctx}/support/orderDetailPay.do?orderId="+result;
+			},
+			error : function() {
+				easyDialog.open({
+					container : {
+						content : 'Add Failed'
+					},
+					autoClose : 1000
+			  });
+			}
+		});
+    }
+    //关闭提示框
+	function alert_dialog(){
+      $('#alert').fadeOut();
+	}
+	</script>
+</html>

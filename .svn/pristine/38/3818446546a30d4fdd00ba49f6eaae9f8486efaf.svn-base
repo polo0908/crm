@@ -1,0 +1,217 @@
+<%@ page language="java" contentType="text/html; charset=utf-8" pageEncoding="utf-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<title>ImportX</title>
+<meta charset="UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="/crm/css/bootstrap.min.css" />
+<link rel="stylesheet"
+	href="/crm/css/bootstrap-responsive.min.css" />
+<!--<link rel="stylesheet" href="css/fullcalendar.css" />-->
+<!--<link rel="stylesheet" href="css/font-awesome.css" />-->
+<link rel="stylesheet" href="/crm/css/matrix-style.css" />
+<link rel="stylesheet" href="/crm/css/matrix-media.css" />
+<link rel="stylesheet" href="/crm/css/select2.css" />
+<link href="/crm/font-awesome/css/font-awesome.css" rel="stylesheet" />
+<link rel="stylesheet" href="/crm/css/style.css" />
+<link type='image/x-ico' rel='icon' href='img/favicon.ico' />
+
+<style>
+.shuruming {
+	margin-top: 20px;
+	float: none;
+	text-shadow: 0 1px 0 #ffffff;
+	margin-left: 20px;
+	position: relative;
+}
+
+.shuru  input {
+	width: 15%;
+}
+
+.a2 input {
+	width: 20px;
+	position: relative;
+	opacity: 0;
+}
+
+.btn-left {
+	left: 78%;
+	position: absolute;
+	padding: 4px 20px;
+	top: 58px;
+}
+
+.btn-left2 {
+	left: 84%;
+	position: absolute;
+	padding: 4px 20px;
+	top: 58px;
+}
+
+.btn-left3 {
+	left: 90%;
+	position: absolute;
+	padding: 4px 20px;
+	top: 58px;
+}
+
+#shipping_doc_ul li{
+    float: left;
+    margin-left: 9%;
+}
+
+</style>
+
+<script type="text/javascript" src="/crm/js/jquery-1.10.2.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115010583-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-115010583-1');
+</script>
+
+<script type="text/javascript">
+
+</script>
+
+</head>
+<body>
+	<div id="content">
+		<div id="content-header">
+			<div id="breadcrumb">
+				<a href="#" class="tip-bottom"><i class="icon  icon-paste"></i>客户订单管理</a>
+				<a href="#" class="current"></a>
+			</div>
+			<div class="container-fluid">
+				<div class="row-fluid">
+					<div class="span7">
+						<div class="w-box">
+							<div class="controls-row">
+<!-- 								<div class="span4"> -->
+<!-- 									<input type="text" id="userName" class="span12 m-wrap" placeholder=""> -->
+<!-- 								</div> -->
+                        <a href="#"><button
+						class="btn btn-primary">查询</button></a>	
+					        </div>
+						</div>
+					</div>
+				</div>
+				
+			</div>
+		</div>
+	
+		
+		
+		<div class="container-fluid">
+			<hr>
+			<div class="row-fluid">
+				<div class="span12">
+					<div class="widget-box">
+						<div class="widget-content nopadding">
+							<div id="DataTables_Table_0_wrapper" class="dataTables_wrapper"
+								role="grid">
+									<table class="table table-bordered data-table dataTable"
+										id="DataTables_Table_0">
+										<thead>
+											<tr role="row">
+												<th class="ui-state-default ui-th" role="columnheader"
+													tabindex="0" aria-controls="DataTables_Table_0" rowspan="1"
+													colspan="1" aria-sort="ascending"
+													aria-label="Rendering engine: activate to sort column descending"
+													>
+													<div class="DataTables_sort_wrapper">
+														项目编号 <span
+															class="DataTables_sort_icon css_right ui-icon ui-icon-triangle-1-n"></span>
+													</div>
+												</th>
+												<th class="ui-state-default ui-th" role="columnheader"
+													tabindex="0" aria-controls="DataTables_Table_0" rowspan="1"
+													colspan="1"
+													aria-label="Browser: activate to sort column ascending"
+													>
+													<div class="DataTables_sort_wrapper">
+														下单时间 <span
+															class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+													</div>
+												</th>
+								
+												<th class="ui-state-default ui-th" role="columnheader"
+													tabindex="0" aria-controls="DataTables_Table_0" rowspan="1"
+													colspan="1"
+													aria-label="Engine version: activate to sort column ascending"
+													>
+													<div class="DataTables_sort_wrapper">
+														状态 <span
+															class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+													</div>
+												</th>								
+											</tr>
+										</thead>
+										<tbody role="alert" aria-live="polite" aria-relevant="all" id="clientOrders">
+                                            <c:forEach var="obj" items="${clientOrders}" varStatus="i">
+                                              <tr>
+                                                  <td>${obj.orderId}</td>
+					    			              <td>${obj.createTime}</td>
+					    			              <td>${obj.orderStatus}</td>
+					    			         </tr>
+                                            </c:forEach>
+										</tbody>
+									</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+		
+
+
+	<div class="row-fluid">
+		<div id="footer" class="span12">
+		</div>
+	</div>
+	
+</body>
+<script type="text/javascript">
+//    $(function(){
+//        query();			    	
+//    })
+
+//    function query(){
+	   
+// 	 $('#clientOrders').empty();
+// 	   $.post("/crm/addTest.do",
+// 				function(result){	
+// 			    	if(result.state == 0){	
+// 			    		var orders = result.data;
+// 			    		for(var i=0;i<orders.length;i++){
+// 			    			var tr = '<tr><td>'+orders[i].orderId+'</td>'+
+// 			    			             '<td>'+orders[i].createTime+'</td>'+
+// 			    			             '<td>'+orders[i].orderStatus+'</td>'+
+// 			    			         '</tr>'
+			    			         
+// 			    			 $('#clientOrders').append(tr);       
+// 			    		}
+// 			    	}
+			    	
+// 			    }) 
+//    }
+   
+   
+</script>
+
+
+</html>

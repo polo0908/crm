@@ -1,0 +1,205 @@
+<%@ page language="java" contentType="text/html; charset=utf-8"
+	pageEncoding="utf-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>ImportX</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="/crm/css/bootstrap.min.css" />
+<link rel="stylesheet"
+	href="/crm/css/bootstrap-responsive.min.css" />
+<link rel="stylesheet" href="/crm/css/matrix-style.css" />
+<link rel="stylesheet" href="/crm/css/matrix-media.css" />
+<link rel="stylesheet" href="/crm/css/select2.css" />
+<link rel="stylesheet" href="/crm/css/easydialog.css" />
+<link rel="stylesheet" href="/crm/css/drawing.css" />
+<link href="/crm/font-awesome/css/font-awesome.css"
+	rel="stylesheet" />
+<!--<link rel="stylesheet" href="css/jquery.gritter.css" />-->
+<link rel="stylesheet" href="/crm/css/style.css" />
+<link type='image/x-ico' rel='icon' href='img/favicon.ico' />
+<style>
+.shuruming {
+	margin-top: 20px;
+	float: none;
+	text-shadow: 0 1px 0 #ffffff;
+	margin-left: 20px;
+	position: relative;
+}
+.w-right{
+	position: absolute;
+    right: 20px;
+    top: 6px;}
+.shuru  input {
+	width: 15%;
+}
+</style>
+
+<script type="text/javascript" src="/crm/js/My97DatePicker/WdatePicker.js"></script>
+<script type="text/javascript" src="/crm/js/easydialog.min.js"></script>
+<script type="text/javascript" src="js/jquery-1.10.2.js"></script>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-115010583-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-115010583-1');
+</script>
+<script type="text/javascript">
+
+	
+	$(function(){
+		
+	    $('#sidebar_ul').find('li').eq(2).addClass('active');	
+		
+	});
+	
+	//查看报价单详情
+	function show_quotation(quotationInfoId){
+		window.location.href = "/crm/queryQuotationById.do?quotationInfoId="+quotationInfoId;	
+	}
+	
+	
+	
+</script>
+</head>
+<body>
+<jsp:include page="base.jsp"></jsp:include>
+	<!--main-container-part-->
+	<div id="content">
+		<div id="content-header">
+			<div id="breadcrumb">
+				<a href="/crm/queryAllQuotation.do" class="tip-bottom"><i
+					class="icon icon-picture"></i>Quotation</a> 
+					<div class="w-right">
+                  </div>
+			</div>
+			<div class="shuru">
+				<h1 style="text-align: center;">Quotation of CSG</h1>
+			</div>
+		</div>
+		<div class="container-fluid">
+			<hr>
+			<div class="row-fluid">
+				<div class="span12">
+					<div class="widget-box">
+
+						<div class="widget-content nopadding">
+							<div id="DataTables_Table_0_wrapper" class="dataTables_wrapper"
+								role="grid">
+
+								<table class="table table-bordered data-table dataTable"
+									id="DataTables_Table_0">
+									<thead>
+										<tr role="row">
+											<th class="ui-state-default" role="columnheader" tabindex="0"
+												aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
+												aria-sort="ascending"
+												aria-label="Rendering engine: activate to sort column descending" style="width: 12%;">
+												<div class="DataTables_sort_wrapper">
+													Quotation Id <span
+														class="DataTables_sort_icon css_right ui-icon ui-icon-triangle-1-n"></span>
+												</div>
+											</th>
+											<th class="ui-state-default" role="columnheader" tabindex="0"
+												aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
+												aria-label="Browser: activate to sort column ascending">
+												<div class="DataTables_sort_wrapper">
+													Supplier <span
+														class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+												</div>
+											</th>
+											<th class="ui-state-default" role="columnheader" tabindex="0"
+												aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
+												aria-label="Platform(s): activate to sort column ascending">
+												<div class="DataTables_sort_wrapper">
+													Subject <span
+														class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+												</div>
+											</th>
+											<th class="ui-state-default" role="columnheader" tabindex="0"
+												aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
+												aria-label="Engine version: activate to sort column ascending">
+												<div class="DataTables_sort_wrapper">
+													Quoter <span
+														class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+												</div>
+											</th>
+											<th class="ui-state-default" role="columnheader" tabindex="0"
+												aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
+												aria-label="Engine version: activate to sort column ascending">
+												<div class="DataTables_sort_wrapper">
+													Quote Date <span
+														class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+												</div>
+											</th>
+											<th class="ui-state-default" role="columnheader" tabindex="0"
+												aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
+												aria-label="Engine version: activate to sort column ascending">
+												<div class="DataTables_sort_wrapper">
+													Period of validity <span
+														class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+												</div>
+											</th>
+											<th class="ui-state-default" role="columnheader" tabindex="0"
+												aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
+												aria-label="Engine version: activate to sort column ascending">
+												<div class="DataTables_sort_wrapper">
+													Read <span
+														class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+												</div>
+											</th>
+											<th class="ui-state-default" role="columnheader" tabindex="0"
+												aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
+												aria-label="Engine version: activate to sort column ascending">
+												<div class="DataTables_sort_wrapper">
+													Operate <span
+														class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+												</div>
+											</th>
+										</tr>
+									</thead>
+									<tbody role="alert" aria-live="polite" aria-relevant="all" id="rfqTbody">
+									<tr>
+										<td style='text-align:center'><a href="#">${quotationBean.quotationId}</a></td>
+										<td style='text-align:center'>${quotationBean.customerName}</td>
+										<td style='text-align:center'>${quotationBean.quotationSubject}</td>
+										<td style='text-align:center'>${quotationBean.quoter}</td>
+										<td style='text-align:center'>${quotationBean.quotationDate}</td>
+										<td style='text-align:center'>${quotationBean.quotationValidity} days</td>
+										<td style='text-align:center'>${quotationBean.readStatus == 0 ? "No" : "Yes"}</td>
+										<td style='text-align:center'>
+										<a href="#"><button class="btn btn-info" onclick="listQuotation()">View Details</button></a>
+									</tr>
+									</tbody>	
+								</table>
+
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+			 		            <div style="text-align: center;">
+									<button class="btn btn-info" onclick="listQuotation()" style="margin-top:10%;font-size: 18px;">Sign in to view quotes</button>
+								</div>
+	</div>
+
+
+	<div class="row-fluid">
+		<div id="footer" class="span12">
+		</div>
+	</div>
+
+
+
+</body>
+</html>

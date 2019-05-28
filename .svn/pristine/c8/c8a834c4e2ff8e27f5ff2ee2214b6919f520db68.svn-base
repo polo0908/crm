@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.InvoiceInfoDao">
+
+	<resultMap id="InvoiceInfoResultMap" type="com.cbt.entity.InvoiceInfo">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="userid" property="userid" jdbcType="VARCHAR" />
+		<result column="sales_id" property="salesId" jdbcType="VARCHAR" />
+		<result column="order_id" property="orderId" jdbcType="VARCHAR" />
+		<result column="invoice_id" property="invoiceId" jdbcType="VARCHAR" />
+		<result column="amount_unit" property="amountUnit" jdbcType="INTEGER" />
+		<result column="product_price" property="productPrice" jdbcType="DOUBLE" />
+		<result column="other_price" property="otherPrice" jdbcType="DOUBLE" />
+		<result column="mold_price" property="moldPrice" jdbcType="DOUBLE" />
+		<result column="transaction_type" property="transactionType" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="invoice_path" property="invoicePath" jdbcType="VARCHAR" />
+		<result column="shipping_fee" property="shippingFee" jdbcType="DOUBLE" />
+		<result column="comment" property="comment" jdbcType="VARCHAR" />
+		<result column="amount" property="amount" jdbcType="DOUBLE" />
+		<result column="factory_id" property="factoryId" jdbcType="VARCHAR" />
+		
+		<!-- 虚拟字段 -->
+		<result column="sum_amount_actual" property="sumAmountActual"/>
+		<result column="amount_actual" property="amountActual"/>
+		<result column="payment_time" property="paymentTime"/>
+     
+      
+	</resultMap> 
+
+	<sql id="InvoiceInfoColumnList">
+		id, userid, sales_id, order_id, invoice_id,amount,
+		amount_unit, product_price, mold_price, other_price, transaction_type, 
+	    update_time, create_time, invoice_path, shipping_fee, comment, factory_id
+	</sql>
+	
+<!-- 	<select id="queryInvoiceByOrderId" resultMap="InvoiceInfoResultMap" parameterType="string"> -->
+<!-- 	    select  -->
+<!-- 	    <include refid="InvoiceInfoColumnList" />  -->
+<!-- 	    from invoice_info  -->
+<!-- 	    where order_id = #{orderId,jdbcType=VARCHAR} -->
+	
+<!-- 	</select> -->
+	
+	<select id="queryByInvoiceId" resultMap="InvoiceInfoResultMap">
+	    select 
+	    <include refid="InvoiceInfoColumnList" /> 
+	    from invoice_info 
+	    where invoice_id = #{invoiceId,jdbcType=VARCHAR} and factory_id = #{factoryId,jdbcType=VARCHAR}	
+	</select>
+	
+	<select id="queryInvoiceByOrderId" resultMap="InvoiceInfoResultMap" parameterType="string">	        
+	    select   
+        ss.order_id,ss.invoice_id,ss.amount,ss.amount_unit,ss.update_time,ss.create_time,
+		ss.invoice_path,ss.factory_id,ss.payment_time as payment_time,ss.payment_amount as amount_actual,
+		sum(ss.payment_amount)as sum_amount_actual             
+	    from 
+		(
+		select info.order_id,info.invoice_id,info.amount,info.amount_unit,info.update_time,info.create_time,
+		info.invoice_path,info.factory_id,p.payment_time,p.amount_actual as payment_amount from invoice_info info  
+		left join 
+		payment_plan p 
+		on   
+		info.invoice_id = p.invoice_id  
+		where info.order_id = #{orderId,jdbcType=VARCHAR} GROUP BY p.payment_time,p.invoice_id order by p.payment_time desc
+		)ss GROUP BY ss.invoice_id   	
+	</select>
+	
+	<delete id="deleteInvoiceById" parameterType="java.lang.Integer">
+		delete from
+		invoice_info
+		where
+		id = #{id,jdbcType=INTEGER}
+	</delete>
+
+	
+</mapper>

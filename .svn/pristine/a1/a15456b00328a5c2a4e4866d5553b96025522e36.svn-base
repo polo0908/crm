@@ -1,0 +1,391 @@
+package com.cbt.controller;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import com.cbt.entity.ClientDrawings;
+import com.cbt.entity.ClientOrder;
+import com.cbt.entity.ClientOrderPo;
+import com.cbt.entity.ClientOrderQcReport;
+import com.cbt.entity.ClientOrderShippingDoc;
+import com.cbt.entity.InvoiceInfo;
+import com.cbt.entity.OrderMessage;
+import com.cbt.entity.QuotationBean;
+import com.cbt.entity.ReOrder;
+import com.cbt.entity.ReOrderDrawings;
+import com.cbt.entity.RfqInfo;
+import com.cbt.entity.UpdateDrawing;
+import com.cbt.service.ClientDrawingsService;
+import com.cbt.service.ClientOrderPoService;
+import com.cbt.service.ClientOrderQcReportService;
+import com.cbt.service.ClientOrderService;
+import com.cbt.service.ClientOrderShippingDocService;
+import com.cbt.service.InvoiceInfoService;
+import com.cbt.service.OrderMessageService;
+import com.cbt.service.QuotationService;
+import com.cbt.service.ReOrderDrawingsService;
+import com.cbt.service.ReOrderService;
+import com.cbt.service.RfqInfoService;
+import com.cbt.service.UpdateDrawingService;
+import com.cbt.util.Base64Encode;
+import com.cbt.util.OperationFileUtil;
+import com.cbt.util.UploadAndDownloadPathUtil;
+import com.cbt.util.ZipUtil;
+
+
+@Controller
+public class FileDownloadController {
+	 @Resource
+	 ClientOrderService clientOrderService;
+	 @Resource
+	 InvoiceInfoService InvoiceInfoService;
+	 @Resource
+	 UpdateDrawingService updateDrawingService;
+	 @Resource
+	 ClientDrawingsService clientDrawingsService;
+	 @Resource
+	 ReOrderDrawingsService reOrderDrawingsService;
+	 @Resource
+	 ReOrderService reOrderService;
+	 @Resource
+	 RfqInfoService rfqInfoService;
+	 @Resource
+	 QuotationService quotationService;
+	 @Resource
+	 OrderMessageService orderMessageService;
+	 @Resource
+	 ClientOrderPoService clientOrderPoService;
+	 @Resource
+	 ClientOrderQcReportService clientOrderQcReportService;
+	 @Resource
+	 ClientOrderShippingDocService clientOrderShippingDocService;
+	 
+	 public static Logger LOG = Logger.getLogger(FileDownloadController.class);
+
+	/**
+	 * 文件下载Controller
+	 */
+
+	/**
+	 * 根据id下载po数据
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping(value = "fileDownload_po.do")
+	public ResponseEntity<byte[]> fileDownload_po(HttpServletRequest request, HttpServletResponse response) {
+		try {
+			if(StringUtils.isBlank(request.getParameter("id"))){
+				throw new RuntimeException("未获取到ID");
+			}		
+			Integer id = Integer.parseInt(request.getParameter("id"));
+	        ClientOrderPo po = clientOrderPoService.queryById(id);
+			ResponseEntity<byte[]> download = null;
+			download = OperationFileUtil.download(po.getPoPath());
+			po.setOldOrNewPo("");
+			clientOrderPoService.update(po);
+				
+				return download;
+			} catch (UnsupportedEncodingException e) {
+				throw new RuntimeException(" download failed!");
+			} catch (IOException e) {
+				throw new RuntimeException(" download failed!");
+			}
+	}
+
+	/**
+	 * 根据id下载invoice数据
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 * @throws UnsupportedEncodingException
+	 */
+	
+	@RequestMapping(value = "fileDownload_invoice.do")
+	public ResponseEntity<byte[]> fileDownload_invoice(HttpServletRequest request, HttpServletResponse response){
+
+		String invoiceId = request.getParameter("invoiceId");
+        String factoryId = request.getParameter("factoryId");
+		InvoiceInfo invoiceInfo = InvoiceInfoService.queryByInvoiceId(invoiceId,factoryId);
+
+		ResponseEntity<byte[]> download = null;
+		try {
+			download = OperationFileUtil.download(invoiceInfo.getInvoicePath());
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		return download;
+	}
+
+	/**
+	 * 根据id下载qc数据
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping(value = "fileDownload_qc.do")
+	public ResponseEntity<byte[]> fileDownload_qc(HttpServletRequest request, HttpServletResponse response) {
+	try {
+		if(StringUtils.isBlank(request.getParameter("id"))){
+			throw new RuntimeException("未获取到ID");
+		}		
+		Integer id = Integer.parseInt(request.getParameter("id"));
+        ClientOrderQcReport qcReport = clientOrderQcReportService.queryById(id);
+		ResponseEntity<byte[]> download = null;
+			download = OperationFileUtil.download(qcReport.getQcReportPath());
+			qcReport.setOldOrNewQc("");
+			clientOrderQcReportService.update(qcReport);
+			
+			return download;
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(" download failed!");
+		} catch (IOException e) {
+			throw new RuntimeException(" download failed!");
+		}
+
+		
+	}
+
+	/**
+	 * 根据id下载shipping数据
+	 * 
+	 * @param request
+	 * @param response
+	 * @throws IOException
+	 * @throws UnsupportedEncodingException
+	 */
+	@RequestMapping(value = "fileDownload_shipping.do")
+	public ResponseEntity<byte[]> fileDownload_shipping(HttpServletRequest request, HttpServletResponse response) {
+		
+		try {
+			
+	   if(StringUtils.isBlank(request.getParameter("id"))){
+				throw new RuntimeException("未获取到ID");
+	    }		
+		Integer id = Integer.parseInt(request.getParameter("id"));
+		ClientOrderShippingDoc shippingDoc = clientOrderShippingDocService.queryById(id);
+		ResponseEntity<byte[]> download = null;
+		String typeId = request.getParameter("typeId");
+		String path = null;
+		//判断shipping文件下载类型
+		switch (typeId) {
+				case "1":
+				path = shippingDoc.getBLPath();
+				shippingDoc.setOldOrNewBL("");
+				break;		
+				case "2":
+					path = shippingDoc.getInvoicePath();
+					shippingDoc.setOldOrNewInvoice("");
+					break;		
+				case "3":
+					path = shippingDoc.getPackingListPath();
+					shippingDoc.setOldOrNewPackingList("");
+					break;		
+				case "4":
+					path = shippingDoc.getFormAPath();
+					shippingDoc.setOldOrNewFormA("");
+					break;		
+				case "5":
+					path = shippingDoc.getPackagingPath();
+					shippingDoc.setOldOrNewPackaging("");
+					break;		
+				case "6":
+					path = shippingDoc.getBLCopyPath();
+					shippingDoc.setOldOrNewBLCopy("");
+					break;		
+				case "7":
+					path = shippingDoc.getOtherPath();
+					shippingDoc.setOldOrNewOther("");
+					break;		
+				default:
+					break;
+		}
+		if(StringUtils.isNotBlank(path)){
+			download = OperationFileUtil.download(path);
+			clientOrderShippingDocService.update(shippingDoc);
+		}								
+			return download;
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(" download failed!");
+		} catch (IOException e) {
+			throw new RuntimeException(" download failed!");
+		}
+	}
+	
+    @RequestMapping(value = "fileDownload_clientDrawing.do")
+    public ResponseEntity<byte[]> fileDownload_clientDrawing(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException, IOException {
+    	Integer id = Integer.parseInt(request.getParameter("id"));
+    	ClientDrawings clientDrawings = clientDrawingsService.queryById(id);
+    	String drawingPath =  UploadAndDownloadPathUtil.getOldDrawingUpLoadAndDownLoadPath() + clientDrawings.getDrawingsName();
+    	ResponseEntity<byte[]> download = OperationFileUtil.download(drawingPath);
+    	return download;
+    }
+	
+	/**
+     * 下载历史版本图纸
+     * @param request
+     * @param response
+     * @return
+     * @throws UnsupportedEncodingException
+     * @throws IOException
+     */
+    @RequestMapping(value = "fileDownload_updateDrawing.do")
+    public ResponseEntity<byte[]> fileDownload_updateDrawing(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException, IOException {
+    	Integer id = Integer.parseInt(request.getParameter("id"));
+    	UpdateDrawing updateDrawing = updateDrawingService.queryById(id);
+    	String drawingPath = updateDrawing.getDrawingPath() + updateDrawing.getDrawingName();
+    	ResponseEntity<byte[]> download = OperationFileUtil.download(drawingPath);
+    	return download;
+    }
+    
+    
+    
+    /**
+     * 下载reOrder订单中单个图纸
+     * @param request
+     * @param response
+     * @return
+     * @throws UnsupportedEncodingException
+     * @throws IOException
+     */
+    @RequestMapping(value = "fileDownload_reOrderDrawing.do")
+    public ResponseEntity<byte[]> fileDownload_reOrderDrawing(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException, IOException {
+    	Integer id = Integer.parseInt(request.getParameter("id"));
+    	ReOrderDrawings reOrderDrawings = reOrderDrawingsService.queryById(id);
+    	String drawingPath = reOrderDrawings.getDrawingsPath() + reOrderDrawings.getDrawingsName();
+    	ResponseEntity<byte[]> download = OperationFileUtil.download(drawingPath);
+	 
+    	return download;
+    }
+    
+    /**
+     * 打包下载reOrder图纸数据(图纸名不允许汉字)
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "fileDownload_compression.do")
+    public void fileDownload_compression(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    	Integer reOrderId = Integer.parseInt(request.getParameter("reOrderId"));
+    	List<ReOrderDrawings> list = reOrderDrawingsService.queryReOrderDrawings(reOrderId);
+    	List<File> files = new ArrayList<File>();	    	
+    	for (ReOrderDrawings reOrderDrawings : list) {
+    		String path = reOrderDrawings.getDrawingsPath() + reOrderDrawings.getDrawingsName();	    		
+    		files.add(new File(path));
+		}	
+    	ReOrder reOrder = reOrderService.queryById(reOrderId);
+        int reOrderId2 = reOrder.getId();
+    	 //下载文件以reOrderId命名
+    	 File file = new File("d:\\"+reOrderId2+".rar");			
+//    	 File file1 = new File("E:\\aaa\\1&20161116101419.xlsx");
+//    	 files.add(file1);
+    	 ZipUtil.downLoadFiles(files ,file, request, response);
+    		    		    	
+    }
+    
+    
+    /**
+     * 下载新图纸询盘图纸(rfq_info)
+     * @param request
+     * @param response
+     * @return
+     * @throws UnsupportedEncodingException
+     * @throws IOException
+     */
+    @RequestMapping(value = "fileDownload_drawing.do")
+    public ResponseEntity<byte[]> fileDownload_drawing(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException, IOException {
+    	Integer id = Integer.parseInt(request.getParameter("id"));
+    	RfqInfo rfqInfo = rfqInfoService.queryById(id);
+    	String drawingPath = rfqInfo.getDrawingPath()+rfqInfo.getDrawingName();	    	
+    	ResponseEntity<byte[]> download = OperationFileUtil.download(drawingPath);
+	 
+    	return download;
+    }
+
+    
+    /**
+     * 下载报价单
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "fileDownload_quotation.do")
+    public ResponseEntity<byte[]> fileDownload_quotation(HttpServletRequest request, HttpServletResponse response) throws Exception {
+			Integer quotationInfoId = Integer.parseInt(Base64Encode.getFromBase64(request.getParameter("quotationInfoId")));
+			QuotationBean quotationBean = quotationService.queryById(quotationInfoId);				
+			String quotationPath = quotationBean.getQuotationPath();
+			ResponseEntity<byte[]> download = OperationFileUtil.download(quotationPath);			
+			LOG.info("=========下载报价单成功=========");				 
+    		   
+			return download;
+    }
+    
+    
+    /**
+     * 下载报价单留言附件
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping(value = "fileDownload_quotation_attachment.do")
+    public ResponseEntity<byte[]> fileDownload_quotation_attachment(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    	
+    	Integer id = Integer.parseInt(Base64Encode.getFromBase64(request.getParameter("id")));
+    	OrderMessage orderMessage = orderMessageService.queryById(id);
+    	String attachmentPath = orderMessage.getAttachmentPath();
+    	ResponseEntity<byte[]> download = null;
+    	if(!(StringUtils.isBlank(attachmentPath))){
+        	download = OperationFileUtil.download(attachmentPath);		
+    	}					 
+    	
+    	return download;
+    }
+}

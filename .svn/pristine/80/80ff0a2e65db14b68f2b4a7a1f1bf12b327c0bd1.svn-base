@@ -1,0 +1,579 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%> 
+<%@page import="com.cbt.util.WebCookie"%>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>Request Quality Control</title>
+	    <link rel="stylesheet" href="${ctx}/css/bootstrap.css">
+		<script src="${ctx}/js/jquery.min.js"></script>
+		<script src="${ctx}/js/bootstrap.min.js"></script>
+	    <script type="text/javascript" src="${ctx}/js/jquery-1.3.2.min.js"></script>
+	    <script type="text/javascript" src="${ctx}/js/progressBar.js"></script>
+	    <link rel="shortcut icon" href="${ctx}/img/favicon1.ico">
+	    <link type="text/css" rel="stylesheet" href="${ctx}/css/progressBar.css">
+	    <script type="text/javascript" src="${ctx}/js/jquery-form.js"></script>
+		<script type="text/javascript">
+			$(function() {
+				$(".factory-audo ul li").eq(0).show();
+				//选择客户的需求类型(Check Appearance & Basic Function & Count  || Check Part-Level Dimensions)
+				$(".factory-audo p").click(function() {
+					var ind = $(".factory-audo p").index(this);
+					$(this).find('i').addClass('audo-check').end().siblings().find('i').removeClass('audo-check');
+					$("#type").val($(this).find('i').text())
+					calculatePrice();
+				})
+				//选择零件的复杂度
+				$(".factory-audo2 span").click(function() {
+					var ind = $(".factory-audo2 span").index(this);
+					$(this).find('i').addClass('audo-check2').end().siblings().find('i').removeClass('audo-check2');
+					$("#complexity").val($(this).find('i').text())
+					calculatePrice();
+				})
+				$(".factory-audo3 span").click(function() {
+					var ind = $(".factory-audo3 span").index(this);
+					$(this).find('i').addClass('audo-check3').end().siblings().find('i').removeClass('audo-check3');
+				})
+				
+				
+				$(".complex-show").click(function(){
+					$(".complex-hide").show();
+					
+				})
+				$(".complex-show1").click(function(){
+					$(".complex-hide").hide();
+				})
+				$(".complex-show").click(function(){
+					$(".complex-neir").show();
+				})
+				$(".complex-show1").click(function(){
+					$(".complex-neir").hide();
+				})
+			$(".factory-audo3-1").click(function(){
+					$(".factory-diemo").show();
+				})
+				$(".factory-audo3-2").click(function(){
+					$(".factory-diemo").hide();
+				})
+			})
+
+			function nexts() {
+				var other=$("#other").val();
+			    var otherS=other.split(",");
+			    var number=$("#number").val();
+			    for(var i=0;i<otherS.length;i++){
+			    	if(otherS[i]=='0' && number==""){
+			    		 $("#alert").fadeIn();
+						 $("#alert").text("Please fill in the number of elements");
+						 var t=setTimeout("alert_dialog()",1000)
+						 return false;
+			    	}
+			    }
+				$(".next-cont").show();
+				$(".form-horizontal").hide();
+			}
+
+			function prevs() {
+				$(".next-cont").hide();
+				$(".form-horizontal").show();
+			}
+			function Chemicalss(){
+				$(".Chemical-hide").toggle();
+				$(".Chemical-hide p").each(function () {
+					 $(this).find("input").attr("checked",false);	
+			    });
+				$("#number").val('');
+				$("#other").val(null);
+				calculatePrice();
+			}
+			//选择省份
+			function selectProvince(obj){
+				 var selectProvince=$(obj).val();
+				 $("#province").val(selectProvince);
+				 $("#factoryProvince").val(selectProvince);
+				 calculatePrice();
+			}
+			//判断是否还有其他的检查
+			function checkOther(){
+			 var otherValue =[];  
+			 $(".Chemical-hide p").each(function () {
+				 if($(this).find("input").is(':checked')){
+					 otherValue.push($(this).find("input").val()); 
+				 }
+		     });
+		      $("#other").val(otherValue);
+		      calculatePrice();
+			}
+			//文本框事件
+			function selectCount(){
+ 				calculatePrice();
+			}
+			
+			//文本框事件
+			function selectNumber(){
+				calculatePrice();
+			}
+			
+			  //关闭提示框
+			function alert_dialog(){
+		      $('#alert').fadeOut();
+			}
+		</script>
+		<style type="text/css">
+			ul,
+			li {
+				list-style: none;
+			}
+			
+			.container {
+				max-width: 970px;
+			}
+			
+			input {
+				color: #333
+			}
+			
+			#myquestion {
+				position: fixed;
+				left: 35%;
+				display: none;
+			}
+			
+			.wrap-bg {
+				width: 100%;
+				position: absolute;
+				background: url(${ctx}/img/project-3.jpg);
+				filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='${ctx}/img/project-3.jpg)', sizingMethod='scale');
+				background-size: cover;
+				height: auto;
+				left: 0;
+				bottom: 0px;
+				top: 0px;
+				right: 0px;
+				overflow: hidden;
+			}
+			
+			.factories_form {
+				list-style: none;
+				color: #fff;
+			}
+			
+			.factories_form li {
+				margin-bottom: 10px;
+			}
+			
+			.row,
+			.form-horizontal .form-group {
+				padding: 15px 0px 0;
+				margin: 0 0;
+			}
+			
+			.modal-dialog {
+				top: 25%;
+			}
+			
+			.btn-sel {
+				color: #333;
+				background-color: #fff;
+				border: 1px solid #ccc;
+				display: inline-block;
+				margin-bottom: 0;
+				font-weight: normal;
+				text-align: center;
+				vertical-align: middle;
+				touch-action: manipulation;
+				cursor: pointer;
+				white-space: nowrap;
+				padding: 10px 20px;
+				font-size: 14px;
+				line-height: 1.42857;
+				border-radius: 4px;
+			}
+			
+			.question {
+				background: #fff;
+				border-radius: 6px;
+				padding: 20px;
+				-webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+				box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+			}
+			
+			.col-md-3 {
+				padding-left: 0px;
+			}
+			
+			.green_btn {
+				background: #28b779;
+				color: #fff;
+				font-weight: bold;
+				border: 1px solid #16a768;
+			}
+			
+			.blue_btn {
+				background: #08c;
+				color: #fff;
+				font-weight: bold;
+				border: 1px solid #0272aa;
+			}
+			
+			.green_btn:hover {
+				background: #16a768;
+				color: #fff;
+				border: 1px solid #28b779;
+			}
+			
+			.blue_btn:hover {
+				background: #0272aa;
+				color: #fff;
+				border: 1px solid #08c;
+			}
+			
+			label {
+				color: #fff;
+			 margin-right: 5px;
+			}
+			
+			.factory-audo,
+			.factory-audo2 {
+				color: #fff;
+			}
+			
+			.factory-audo p,
+			.factory-audo2 p {
+				cursor: pointer;
+			}
+			.factory-audo2 span{width:150px;float:left;cursor: pointer;}
+			.factory-audo p i,
+			.factory-audo2 span i,.factory-audo3 span i{
+				background: url(${ctx}/images/radius.png) 0px 0px;
+				width: 20px;
+				height: 18px;
+				float: left;
+				text-indent: 9999em;
+			}
+			
+			.factory-audo .audo-check,
+			.factory-audo2 .audo-check2, 
+			.factory-audo3 .audo-check3 {
+				background: url(${ctx}/images/radius.png) -18px 0px;
+				cursor: pointer;
+			
+			}
+			.factory-audo ul {
+				padding-left: 20px;
+			}
+			
+			.next-cont,.complex-hide,.Chemical-hide {
+				display: none;
+			}
+			.ui-label{color:red;width:200px;display: inline-block;}
+			#upload_title h1{font-size: 1.5rem;margin-top: 10px;}
+			#file_upload_id{color:#fff}
+			.factory-audo3 span{width:80px;float:left;}
+			.factory-diemo{ }
+			.col-md-7{width:50%;}
+			input,select,buttom{padding-left:5px;}
+			a{color:#9DD2FF}
+			a:focus, a:hover{color:#5BBBFF}
+			.col-md-3 b{font-weight:300;}
+			#alert{display:none;position:absolute;left:0;top:200px;right:0;margin:auto;width:300px;height:100px;line-height:100px;text-align:center;background:pink;z-index:999;border-radius:8px;}
+		</style>
+	</head>
+<body>
+        <div id="alert"></div>
+		<div class="wrap-bg">
+			<div class="container" style="margin-top:10%; background:#2E363F;margin:0 0;padding:1% 2%;margin:5% auto;">
+				<!-- <p style="color: #fff;">With this service, you manage your own purchase with the factory, we only get paid for each inspection.</p> -->
+				<form id="file_upload_id"  onsubmit="return false;" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="userId" id="userId" value="${userId}">
+				<div  class="form-horizontal">
+					<div class="form-group">
+						<div class=row>
+							<div class="col-md-3 "><label>Factory Province:</label></div>
+							<div class="col-md-7 ">
+								<select class="btn-sel" style="width:100%" onchange="selectProvince(this)">
+									<option value="Shanghai" selected="selected">Shanghai</option>
+									<option value="Jiangsu Province">Jiangsu Province</option>
+									<option value="Zhejiang Province">Zhejiang Province</option>
+									<option value="Others">Others</option>
+								</select>
+							</div>
+							<div class="col-md-2"></div>
+						</div>
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Requriements:</label>
+								<input type="hidden" name="type" id="type" value="0">
+							</div>
+							<div class="col-md-7 factory-audo">
+								<p class="complex-show1" style="margin-bottom:0px"><i class="audo-check">0</i><em>Check Appearance & Basic Function & Count</em></p>
+								<p class="complex-show"><i>1</i><em>Check Part-Level Dimensions</em></p>
+							</div>
+							
+						</div>
+		                <div class="complex-neir row" style="display:none;padding-top:0px;">
+		                        <label class="col-md-3 ">How many kinds of parts:</label>
+		                        <div class="col-md-7 "><input type="text" name="partsCount" id="partsCount" style="border-radius: 3px;height:40px;width: 60%;border: none;" value=""></div>
+								</div>
+						<div class="row complex-hide">
+							<div class="col-md-3" style="padding:0 0;">
+								<label for="url" class="control-label">How complex are these parts:</label>
+								<input type="hidden" name="complexity" id="complexity" value="">
+							</div>
+							<div class="col-md-7 factory-audo2">
+								<span><i>0</i><em>Normal Parts</em></span>
+								<span><i>1</i><em>Complex Parts</em></span>
+							</div>
+							<div class="factories_add  col-md-2">
+							</div>
+						</div>
+						<div class="row" style="padding-top:0px;">
+						<div class="col-md-3"><label>Total units to be checked:</label></div>
+						<div class="col-md-7"><input type="text" name="count" id="count" value="" oninput="selectCount()" style="border-radius: 3px;height:40px;width:100%;border:none;"></div>
+						</div>
+						<p class="row" style="margin-left:27%;padding-top:10px;margin-bottom:10px; color: #808080;font-style: italic;">(For example, if total shipment is 10000 pieces and you want us to check 1%, that's 100.)<br></p>
+						<div style="clear:both"></div>
+						<div class="row factory-diemo" style="padding-top: 0px;">
+							<div style="color: #fff;line-height: 42px;text-align:center;">
+								<span style="float:left;">Besides dimensional, appearance and quantity checking, add other checking</span>
+								<input type="button" value=">> Add" class="btn green_btn" onclick="Chemicalss()" style="float: left;margin-left: 10px;display: inline;"></div>
+								<input type="hidden" value="" name="other" id="other">
+						</div>
+ 						<ul class="row Chemical-hide" style="color: #fff;width:80%;margin:auto;" onchange="checkOther()">
+							<p style="margin:0 0;"><label><input type="checkbox" value="0"></label><span>Chemical Component Check,Input number of elements</span><input type="text" name="number" id="number" style=" margin-left: 10px;border-radius: 3px;border: none" value="" oninput="selectNumber()"></input></p>
+							<p style="color:#808080;font-style: italic;margin-left:2%;">(If you have 2 different parts and each need to check 2 elements, please  input 4 here.)</p>
+							<p><label><input type="checkbox" value="1"></label><span>Salt Spray Test</span></p>
+							<p><label><input type="checkbox" value="2"></label><span>UV Stability Test</span></p>
+							<p><label><input type="checkbox" value="3"></label><span>X-Ray Check</span></p>
+						</ul>
+					</div>
+					<div style="clear:both"></div>
+					<div class="row pay_style">
+						<div class="col-md-3 ">
+							<b style="color: #fff;font-size:20px;">Price:</b>
+						</div>
+						<div class="col-md-7">
+							<b style="color:#ff5100;font-size:20px;" id="showPrice">$200</b>
+							<input type="hidden" name="price" id="price" value="$200"> 
+						</div>
+					</div>
+			        <p style="text-align: center;"><button type="button" value="" onclick="nexts()" class="btn  blue_btn">Next</button></p>
+			</div>
+			<div class="next-cont">
+				<div class="row">
+					<div class="col-md-3 ">
+						<b style="color: #fff;">Add Comments:</b>
+					</div>
+					<div class="col-md-7">
+						<textarea style="width: 100%;height: 80px;" class="form-control" id="comment" name="comment" value=""></textarea>
+					</div>
+					<div class="col-md-2 ">
+					</div>
+				</div>
+				<p class="row" style="color:#fff;">If you have parts drawings and inspection forms, please archive them into one file and upload here.</p>
+				<div class="row">
+					<div class="col-md-3 ">Upload Attachment:</div>
+					<div class="form-group col-md-4">
+						<input type="text" class="form-control" id="qualityFileName" name="qualityFileName" value="">
+					</div>
+					<div class="form-group col-md-3" style="position: relative;padding-right:0px;margin-right:0px;">
+						<input type="file" id="file_upload" name="file_upload"  onchange="doUploadFileName(this)"class="a-file-style" style="opacity:1;opacity:0;position: absolute;width: 115px;height: 42px;">
+                        <button type="button" class="btn   green_btn" style="">Attach File</button>
+                          <input name="questionFile" id="questionFile"  type="hidden" value="">
+						<button type="button" class="btn  blue_btn" onclick="doUploadFile()" style="margin-left:10px;">Submit</button>
+					</div>
+
+				</div>
+				<div class="row">
+					<div class="col-md-3 ">
+						<b style="color: #fff;">Factory  Address</b>
+					</div>
+					<div class="col-md-7">
+						<input type="text" class="form-control" name="address" id="address" value=""/>
+					</div>
+					<div class="col-md-2 ">
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-3 ">
+						<b style="color: #fff;">Factory Province:</b>
+					</div>
+					<div class="col-md-7">
+						<input type="text" class="form-control" name="province" id="province" value="Shanghai" readonly="readonly"/></div>
+					<div class="col-md-2 ">
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-3 ">
+						<b style="color: #fff;">Factory Phone:</b>
+					</div>
+					<div class="col-md-7">
+						<input type="text" class="form-control" id="phone" name="phone" value=""/>
+					</div>
+					<div class="col-md-2 ">
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-md-3 ">
+						<b style="color: #fff;">Factory Email:</b>
+					</div>
+					<div class="col-md-7">
+						<input type="text" class="form-control" id="email" name="email" value=""/>
+					</div>
+					<div class="col-md-2 ">
+					</div>
+				</div>
+				<div style="text-align: center;margin-top: 30px;">
+					<a href="javascript:void(0)" onclick="prevs()" style="float:left;height: 45px;line-height: 45px;text-decoration: underline;">Previous</a>
+					<!-- <button type="button" value="" class="btn  blue_btn" onclick="toQualityPayPage()">Pay Now</button> -->
+					<div class="row" style=" text-align: center;"><button type="button" class="btn  blue_btn" onclick="toQualityPayPage()">Submit</button></div>
+					<!-- <p style="text-align: center;color: #d4d4d4;">We are processing your payment and will arrange the inspection. And will contact you in case of problems.</p> -->
+				</div>
+				</div>
+			</form>
+
+		</div>
+
+		<div class="modal-dialog question" id="myquestion">
+			<p>We are processing your payment and will work on your requests ASAP. And will contact you in case of problems.</p>
+			<p style="font-weight:bold;text-align:center;">Questions? You can email us at contact@csmfg.com</p>
+			<p style="text-align: center;"><button type="button" class="btn btn-default" style=" padding-left:5%;   background: #197ec5;color: #fff;" onclick="mysure()">Close</button></p>
+		</div>
+		</div>
+		
+		<!-- 上传文件进度条div -->	
+		<div class="w-out-box" id="show_upload_dialog" style="display:none;">
+	       <div class="weui_mask"></div>
+	       <div class="w-weui_dialog" style="width:510px;background:#fff;box-shadow: 1px 5px 5px  #A7A0A0;    border-radius: 3px;
+	         border: 1px solid #28b779;height:100px;top:40%;text-align: center;">
+	       <div id="container">
+		   <div class="content" id="upload_title">
+			<h1>Progress</h1>
+		   </div>
+		  <div id="progress_bar" class="ui-progress-bar ui-container">
+		     <div class="ui-progress" style="width: 0%;" id="ui-progress-upload">
+		     <span class="ui-label" style="display:none;">Uploading...<b class="value">0%</b></span>
+	      </div>
+		  </div>
+		  <div class="content" id="main_content" style="display: none;">
+			<p>Uploaded!</p>
+		  </div>
+	    </div>
+	   </div>
+	   </div>
+	</body>
+	<script type="text/javascript">
+	function doUploadFileName(){
+		 var path =  $("#file_upload").val();	
+		 sppath = path.split("\\");
+		 var questionFile = sppath[sppath.length-1];	
+		 $('#qualityFileName').val(questionFile);	
+	}
+	//上传文件
+	  function doUploadFile(){
+		  var path =  $("#file_upload").val();	
+		  sppath = path.split("\\");
+		  var questionFile = sppath[sppath.length-1];	
+		  $('#questionFile').val(questionFile);	
+		  autTime(); 
+		  //发送ajax请求,提交form表单    
+	     $("#file_upload_id").ajaxSubmit({
+		 type : "post",
+		 url : "${ctx}/quality/addQualityFile.do",
+		 dataType : "text",
+		 success : function(result) {
+			$('#questionFile').val(result);
+		 },
+		error : function() {
+			easyDialog.open({
+				container : {
+					content : '  Upload failed'
+				},
+				autoClose : 1000
+		  });
+		}
+	  });
+	 }
+	
+	//保存信息支付页面
+    function toQualityPayPage(){
+		 //验证地址信息
+		 var address =$("#address").val();
+		 var phone=$("#phone").val();
+		 var email=$("#email").val();
+		 var questionFile=$("#questionFile").val();
+		 if(questionFile==""){
+			 $("#alert").fadeIn();
+			 $("#alert").text("Please select a file upload");
+			 var t=setTimeout("alert_dialog()",1000)
+			 return false;
+		 }
+		 if(address == ""){
+	    	 $("#alert").fadeIn();
+			 $("#alert").text("Please fill in factory address");
+			 var t=setTimeout("alert_dialog()",1000)
+			 return false;
+		 }
+		 if(phone == ""){
+		    $("#alert").fadeIn();
+			$("#alert").text("Please fill in factory phone");
+			var t=setTimeout("alert_dialog()",1000)
+			return false;
+		 }
+		 if(email == ""){
+		    $("#alert").fadeIn();
+			$("#alert").text("Please fill in factory email");
+			var t=setTimeout("alert_dialog()",1000)
+			return false;
+		 }
+		 $("#file_upload_id").ajaxSubmit({
+			type : "post",
+			url : "${ctx}/quality/addQualityToPay.do",
+			dataType : "text",
+			success : function(result) {
+				var json = eval("(" + result +")");	
+				var boolStr=json.boolStr;
+				var orderId=json.orderId;
+				if(boolStr == "Yes"){//登陆过
+					window.location.href = "${ctx}/quality/orderDetailPay.do?orderId="+orderId;
+				}else{ //没登录过
+					window.location.href = "${ctx}/c_register.jsp";
+				}
+			},
+			error : function() {
+				easyDialog.open({
+					container : {
+						content : 'Add Failed'
+					},
+					autoClose : 1000
+			  });
+			}
+		});
+	 }
+	//计算价格
+	function calculatePrice(){
+	   $("#file_upload_id").ajaxSubmit({
+			type : "post",
+			url : "${ctx}/quality/calculatePrice.do",
+			dataType : "text",
+			success : function(result) {
+				$("#showPrice").text(result);
+				$("#price").val(result);
+			},
+			error : function() {
+				easyDialog.open({
+					container : {
+						content : 'Add Failed'
+					},
+					autoClose : 1000
+			  });
+			}
+		});
+	}
+	</script>
+</html>

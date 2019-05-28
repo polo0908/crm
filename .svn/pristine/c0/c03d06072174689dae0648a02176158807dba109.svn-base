@@ -1,0 +1,508 @@
+package com.cbt.controller;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Resource;
+import javax.json.JsonArray;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.sf.json.JSONObject;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.cbt.entity.MessageCenter;
+import com.cbt.entity.OrderMessage;
+import com.cbt.entity.QualityIssuesPic;
+import com.cbt.service.FactoryMessageService;
+import com.cbt.service.MessageCenterService;
+import com.cbt.service.OrderMessageService;
+import com.cbt.service.QualityIssuesPicService;
+import com.cbt.util.Base64Encode;
+import com.cbt.util.DateFormat;
+import com.cbt.util.ImageCompressUtil;
+import com.cbt.util.OperationFileUtil;
+import com.cbt.util.SerializeUtil;
+import com.cbt.util.UploadAndDownloadPathUtil;
+import com.cbt.util.WebCookie;
+
+@Controller 
+
+public class MessageCenterController {
+  @Resource
+  private MessageCenterService messageCenterService;
+  @Resource
+  private FactoryMessageService factoryMessageService;
+  @Resource
+  private OrderMessageService orderMessageService;
+  @Resource
+  private QualityIssuesPicService qualityIssuesPicService;
+  
+  //静态常量（消息标题）
+  private static final String PUSH_MESSAGE_TITLE = "Push for Lead Time";
+  private static final String OTHER_MESSAGE_TITLE = "Other message";
+  private static final String QUALITY_MESSAGE_TITLE = "Report Quality Issues";
+  private static final int UNREAD_STATUS = 0;
+  private static final int MESSAGE_PUSH_TYPE = 1;
+  private static final int MESSAGE_QUOTATION_TYPE = 4;
+  private static final int HAVE_PIC = 1;
+  private static final int NO_PIC = 0;
+  private static final int CUSTOMER_MESSAGE = 1;
+
+  
+  
+  
+  public static final Logger LOG = Logger.getLogger(MessageCenterController.class); 
+   
+  
+  
+  /**
+   * 跳转消息输入页面
+   * @author polo
+   * 2017年6月6日
+   *
+   */
+  @RequestMapping("/toInputMessage.do")
+  public String toInputMessage(HttpServletRequest request,HttpServletResponse response){
+	     
+	  try {
+		if(request.getParameter("orderId") == null || "".equals(request.getParameter("orderId"))){
+			  throw new RuntimeException("orderId can not empty");
+		  }
+		  String orderId = request.getParameter("orderId");
+		  if(request.getParameter("factoryId") == null || "".equals(request.getParameter("factoryId"))){
+			  throw new RuntimeException("factoryId can not empty");
+		  }
+		  String factoryId = request.getParameter("factoryId");
+		  if(request.getParameter("messageType") == null || "".equals(request.getParameter("messageType"))){
+			  throw new RuntimeException("message type can not empty");
+		  }
+		  Integer messageType = Integer.parseInt(request.getParameter("messageType"));
+		  request.setAttribute("orderId", orderId);
+		  request.setAttribute("factoryId", factoryId);
+		  request.setAttribute("messageType", messageType);
+		  
+		  
+	} catch (NumberFormatException e) {
+		e.printStackTrace();
+		LOG.error("======MessageCenterController====== toInputMessage============"+e.getMessage());
+	}
+	  
+	  
+	  return "message_input.jsp";
+  }
+  
+  
+  
+  
+   /**
+    * 保存交期时间消息
+    * @param request
+    * @param response
+    * @return
+    */
+   @ResponseBody
+   @RequestMapping("/savePushMessageByOrderId.do")
+   public JsonResult<String> savePushMessageByOrderId(HttpServletRequest request,HttpServletResponse response){
+	     
+	        MessageCenter messageCenter = new MessageCenter();
+	        OrderMessage orderMessage = new OrderMessage();
+	        try {
+				String pushMessage = request.getParameter("pushMessage");
+				String orderId = request.getParameter("orderId");
+				String userid = WebCookie.getUserid(request);
+				String factoryId = request.getParameter("factoryId");
+				
+				if(pushMessage == null || "".equals(pushMessage)){
+					throw new RuntimeException("消息不能为空");
+				}
+				if(orderId == null || "".equals(orderId)){
+					throw new RuntimeException("未获取到订单信息");
+				}
+				if(userid == null || "".equals(userid)){
+					throw new RuntimeException("未获取到客户ID");
+				}
+				if(request.getParameter("messageType") == null || "".equals(request.getParameter("messageType"))){
+					throw new RuntimeException("未获取到消息类型");
+				}
+				Integer messageType = Integer.parseInt(request.getParameter("messageType"));
+				String title = "";
+				if(messageType == MESSAGE_PUSH_TYPE){
+					title = PUSH_MESSAGE_TITLE;
+				}else{
+					title = OTHER_MESSAGE_TITLE;
+				}
+				
+				messageCenter.setOrderId(orderId);
+				messageCenter.setMessageTitle(title);
+				messageCenter.setMessageType(messageType);
+				messageCenter.setUserid(userid);	
+				messageCenter.setFactoryId(factoryId);
+                
+				orderMessage.setMessageDetails(pushMessage);
+				orderMessage.setMessageSendTime(DateFormat.format());
+				orderMessage.setPicStatus(NO_PIC);
+				orderMessage.setFactoryId(factoryId);
+				orderMessage.setReadStatus(UNREAD_STATUS);
+				
+				messageCenterService.insert(messageCenter,orderMessage);
+		        
+				return new JsonResult<String>(0,"success");
+				
+			} catch (Exception e) {
+				LOG.error("======MessageCenterController====== savePushMessageByOrderId============"+e.getMessage());
+				e.printStackTrace();
+				return new JsonResult<String>(1,"save failed");
+			}
+
+   }
+   
+   /**
+    * 上传质量问题图片
+    * @param request
+    * @param response
+    * @return
+    * @throws Exception 
+    */
+   @ResponseBody
+   @RequestMapping("/uploadQualityMessage.do")
+   public JsonResult<String> uploadQualityMessage(HttpServletRequest request,HttpServletResponse response) throws Exception{
+	   
+	    try {
+			String orderId = request.getParameter("orderId");
+			String path = UploadAndDownloadPathUtil.getQualityPath() +  orderId;
+			File file = new File(path);
+			if  (!file.exists()  && !file .isDirectory())      
+			{         
+			 file .mkdir();     
+			}  	   		   
+			 //调用保存文件的帮助类进行保存文件(文件上传，form表单提交)
+			Map<String, String> multiFileUpload = OperationFileUtil.multiFileUpload(request, path+File.separator);
+			String picNames = "";
+			if(!(multiFileUpload == null || multiFileUpload.size() == 0)){
+				 Set<String> keySet = multiFileUpload.keySet();
+				   for (String key : keySet) {	
+					   String pic = multiFileUpload.get(key);  
+					   String photoCompressName = "";
+				        if(pic != null && !"".equals(pic)){
+				        	photoCompressName = OperationFileUtil.changeFilenameZip(pic);
+				        }		
+				        String photoPath = path + File.separator + pic;
+	                    String photoPathCompress = path + File.separator + photoCompressName;
+				        ImageCompressUtil.saveMinPhoto(photoPath, photoPathCompress, 139, 0.9d);
+					 
+					 picNames += pic + ",";
+				   }
+				   if(picNames.endsWith(",")){
+					   picNames = picNames.substring(0,picNames.length()-1);
+				   }				   			        
+				   
+			}
+			return new JsonResult<String>(0,"success",picNames);
+		} catch (IllegalStateException e) {
+			e.printStackTrace();
+		    LOG.error("======MessageCenterController====== uploadQualityMessage============"+e.getMessage());
+			return new JsonResult<String>(1,"upload failed");
+		} catch (IOException e) {
+			e.printStackTrace();
+			LOG.error("======MessageCenterController====== uploadQualityMessage============"+e.getMessage());	
+			return new JsonResult<String>(1,"upload failed");
+		}	
+	   
+   }
+   
+   
+   
+   /**
+    * 保存质量问题消息
+    * @param request
+    * @param response
+    * @return
+    */
+   @ResponseBody
+   @RequestMapping("/saveQualityMessageByOrderId.do")
+   public JsonResult<String> saveQualityMessageByOrderId(HttpServletRequest request,HttpServletResponse response){
+	   
+	   MessageCenter messageCenter = new MessageCenter();
+       OrderMessage orderMessage = new OrderMessage();
+	   try {
+		   String qualityMessage = request.getParameter("qualityMessage");
+		   String orderId = request.getParameter("orderId");
+		   String userid = WebCookie.getUserid(request);
+		   String factoryId = request.getParameter("factoryId");
+		   String drawingsMap = request.getParameter("drawingsMap");
+		   
+		   if(qualityMessage == null || "".equals(qualityMessage)){
+			   throw new RuntimeException("消息不能为空");
+		   }
+		   if(orderId == null || "".equals(orderId)){
+			   throw new RuntimeException("未获取到订单信息");
+		   }
+		   if(userid == null || "".equals(userid)){
+			   throw new RuntimeException("未获取到客户ID");
+		   }
+		   if(request.getParameter("messageType") == null || "".equals(request.getParameter("messageType"))){
+				throw new RuntimeException("未获取到消息类型");
+			}
+		   Integer messageType = Integer.parseInt(request.getParameter("messageType"));
+		   messageCenter.setOrderId(orderId);
+		   messageCenter.setMessageTitle(QUALITY_MESSAGE_TITLE);
+		   messageCenter.setMessageType(messageType);
+		   messageCenter.setUserid(userid);	
+		   messageCenter.setFactoryId(factoryId);
+		   
+		   orderMessage.setMessageDetails(qualityMessage);
+		   orderMessage.setMessageSendTime(DateFormat.format());
+		   orderMessage.setFactoryId(factoryId);
+		   orderMessage.setReadStatus(UNREAD_STATUS);
+          		    
+		   if(drawingsMap == null || "".equals(drawingsMap)){
+			   orderMessage.setPicStatus(NO_PIC); 
+		   }else{
+			   orderMessage.setPicStatus(HAVE_PIC); 
+		   }
+		   
+		   messageCenterService.insert(messageCenter, drawingsMap ,orderMessage);		   
+		   return new JsonResult<String>(0,"send successfully");
+		   
+	   } catch (Exception e) {
+		   LOG.error("======MessageCenterController====== saveQualityMessageByOrderId============"+e.getMessage());
+		   e.printStackTrace();
+		   return new JsonResult<String>(1,"save failed");
+	   }
+	   
+   }
+   
+   @RequestMapping("/submitSuccess.do")
+   public String submitSuccess(HttpServletRequest request,HttpServletResponse response){
+	   String orderId = request.getParameter("orderId");
+	   request.setAttribute("orderId", orderId);
+	   return "submitMessage-ok.jsp";
+   }
+   
+   
+   /**
+    * 查询未读消息数
+    * @author polo
+    * 2017年5月19日
+    *
+    */
+   @ResponseBody
+   @RequestMapping("/queryMessageCount.do")
+   public JsonResult<Integer> queryMessageCount(HttpServletRequest request,HttpServletResponse response){
+	   
+	   try {
+	    	String userid = WebCookie.getUserid(request);
+		   if(userid == null || "".equals(userid)){
+			   throw new RuntimeException("未获取到客户ID");
+		   }
+		    int total = messageCenterService.total(userid);
+		    
+		 return new JsonResult<Integer>(total);   
+	    } catch (Exception e) { 
+	   	  e.printStackTrace();
+	   	 return new JsonResult<Integer>(1, "Get failed");
+	   }    
+    }
+   
+   /**
+    * 查询消息
+    * @author polo
+    * 2017年5月19日
+    *
+    */
+   @RequestMapping("/queryMessageByUserId.do")
+   public String queryMessageByUserId(HttpServletRequest request,HttpServletResponse response){
+	   
+	   try {
+		   String userid = WebCookie.getUserid(request);
+		   if(userid == null || "".equals(userid)){
+			   throw new RuntimeException("未获取到客户ID");
+		   }
+		   List<MessageCenter> messageCenters = messageCenterService.queryMessageByUserId(userid);		 
+		   List<Integer> counts = new ArrayList<Integer>();
+		   List<List<OrderMessage>> orderMessages = new ArrayList<List<OrderMessage>>();
+		   List<List<List<QualityIssuesPic>>> qualityIssuesPicss = new ArrayList<List<List<QualityIssuesPic>>>();
+		   List<List<QualityIssuesPic>> qualityIssuesPics = new ArrayList<List<QualityIssuesPic>>();
+		   List<QualityIssuesPic> qualityIssuesPic = new ArrayList<QualityIssuesPic>();
+				   
+		   int count = 0;		   
+		   for (MessageCenter messageCenter : messageCenters) {
+			  if(!(messageCenter.getMessageType() == null || "".equals(messageCenter.getMessageType()))){
+				  
+				count = messageCenterService.totalByMessageType(messageCenter.getId(), messageCenter.getMessageType());
+
+				  counts.add(count);
+			  }
+			  List<OrderMessage> orderMessage = orderMessageService.queryByMessageCenterId(messageCenter.getId());	
+			  for (OrderMessage orderMessage2 : orderMessage) {
+				  if(orderMessage2.getPicStatus() == HAVE_PIC){
+					  qualityIssuesPic = qualityIssuesPicService.queryByOrderMessageId(orderMessage2.getId());  
+					  qualityIssuesPics.add(qualityIssuesPic);
+				  }			  
+			  }
+			  qualityIssuesPicss.add(qualityIssuesPics);
+			  orderMessages.add(orderMessage);
+		   }
+		   
+		   request.setAttribute("messageCenters", messageCenters);
+		   request.setAttribute("counts", counts);
+		   request.setAttribute("orderMessages", orderMessages);
+		   request.setAttribute("qualityIssuesPicss", qualityIssuesPicss);
+		   
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOG.error("=========MessageCenterController =====queryMessageByUserId======"+e.getMessage());
+		}
+         return "message_center.jsp";
+   }
+   
+   
+   
+   /**
+    * 查询消息
+    * @author polo
+    * 2017年5月19日
+    *
+    */
+   @RequestMapping("/queryMessageByOrderId.do")
+   public String queryMessageByOrderId(HttpServletRequest request,HttpServletResponse response){
+	   
+	   try {
+		   String orderId = request.getParameter("orderId");
+		   if(orderId == null || "".equals(orderId)){
+			   throw new RuntimeException("未获取到订单号");
+		   }
+		   orderId = Base64Encode.getFromBase64(orderId);
+		   List<MessageCenter> messageCenters = messageCenterService.queryByOrderId(orderId);	 
+		   List<Integer> counts = new ArrayList<Integer>();
+		   List<List<OrderMessage>> orderMessages = new ArrayList<List<OrderMessage>>();
+//		   List<List<List<QualityIssuesPic>>> qualityIssuesPicss = new ArrayList<List<List<QualityIssuesPic>>>();
+//		   List<List<QualityIssuesPic>> qualityIssuesPics = new ArrayList<List<QualityIssuesPic>>();
+//		   List<QualityIssuesPic> qualityIssuesPic = new ArrayList<QualityIssuesPic>();
+				   
+		   int count = 0;		   
+		   for (MessageCenter messageCenter : messageCenters) {
+			  if(!(messageCenter.getMessageType() == null || "".equals(messageCenter.getMessageType()))){				  
+				count = messageCenterService.totalByMessageType(messageCenter.getId(), messageCenter.getMessageType());
+				  counts.add(count);
+			  }
+			  List<OrderMessage> orderMessage = orderMessageService.queryByMessageCenterId(messageCenter.getId());	
+			  for (OrderMessage orderMessage2 : orderMessage) {
+				  if(orderMessage2.getPicStatus() == HAVE_PIC){
+					  orderMessage2.setQualityIssuesPic(qualityIssuesPicService.queryByOrderMessageId(orderMessage2.getId()));
+				  }			  
+			  }			 
+			  orderMessages.add(orderMessage);
+		   }
+		   request.setAttribute("messageCenters", messageCenters);
+		   request.setAttribute("counts", counts);
+		   request.setAttribute("orderMessages", orderMessages);
+//		   request.setAttribute("qualityIssuesPicss", qualityIssuesPicss);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOG.error("=========MessageCenterController =====queryMessageByUserId======"+e.getMessage());
+		}
+         return "message_center.jsp";
+   }
+   
+   
+   
+   
+   
+   
+   /**
+    * 查询消息详情
+    * @author polo
+    * 2017年5月19日
+    *
+    */
+   @ResponseBody
+   @RequestMapping("/queryMessageDetails.do")
+   public JsonResult<String> queryMessageDetails(HttpServletRequest request,HttpServletResponse response){
+	     
+	   try {
+		Integer messageCenterId = null;
+		   if(request.getParameter("messageCenterId") == null || "".equals(request.getParameter("messageCenterId"))){
+			   throw new RuntimeException("未获取到消息");
+		   }else{
+			   messageCenterId = Integer.parseInt(request.getParameter("messageCenterId"));
+		   }
+		   orderMessageService.updateOrderMessage(messageCenterId);
+
+		   return new JsonResult<String>(0,"ok");
+		} catch (NumberFormatException e) {			
+			e.printStackTrace();
+			LOG.error("=========MessageCenterController =====queryMessageDetails======"+e.getMessage());
+		   return new JsonResult<String>(1,"消息中心ID为空");
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOG.error("=========MessageCenterController =====queryMessageDetails======"+e.getMessage());
+			return new JsonResult<String>(1,"查询失败");
+	    }
+   }
+   
+   
+   /**
+    * 保存工厂回复消息
+    * @author polo
+    * 2017年5月19日
+    *
+    */
+   @ResponseBody
+   @RequestMapping("/saveCustomerMessage.do")
+   public JsonResult<OrderMessage> saveCustomerMessage(HttpServletRequest request,HttpServletResponse response){
+	   
+	   try {
+		   Integer messageCenterId = null;
+		   String factoryId = null;
+		   OrderMessage orderMessage = new OrderMessage();
+		   
+		   if(request.getParameter("messageCenterId") == null || "".equals(request.getParameter("messageCenterId"))){
+			   throw new RuntimeException("消息ID不存在");
+		   }else{
+			   messageCenterId = Integer.parseInt(request.getParameter("messageCenterId"));
+		   }
+		   if(request.getParameter("factoryId") == null || "".equals(request.getParameter("factoryId"))){
+			   throw new RuntimeException("工厂ID不存在");
+		   }else{
+			   factoryId = request.getParameter("factoryId");
+		   }
+		   
+		   orderMessage.setMessageCenterId(messageCenterId);
+		   orderMessage.setMessageDetails(request.getParameter("messageDetails"));	   
+		   orderMessage.setMessageSendTime(DateFormat.format());
+		   orderMessage.setReadStatus(UNREAD_STATUS);	   
+		   orderMessage.setFactoryId(factoryId);
+		   orderMessage.setPicStatus(0);
+		   orderMessage.setCustomerOrFactory(CUSTOMER_MESSAGE);
+		   
+		   return new JsonResult<OrderMessage>(orderMessageService.insert(request,orderMessage));
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+			LOG.error("=========MessageCenterController =====saveCustomerMessage======"+e.getMessage());
+			return new JsonResult<OrderMessage>(1,"订单消息ID不存在");
+		} catch (Exception e) {
+			e.printStackTrace();
+			LOG.error("=========MessageCenterController =====saveCustomerMessage======"+e.getMessage());
+			return new JsonResult<OrderMessage>(1,"保存失败");
+		}
+   }
+   
+   
+   
+   
+   
+   
+   
+   
+}

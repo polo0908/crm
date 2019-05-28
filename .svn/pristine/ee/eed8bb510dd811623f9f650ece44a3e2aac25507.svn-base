@@ -1,0 +1,17 @@
+package com.cbt.service;
+
+import com.cbt.entity.OrderPayLog;
+import com.cbt.entity.SourceSupport;
+
+/**
+ * 采购支持Service
+ * @author Administrator
+ *
+ */
+public interface SourceSupportService {
+    /**
+     * 采购支持订单记录
+     * @return
+     */
+	public OrderPayLog addSourceSupportToPay(SourceSupport sourceSupport);
+}

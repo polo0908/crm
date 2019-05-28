@@ -1,0 +1,215 @@
+package com.cbt.controller;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.cbt.entity.Factory;
+import com.cbt.entity.FactoryOrder;
+import com.cbt.entity.OrderPayLog;
+import com.cbt.enums.OrderTypeEnum;
+import com.cbt.service.FactoryOrderService;
+import com.cbt.service.FactoryService;
+import com.cbt.util.IdGen;
+import com.cbt.util.JudgmentLoginUtil;
+import com.cbt.util.OperationFileUtil;
+import com.cbt.util.UploadAndDownloadPathUtil;
+import com.cbt.util.WebCookie;
+
+/**
+ * 工厂选择Controller
+ * @author Administrator
+ *
+ */
+@Controller
+@RequestMapping("/factory")
+public class FactoryController {
+    
+	@Autowired
+	private FactoryService factoryService;
+	
+	@Autowired 
+	private FactoryOrderService factoryOrderService; 
+	
+	public static final Logger log = Logger.getLogger(FactoryController.class);
+	/**
+	 * 跳转添加页面
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/toAddFactory.do")
+	public String toAddFactory(HttpServletRequest request,HttpServletResponse response){
+		String userId=request.getParameter("userId");
+//		if(userId == null || "".equals(userId)){
+//			userId = WebCookie.getUserid(request);
+//		}
+		request.setAttribute("userId",userId);
+		return "/select_factories.jsp";
+	}
+	/**
+	 * 添加选择工厂附件
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/addFactoryFile.do")
+	@ResponseBody
+	public String addFactoryFile(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		 String questionFile = request.getParameter("questionFile");
+		 String path = UploadAndDownloadPathUtil.getFactoryFilePath();
+		 File file = new File(path);
+		 if  (!file.exists()  && !file .isDirectory())       {         
+				file .mkdir();     
+		 }  	
+		 //调用保存文件的帮助类进行保存文件(文件上传，form表单提交)
+		try {
+			Map<String, String> multiFileUpload = OperationFileUtil.multiFileUpload(request, path+File.separator);
+			String fileName = multiFileUpload.get(questionFile);
+			return fileName;
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error("=======FactoryController   addFactoryFile===="+e.getMessage());
+			throw new Exception(e.getMessage());
+		}
+	}
+	/**
+	 * 保存工厂信息
+	 * @param request
+	 * @param response
+	 * @return 
+	 * @throws Exception
+	 */
+	@RequestMapping("/addFactoryToPay.do")
+	@ResponseBody
+	public Map<Object,String> addFactoryToPay(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		String userId=request.getParameter("userId");
+		String questionFile=request.getParameter("questionFile");
+		String productName=request.getParameter("productName");
+		String orderValue=request.getParameter("orderValue");
+		String remark=request.getParameter("remark");
+		String description=request.getParameter("description");
+		String url=request.getParameter("url");
+		String checkboxValue=request.getParameter("checkboxValue");
+		String urlStr=url.substring(0,url.lastIndexOf(','));
+		String [] urlArr= urlStr.split(",");  //工厂网址
+		String priceStr=request.getParameter("price");
+		String price=priceStr.replaceAll("\\$", "");
+		List<String> urlList=new ArrayList<String>();
+		for (int i = 0; i < urlArr.length; i++) {
+			urlList.add(urlArr[i]);
+		}
+		Factory factory=new Factory();
+		factory.setId(IdGen.uuid());
+		factory.setUserId(userId);
+		factory.setOrderId(IdGen.uuid());
+        factory.setQuestionFile(questionFile);
+        factory.setProductName(productName);
+        factory.setOrderValue(orderValue);
+        factory.setDescription(description);
+        factory.setRemark(remark);
+        factory.setUrlList(urlList);
+        factory.setPrice(Float.parseFloat(price));
+        factory.setCheckboxValue(checkboxValue);
+        factory.setCreateDate(new Date());
+        HttpSession session=request.getSession();
+        //判断是否登录
+        boolean bool=JudgmentLoginUtil.identify(request);
+        String boolStr="";
+        if(bool){
+        	boolStr="Yes"; //登陆过
+        }else{
+        	boolStr="No";  //没登录过
+        	session.setAttribute("payUrl", "http://192.168.1.186:8080/crm/factory/orderDetailPay.do?orderId="+factory.getOrderId()+"");
+        }
+        try {
+        	Map<Object,String> hashMap=new HashMap<Object,String>();
+        	OrderPayLog orderPayLog=factoryService.addFactoryPay(factory);//调用方法处理业务逻辑
+        	hashMap.put("boolStr", boolStr);
+        	hashMap.put("orderId", orderPayLog.getOrderId());
+        	//session.setAttribute("orderId",orderPayLog.getOrderId());     
+        	return hashMap;
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error("=======FactoryController   addFactoryPay===="+e.getMessage());	
+			throw new Exception(e.getMessage());
+		}
+	}
+	
+	/**
+	 * 查询订单详情跳转到支付确认页面
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping("/orderDetailPay.do")
+	public String orderDetailPay(HttpServletRequest request,HttpServletResponse response){
+		String userId="";
+		String orderId=request.getParameter("orderId");
+		if(userId == null || "".equals(userId)){
+			userId = WebCookie.getUserid(request);
+		}
+		//更新UserId,将订单和用户关联
+		factoryOrderService.updateOrderUserId(orderId, userId);
+		FactoryOrder factoryOrder=factoryOrderService.findSelectFactoryOrderDetail(orderId);
+		request.setAttribute("factoryOrder", factoryOrder);
+		HttpSession session=request.getSession();
+		session.setAttribute("payUrl", "");
+		return "/factory_pay_ment.jsp";
+	}
+	
+	
+	/**
+	 * 查找用户申请过记录
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping("/selectRequestList.do")
+	public String selectRequestList(HttpServletRequest request,HttpServletResponse response){
+		String userId=request.getParameter("userId");
+		List<FactoryOrder> orderList=new ArrayList<FactoryOrder>();
+		orderList=factoryOrderService.selectRequestList(userId);
+		request.setAttribute("orderList",orderList);
+		return "order_list.jsp";
+	}
+	/**
+	 * 查找用户申请的详细记录
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/selectRequestDetail.do")
+	public String selectRequestDetail(HttpServletRequest request,HttpServletResponse response){
+		String orderId=request.getParameter("orderId");
+		String type=request.getParameter("type");
+		FactoryOrder factoryOrder=new FactoryOrder();
+	    if(type.equals(OrderTypeEnum.QUALITY.getCode())){//客户质量要求订单详情
+	    	factoryOrder=factoryOrderService.findQualityOrderDetail(orderId);
+	    }else if(type.equals(OrderTypeEnum.FACTORIES_SELECTED.getCode())){//客户选择工厂订单详情
+	    	factoryOrder=factoryOrderService.findSelectFactoryOrderDetail(orderId);
+	    }else if(type.equals(OrderTypeEnum.FACTORY_AUDIT.getCode())){//客户工厂审核订单详情
+	    	factoryOrder=factoryOrderService.findAuditOrderDetail(orderId);
+	    }else if(type.equals(OrderTypeEnum.SOURCING_ASSISTANCE.getCode())){//客户采购帮助支持订单详情
+	    	factoryOrder=factoryOrderService.findSourceAssistanceOrderDetail(orderId);
+	    }
+	    if(factoryOrder!=null){
+	    	request.setAttribute("factoryOrder", factoryOrder);
+	    }  
+		return "order_detail.jsp";
+	}
+}

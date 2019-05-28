@@ -1,0 +1,262 @@
+/* /* * { */
+  box-sizing: border-box;
+}
+ul {
+  list-style: none;
+} 
+  body { 
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.42857143;
+  color: #333;
+} 
+a:hover{
+	text-decoration:none;
+}
+/* .subline_slide {  */
+/*   width: 220px; */
+/*   position: fixed; */
+/*   z-index: 1; */
+/*   height: 100%; */
+/*   background-color: red; */
+/* }  */
+.weekly_report {
+ /*  background-color: yellow;
+  margin-left: 220px;
+  min-height: 600px;
+  padding-top: 100px; */
+  margin-left: 14px;;
+}
+.report2{
+	margin-left:36px;
+}
+.weekly_report .row {
+ /*  background-color: #fff;
+  min-height: 300px; */
+  margin-right: 18px;
+  margin-top: 20px;
+  box-sizing: border-box;
+}
+.weekly_report .row .col-xs-0-3 {
+  width: 13%;
+  float: left;
+  position: relative;
+  min-height: 1px;
+  padding-right: 15px;
+  padding-left: 15px;
+  height: 300px;
+}
+.weekly_report .row .col-xs-0-3 .thumbnail {
+  display: block;
+  margin-bottom: 20px;
+  line-height: 1.42857143;
+  background-color: #fff;
+  transition: border 0.2s ease-in-out;
+  box-shadow: 3px 2px 6px rgba(43, 43, 43, 0.15), -3px 2px 6px rgba(43, 43, 43, 0.15);
+  padding:0;
+}
+.weekly_report .row .col-xs-0-3 .thumbnail .imgs {
+  border-bottom: 4px solid #d9d9d9;
+  height: 220px;
+  vertical-align: middle;
+  line-height: 220px;
+  position: relative;
+  text-align: center;
+}
+.weekly_report .row .col-xs-0-3 .thumbnail .imgs img {
+  display: inline-block;
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+.weekly_report .row .col-xs-0-3 .thumbnail .imgs span {
+  display: block;
+  width: 45px;
+  height: 18px;
+  background-color: #b2b2b2;
+  border-radius: 8px;
+  font-size: 12px;
+  color: #fff;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  text-align: center;
+  line-height: 18px;
+}
+.weekly_report .row .col-xs-0-3 .thumbnail .caption {
+  height: 80px;
+  padding: 0 6px 6px 6px;
+  margin-top: -12px;
+}
+.weekly_report .row .col-xs-0-3 .thumbnail .caption p {
+  font-size: 14px;
+  color: #666;
+  margin-top: 9px;
+  word-break: break-all;
+  line-height: 16px;
+  padding-top: 6px;
+  height: 54px;
+  overflow: hidden;
+}
+.weekly_report .row .col-xs-0-3 .thumbnail .caption .p2 {
+  font-size: 12px;
+  color: #999;
+  text-align: right;
+  margin-top: -12px;
+}
+ .weekly_lunbo{
+ width: 1300px;
+ margin: 0 auto;
+ top:8%;
+ position: fixed;
+ z-index: 9999;
+ }
+.weekly_lunbo .row {
+  margin-right: -15px;
+  margin-left: -15px;
+}
+.weekly_lunbo .colxls10 {
+ /*  border: 1px solid red; */
+  /* width:75%;*/
+  margin: 0 auto;
+ /*  width: 86.333333%; */
+ width:1300px;
+  /* float: left; */
+  position: relative;
+  min-height: 1px;
+  padding-right: 15px;
+  /* padding-left: 15px; */
+  background-color: #fff;
+   z-index: 9999;
+}
+.weekly_lunbo .colxls10 .lunbo {
+  width: 980px;
+  /* height:680px;*/
+  background-color: #111;
+  padding-top: 40px;
+  padding-bottom: 30px;
+  float: left;
+  position: relative;
+  min-height: 1px;
+  padding-right: 15px;
+  padding-left: 15px;
+}
+.weekly_lunbo .colxls10 .lunbo .lg {
+  width: 448px;
+  height:336px;
+  margin: 0 auto;
+  margin-bottom: 40px;
+}
+.weekly_lunbo .colxls10 .lunbo .lg img {
+  display: block;
+  width: 448px;
+  height:336px;
+  vertical-align: middle;
+}
+.weekly_lunbo .colxls10 .lunbo .img_list {
+	position:relative;
+  margin: 0 50px 0 50px;
+}
+.weekly_lunbo .colxls10 .lunbo .img_list .uls {
+width:805px;
+  margin: 0 auto;
+  position: relative;
+  overflow:hidden;
+}
+.weekly_lunbo .colxls10 .lunbo .img_list .uls .colxs12 {
+  width: 2300px;
+  float: left;
+  position: relative;
+  min-height: 1px;
+}
+.weekly_lunbo .colxls10 .lunbo .img_list span {
+  width: 22px;
+  height: 36px;
+  position: absolute;
+  top: 50%;
+  margin-top: -18px;
+}
+.weekly_lunbo .colxls10 .lunbo .img_list .btnL {
+  background: url(../../images/btnL.png) no-repeat;
+  left: 0;
+  cursor:pointer;
+}
+.weekly_lunbo .colxls10 .lunbo .img_list .btnR {
+  background: url(../../images/btnR.png) no-repeat;
+  right: 0;
+  cursor:pointer;
+}
+.weekly_lunbo .colxls10 .lunbo .img_list .uls ul {
+  overflow: hidden;
+  padding: 0;
+}
+.weekly_lunbo .colxls10 .lunbo .img_list .uls ul .colxs2 {
+  
+  width:120px;
+  height:90px;
+  float: left;
+  position: relative;
+  min-height: 1px;
+  margin-right:17px;
+ /*  padding-right: 8px;
+  padding-left: 8px; */
+}
+.weekly_lunbo .colxls10 .lunbo .img_list .uls ul .colxs2 a img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+      width: 120px;
+    height: 90px;
+}
+/* .weekly_lunbo .colxls10 .lunbo .img_list .uls ul li:last-child { */
+/*   margin-right: 0; */
+/* } */
+.weekly_lunbo .colxls10 .introduce {
+  width: 305px;
+  background-color: #fff;
+  float: left;
+  position: relative;
+  padding:0 15px;
+}
+.weekly_lunbo .colxls10 .introduce h3 {
+  color: #333;
+  font-size: 20px;
+  font-family: "Arial";
+  margin-top: 20px;
+  margin-bottom: 10px;
+  font-weight: 500;
+  line-height: 1.1;
+}
+.weekly_lunbo .colxls10 .introduce p {
+  color: #333;
+  font-size: 16px;
+  font-family: "Arial";
+  word-break: break-all;
+  margin: 0 0 10px;
+  padding: 2px 4px 3px 5px; 
+}
+.weekly_lunbo .colxls10 .emlunbo {
+  display: block;
+  width: 43px;
+  height: 43px;
+  background: url(../../images/colse.png);
+  position: absolute;
+  right: -16px;
+  top: -20px;
+  cursor:pointer;
+}
+.weekly_lunbo .colxls10 .spanlunbo {
+  display: block;
+  position: absolute;
+  right: 20px;
+  bottom: 10px;
+  font-size: 16px;
+  color: #333;
+}
+
+.img-mark{
+   border: solid #bbb440;
+}
+
+

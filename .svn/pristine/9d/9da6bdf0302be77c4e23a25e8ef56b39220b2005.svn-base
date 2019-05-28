@@ -1,0 +1,179 @@
+package com.cbt.entity;
+
+import java.io.Serializable;
+import java.util.Date;
+
+public class Quality implements Serializable {
+    private String id;
+
+    private String userId;
+
+    private String province;
+
+    private Integer type;
+
+    private Integer count;
+
+    private Integer partsCount;
+
+    private Integer complexity;
+
+    private String other;
+    
+    private Integer number;
+
+    private String comment;
+
+    private String fileUrl;
+
+    private String address;
+
+    private String phone;
+
+    private String email;
+    
+    private float price;
+
+    private Date createDate;
+    
+    private String orderId;
+
+    private static final long serialVersionUID = 1L;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id == null ? null : id.trim();
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId == null ? null : userId.trim();
+    }
+
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province == null ? null : province.trim();
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    public Integer getCount() {
+        return count;
+    }
+
+    public void setCount(Integer count) {
+        this.count = count;
+    }
+
+    public Integer getPartsCount() {
+        return partsCount;
+    }
+
+    public void setPartsCount(Integer partsCount) {
+        this.partsCount = partsCount;
+    }
+
+    public Integer getComplexity() {
+        return complexity;
+    }
+
+    public void setComplexity(Integer complexity) {
+        this.complexity = complexity;
+    }
+
+    public String getOther() {
+        return other;
+    }
+
+    public void setOther(String other) {
+        this.other = other == null ? null : other.trim();
+    }
+
+    public Integer getNumber() {
+		return number;
+	}
+
+	public void setNumber(Integer number) {
+		this.number = number;
+	}
+
+	public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment == null ? null : comment.trim();
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl == null ? null : fileUrl.trim();
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address == null ? null : address.trim();
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone == null ? null : phone.trim();
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email == null ? null : email.trim();
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+	public float getPrice() {
+		return price;
+	}
+
+	public void setPrice(float price) {
+		this.price = price;
+	}
+
+	public String getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
+	}
+    
+}

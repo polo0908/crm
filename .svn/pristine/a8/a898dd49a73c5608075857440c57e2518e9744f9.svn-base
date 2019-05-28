@@ -1,0 +1,17 @@
+package com.cbt.dao;
+
+import com.cbt.entity.Quality;
+
+public interface QualityMapper {
+    int deleteByPrimaryKey(String id);
+
+    int insert(Quality record);
+
+    int insertSelective(Quality record);
+
+    Quality selectByPrimaryKey(String id);
+
+    int updateByPrimaryKeySelective(Quality record);
+
+    int updateByPrimaryKey(Quality record);
+}

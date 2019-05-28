@@ -1,0 +1,122 @@
+package com.cbt.service.impl;
+
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cbt.dao.AddressMapper;
+import com.cbt.dao.FactoryAuditMapper;
+import com.cbt.dao.FactoryMapper;
+import com.cbt.dao.FactoryOrderMapper;
+import com.cbt.dao.OrderPayLogMapper;
+import com.cbt.dao.QualityMapper;
+import com.cbt.dao.SourceSupportMapper;
+import com.cbt.dao.UrlInfoMapper;
+import com.cbt.entity.Factory;
+import com.cbt.entity.FactoryAudit;
+import com.cbt.entity.FactoryOrder;
+import com.cbt.entity.OrderPayLog;
+import com.cbt.entity.Quality;
+import com.cbt.entity.SourceSupport;
+import com.cbt.service.FactoryOrderService;
+
+@Service
+public class FactoryOrderServiceImpl implements FactoryOrderService{
+    
+	@Autowired
+	private FactoryOrderMapper factoryOrderMapper;
+	
+	@Autowired
+	private AddressMapper addressMapper;
+	
+	@Autowired
+	private UrlInfoMapper urlInfoMapper;
+	
+	@Autowired
+	private FactoryMapper factoryMapper;
+	
+	@Autowired
+	private OrderPayLogMapper orderPayLogMapper;
+	
+	@Autowired
+	private FactoryAuditMapper factoryAuditMapper;
+	
+	@Autowired
+	private QualityMapper qualityMapper;
+	
+	@Autowired 
+	private SourceSupportMapper sourceSupportMapper;
+	
+	@Override
+	public List<FactoryOrder> selectRequestList(String userId) {
+		return factoryOrderMapper.selectRequestList(userId);
+	}
+    /**
+     * 选择工厂订单详情
+     */
+	@Override
+	public FactoryOrder findSelectFactoryOrderDetail(String orderId) {
+		FactoryOrder factoryOrder=factoryOrderMapper.findSelectFactoryOrderDetail(orderId);
+		factoryOrder.setUrlInfoList(urlInfoMapper.selectByPrimaryKey(factoryOrder.getFactoryId()));
+		return factoryOrder;
+	}
+
+	@Override
+	public FactoryOrder findSourceAssistanceOrderDetail(String orderId) {
+		return factoryOrderMapper.findSourceAssistanceOrderDetail(orderId);
+	}
+
+	@Override
+	public FactoryOrder findQualityOrderDetail(String orderId) {
+		return factoryOrderMapper.findQualityOrderDetail(orderId);
+	}
+    
+	@Override
+	public FactoryOrder findAuditOrderDetail(String orderId) {
+		FactoryOrder factoryOrder= factoryOrderMapper.findAuditOrderDetail(orderId);
+		factoryOrder.setAddressList(addressMapper.selectByPrimaryKey(factoryOrder.getId()));
+		return factoryOrder;
+	}
+	
+	/**
+	 * 更新用户的Id
+	 */
+	@Transactional
+	@Override
+	public void updateOrderUserId(String orderId, String userId) {
+		//1.更新客户选择工厂 UserId
+		Factory factory=new Factory();
+		factory.setOrderId(orderId);
+		factory.setUserId(userId);
+		factoryMapper.updateByPrimaryKeySelective(factory);
+		//2.更新客户工厂审核UserId
+		FactoryAudit factoryAudit=new FactoryAudit();
+		factoryAudit.setOrderId(orderId);
+		factoryAudit.setUserId(userId);
+		factoryAuditMapper.updateByPrimaryKeySelective(factoryAudit);
+		//3.更新客户工厂质量UserId
+		Quality quality=new Quality();
+		quality.setUserId(userId);
+		quality.setOrderId(orderId);
+		qualityMapper.updateByPrimaryKeySelective(quality);
+		//4.更新客户采购支持UserId
+		SourceSupport sourceSupport=new SourceSupport();
+		sourceSupport.setUserId(userId);
+		sourceSupport.setOrderId(orderId);
+		sourceSupportMapper.updateByPrimaryKeySelective(sourceSupport);
+		//5.更新客户工厂订单UserId
+		FactoryOrder factoryOrder=new FactoryOrder();
+		factoryOrder.setUserId(userId);
+		factoryOrder.setOrderId(orderId);
+		factoryOrderMapper.updateByPrimaryKeySelective(factoryOrder);
+		//6.更新客户工厂订单记录UserId
+		OrderPayLog orderPayLog=new OrderPayLog();
+		orderPayLog.setUserId(userId);
+		orderPayLog.setOrderId(orderId);
+		orderPayLogMapper.updateByPrimaryKeySelective(orderPayLog);
+	}
+
+}

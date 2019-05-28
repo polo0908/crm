@@ -1,0 +1,89 @@
+package com.cbt.entity;
+
+import java.io.Serializable;
+import java.util.Date;
+
+public class SourceSupport implements Serializable {
+    private String id;
+
+    private String userId;
+
+    private String requirement;
+
+    private String fileUrl;
+    
+    private float price;
+
+    private Integer type;
+
+    private Date createDate;
+    
+    private String orderId;
+
+    private static final long serialVersionUID = 1L;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id == null ? null : id.trim();
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId == null ? null : userId.trim();
+    }
+
+    public String getRequirement() {
+        return requirement;
+    }
+
+    public void setRequirement(String requirement) {
+        this.requirement = requirement == null ? null : requirement.trim();
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl == null ? null : fileUrl.trim();
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+	public float getPrice() {
+		return price;
+	}
+
+	public void setPrice(float price) {
+		this.price = price;
+	}
+
+	public String getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
+	}
+    
+}

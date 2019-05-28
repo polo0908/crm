@@ -1,0 +1,24 @@
+package com.cbt.service;
+
+import com.cbt.entity.Factory;
+import com.cbt.entity.OrderPayLog;
+
+/**
+ * 工厂选择 Service
+ * @author Administrator
+ *
+ */
+public interface FactoryService {
+    /**
+     * 选择工厂订单支付
+     * @param factory
+     * @return 
+     */
+	public OrderPayLog addFactoryPay(Factory factory);
+	/**
+	 * 添加选择工厂
+	 * @param factory
+	 */
+	public void addSelectFactory(Factory factory);
+	
+}

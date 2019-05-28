@@ -1,0 +1,348 @@
+package com.cbt.controller;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.jsoup.helper.StringUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpRequest;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.cbt.entity.Address;
+import com.cbt.entity.FactoryAudit;
+import com.cbt.entity.FactoryOrder;
+import com.cbt.entity.OrderPayLog;
+import com.cbt.service.FactoryAuditService;
+import com.cbt.service.FactoryOrderService;
+import com.cbt.util.DateUtil;
+import com.cbt.util.IdGen;
+import com.cbt.util.JudgmentLoginUtil;
+import com.cbt.util.OperationFileUtil;
+import com.cbt.util.UploadAndDownloadPathUtil;
+import com.cbt.util.WebCookie;
+
+@Controller
+@RequestMapping("/audit")
+public class FactoryAuditController {
+	
+	private static final Logger log=Logger.getLogger(QualityController.class);
+	
+	@Autowired
+	private FactoryAuditService factoryAuditService;
+	@Autowired 
+	private FactoryOrderService factoryOrderService; 
+	
+	@RequestMapping("/toAddAudit.do")
+	public String toIndex(HttpServletRequest request,HttpServletResponse response){
+		String userId=request.getParameter("userId");
+//		if(userId == null || "".equals(userId)){
+//			userId = WebCookie.getUserid(request);
+//		}
+		request.setAttribute("userId",userId);
+		return "/add_factory_audit.jsp";
+	} 
+	/**
+	 * 添加工厂审核附件
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/addAuditFile.do")
+	@ResponseBody
+	public String addFactoryFile(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		 String auditFileName = request.getParameter("auditFileName");
+		 String path = UploadAndDownloadPathUtil.getFactoryFilePath();
+		 File file = new File(path);
+		 if  (!file.exists()  && !file .isDirectory())       {         
+				file .mkdir();     
+		 }  	
+		 //调用保存文件的帮助类进行保存文件(文件上传，form表单提交)
+		try {
+			Map<String, String> multiFileUpload = OperationFileUtil.multiFileUpload(request, path+File.separator);
+			String fileName = multiFileUpload.get(auditFileName);
+			return fileName;
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error("=======QualityController   addQualityFile===="+e.getMessage());
+			throw new Exception(e.getMessage());
+		}
+	}
+	/**
+	 * 下载审核附件模板
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws UnsupportedEncodingException
+	 * @throws IOException
+	 */
+	@RequestMapping(value = "/downloadAuditFile.do")
+    public ResponseEntity<byte[]> fileDownload_clientDrawing(HttpServletRequest request, HttpServletResponse response) throws UnsupportedEncodingException, IOException {
+    	String path=request.getSession().getServletContext().getRealPath(File.separator)+"template/template.xlsx";
+    	ResponseEntity<byte[]> download = OperationFileUtil.download(path);
+    	return download;
+    }
+    
+    /**
+     * 客户工厂审核并支付
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping("/addAuditToPay.do")
+	@ResponseBody
+	public Map<Object,String> addAuditToPay(HttpServletRequest request,HttpServletResponse response) throws Exception{
+    	String addressFromData=request.getParameter("addressFromData");//得到客户填写地址
+    	String urlFormData=request.getParameter("urlFormData");
+    	String userId=request.getParameter("userId");
+        String endDate=request.getParameter("endDate");
+        String auditFileName = request.getParameter("auditFileName");
+        String priceStr = request.getParameter("totalPrice");
+        String price=priceStr.replaceAll("\\$", "");
+        List<Address> addressList=new ArrayList<Address>();
+        Integer totalPrice=Integer.parseInt(price);
+			try {
+	          if(StringUtils.isNotBlank(urlFormData)){//客户填写的是url地址信息
+	        	String data=urlFormData.substring(0,urlFormData.lastIndexOf(','));
+	         	String[] strArray = data.split(",");
+	     		for (int i = 0; i < strArray.length; i++) {//对前端传递过来的地址参数进行处理
+	     			String strValue=strArray[i];
+	     			String[] strValueArray = strValue.split("&&");
+	     			Address address=new Address();
+	     			for (int j = 0; j < strValueArray.length; j++) {
+	     			   if(j==0){
+	     				   address.setFactoryUrl(strValueArray[j]); 
+	     			   }else if(j==1){
+	     				   address.setType(strValueArray[j]);	     			  
+	     			   }
+	     			   if(!(StringUtil.isBlank(auditFileName))){
+	 	     			  address.setFileUrl(auditFileName); 
+	     			   }
+	     			}
+	     			addressList.add(address);
+	     		}
+	        }else{
+	        	if(StringUtils.isNotBlank(addressFromData)){//客户填写的是地址信息
+	        		String data=addressFromData.substring(0,addressFromData.lastIndexOf(','));
+	             	String[] strArray = data.split(",");
+	         		for (int i = 0; i < strArray.length; i++) {//对前端传递过来的地址参数进行处理
+	         			String strValue=strArray[i];
+	         			String[] strValueArray = strValue.split("&&");
+	         			//[Shanghai, 321134, 1234213, 4321432, 2, bug-manager&20170720161601.zip, $300]
+	         			Address address=new Address();
+	         			for (int j = 0; j < strValueArray.length; j++) {
+	         			   if(j==0){
+	         				   address.setProvince(strValueArray[j]); 
+	         			   }else if(j==1){
+	         				   address.setAddress(strValueArray[j]);
+	         			   }else if(j==2){
+	         				   address.setPhone(strValueArray[j]); 
+	         			   }else if(j==3){
+	         			       address.setEmail(strValueArray[j]);
+	         			   }else if(j==4){
+	         				   address.setType(strValueArray[j]);
+	         			   }
+	         			   if(!(StringUtil.isBlank(auditFileName))){
+	 	 	     			  address.setFileUrl(auditFileName); 
+	 	     			   }
+	         			}
+	         			addressList.add(address);
+	         		}
+	        	}
+	        }
+	 		FactoryAudit factoryAudit=new FactoryAudit();
+			factoryAudit.setId(IdGen.uuid());
+			factoryAudit.setUserId(userId);
+			factoryAudit.setOrderId(IdGen.uuid());
+			factoryAudit.setCreateDate(new Date());
+			factoryAudit.setPrice(totalPrice);
+			if(StringUtils.isNotBlank(endDate)){
+				factoryAudit.setEndDate(DateUtil.StrToDate(endDate));
+			}else{
+				factoryAudit.setEndDate(new Date());
+			}
+		    factoryAudit.setAddressList(addressList);
+		    HttpSession session=request.getSession();
+		   //判断是否登录
+	        boolean bool=JudgmentLoginUtil.identify(request);
+	        String boolStr="";
+	        if(bool){
+	        	boolStr="Yes"; //登陆过
+	        }else{
+	        	boolStr="No";  //没登录过
+	        	session.setAttribute("payUrl", "http://192.168.1.54:8099/crm/audit/orderDetailPay.do?orderId="+factoryAudit.getOrderId()+"");
+	        }
+            OrderPayLog orderPayLog=factoryAuditService.addAuditToPay(factoryAudit);//调用方法处理业务逻辑
+            Map<Object, String> hashMap=new HashMap<Object, String>();
+			hashMap.put("boolStr", boolStr);
+         	hashMap.put("orderId", orderPayLog.getOrderId());
+       	    //session.setAttribute("orderId",orderPayLog.getOrderId());     
+       	    return hashMap;
+		} catch (Exception e) {
+		   e.printStackTrace();
+		   log.error("=======FactoryAuditController   addAuditToPay===="+e.getMessage());
+		   throw new Exception(e.getMessage());
+		}
+	} 
+    
+    
+    /**
+	 * 查询订单详情跳转到支付确认页面
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping("/orderDetailPay.do")
+	public String orderDetailPay(HttpServletRequest request,HttpServletResponse response){
+		String userId="";
+		String orderId=request.getParameter("orderId");
+		if(userId == null || "".equals(userId)){
+			userId = WebCookie.getUserid(request);
+		}
+		//更新UserId,将订单和用户关联
+		factoryOrderService.updateOrderUserId(orderId, userId);
+		
+		FactoryOrder factoryOrder=factoryOrderService.findAuditOrderDetail(orderId);
+		request.setAttribute("factoryOrder", factoryOrder);
+		HttpSession session=request.getSession();
+		session.setAttribute("payUrl", "");
+		
+		return "/audit_pay_ment.jsp";
+	}
+	
+	/**
+	 * 计算客户选择的价格(选择工厂)
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/calculateUrlPrice.do")
+	@ResponseBody
+	public Map<String,Object> calculateUrlPrice(HttpServletRequest request,HttpServletResponse response){
+		String urlDataStr=request.getParameter("urlDataStr");
+		String data=urlDataStr.substring(0,urlDataStr.lastIndexOf(','));
+    	String[] strArray = data.split(",");
+		List<Address> addressList=new ArrayList<Address>();
+		for (int i = 0; i < strArray.length; i++) {//对前端传递过来的地址参数进行处理
+			String strValue=strArray[i];
+			String[] strValueArray = strValue.split("&");
+			Address address=new Address();
+			for (int j = 0; j < strValueArray.length; j++) {
+			   if(j==0){
+				   address.setNum(strValueArray[j]); 
+			   }else if(j==1){
+				   address.setType(strValueArray[j]);
+			   }
+			}
+			addressList.add(address);
+		}
+		//计算价格
+
+		int totalPrice=0;
+		List<String> strs = new ArrayList<String>();
+			totalPrice = 200 * addressList.size();
+			Address address=addressList.get(0);
+			if(address.getType().equals("0")){//判断客户选择的类型     照片,视频   初始价格200
+				strs.add("$"+totalPrice);
+			}else if(address.getType().equals("1")){//上传简单的报告模板
+				totalPrice=totalPrice+50;
+				strs.add("$"+totalPrice);
+			}else if(address.getType().equals("2")){//上传自己的报告
+				totalPrice=totalPrice+100;
+				strs.add("$"+totalPrice);
+			}	
+			
+		
+		Map<String,Object> hashMap=new HashMap<String,Object>();
+		hashMap.put("price", strs);
+		hashMap.put("totalPrice", "$"+totalPrice);
+		return hashMap;
+	}
+	/**
+	 * 计算价格(客户选择地址)
+	 * @param request
+	 * @param response
+	 * @return
+	 */
+	@RequestMapping("/calculateAddressPrice.do")
+	@ResponseBody
+	public Map<String,Object> calculateAddressPrice(HttpServletRequest request,HttpServletResponse response){
+		String addressDataStr=request.getParameter("addressDataStr");
+		String data=addressDataStr.substring(0,addressDataStr.lastIndexOf(','));
+    	String[] strArray = data.split(",");
+		List<Address> addressList=new ArrayList<Address>();
+		for (int i = 0; i < strArray.length; i++) {//对前端传递过来的地址参数进行处理
+			String strValue=strArray[i];
+			String[] strValueArray = strValue.split("&");
+			Address address=new Address();
+			for (int j = 0; j < strValueArray.length; j++) {
+			   if(j==0){
+				   address.setNum(strValueArray[j]);
+			   }else if(j==1){
+				   address.setProvince(strValueArray[j]); 
+			   }else{
+				   address.setType(strValueArray[j]);
+			   }
+			}
+			addressList.add(address);
+		}
+		//遍历参数计算价格
+		int typePrice=0;
+		int totalPrice=0;
+		int allPrice=0;
+		List<String> strs = new ArrayList<String>();
+		for (int i = 0; i < addressList.size(); i++) {
+			
+			int addressPrice=0;
+			Address address=addressList.get(i);
+			if(address.getProvince().equals("Shanghai")){
+				addressPrice=200;
+			}else if(address.getProvince().equals("Jiangsu Province") || address.getProvince().equals("Zhejiang Province")){
+				addressPrice=300;
+			}else if(address.getProvince().equals("Others")){
+				addressPrice=400;
+			}	
+			totalPrice +=addressPrice;  
+		}
+		
+		
+		
+		Address address=addressList.get(0);
+		if(address.getType().equals("0")){//判断客户选择的类型     照片,视频
+			typePrice=0;
+		}else if(address.getType().equals("1")){//上传简单的报告模板
+			typePrice=50;
+		}else if(address.getType().equals("2")){//上传自己的报告
+			typePrice=100;
+		}else{
+			typePrice=0;
+		}
+		allPrice=totalPrice+typePrice;
+		String priceStr="$"+totalPrice;
+		strs.add(priceStr);
+		
+		
+		
+		Map<String,Object> hashMap=new HashMap<String,Object>();
+		hashMap.put("price", strs);
+		hashMap.put("totalPrice", "$"+allPrice);
+		return hashMap;
+	}
+}

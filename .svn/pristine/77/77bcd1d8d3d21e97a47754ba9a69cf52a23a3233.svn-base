@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.ClientOrderShippingDocDao">
+
+	<resultMap id="ClientOrderShippingDocResultMap" type="com.cbt.entity.ClientOrderShippingDoc">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="order_id" property="orderId" jdbcType="VARCHAR" />
+		<result column="shipping_doc_path" property="shippingDocPath" jdbcType="VARCHAR" />
+		<result column="upload_date" property="uploadDate" jdbcType="DATE" />
+		<result column="old_or_new_shipping" property="oldOrNewShipping" jdbcType="VARCHAR" />
+		<result column="shipping_start_date" property="shippingStartDate" jdbcType="DATE" />
+		<result column="shipping_arrival_date" property="shippingArrivalDate" jdbcType="DATE" />
+		<result column="BL_available_Date" property="BLAvailableDate" jdbcType="DATE" />
+		<result column="ISF_date" property="ISFDate" jdbcType="DATE" />
+	</resultMap> 
+
+    <sql id="ClientOrderShippingDocColumnList">
+		id, order_id, shipping_doc_path, upload_date, old_or_new_shipping,shipping_start_date,shipping_arrival_date,
+		BL_available_Date,ISF_date 
+	</sql>   
+
+    
+    <!-- 根据id查询 -->
+    <select id="queryByClientOrderId" resultMap="ClientOrderShippingDocResultMap" parameterType="string">
+          select 
+          <include refid="ClientOrderShippingDocColumnList"/> 
+          from client_order_shippingDoc 
+          where order_id = #{orderId,jdbcType=VARCHAR}       
+    </select>
+    
+       <!-- 根据id查询 -->
+    <select id="queryById" parameterType="int" resultMap="ClientOrderShippingDocResultMap">
+          select <include refid="ClientOrderShippingDocColumnList"/> from client_order_shippingDoc where id = #{id,jdbcType=INTEGER} 
+    </select> 
+      
+     
+    
+     <update id="update" parameterType="com.cbt.entity.ClientOrderShippingDoc">
+       update client_order_shippingDoc 
+       <set> 
+	    <if test="oldOrNewShipping != null">
+			old_or_new_shipping = #{oldOrNewShipping,jdbcType=VARCHAR}
+		</if>
+       </set>
+       where id = #{id,jdbcType=INTEGER}	    
+    </update>
+	
+</mapper>

@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.ReOrderDao">
+
+	<resultMap id="ReOrderResultMap" type="com.cbt.entity.ReOrder">
+	   
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="userid" property="userid" jdbcType="VARCHAR" />
+		<result column="required_time" property="requiredTime" jdbcType="DATE" />
+		<result column="comments" property="comments" jdbcType="VARCHAR" />
+		<result column="reOrder_state" property="reOrderState" jdbcType="INTEGER" />
+		<result column="total_amount" property="totalAmount" jdbcType="DOUBLE" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="follow_up" property="followUp" jdbcType="VARCHAR" />
+		<result column="factory_id" property="factoryId" jdbcType="VARCHAR" />
+        
+        <result column="username" property="userName" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="ReOrderColumnList">
+		id, userid,
+		required_time, comments, reOrder_state, 
+		total_amount, create_time, follow_up, factory_id
+	</sql>
+
+	<select id="queryByUserId" resultMap="ReOrderResultMap"
+		parameterType="java.lang.String">
+		select c.*, u.username as username  from reorder c  left join user u on c.userid = u.userid
+		where c.userid = #{userid,jdbcType=VARCHAR}
+	</select>
+		
+	<select id="queryById" resultMap="ReOrderResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="ReOrderColumnList" />
+		from reorder
+		where id = #{id,jdbcType=INTEGER}
+	</select>
+	
+	<!-- 插入对象 -->
+	<insert id="insertReOrder" parameterType="com.cbt.entity.ReOrder" useGeneratedKeys="true" keyProperty="id">
+	    insert into reorder  
+		(
+		id,userid,
+		required_time, comments, reOrder_state, 
+		total_amount, create_time, follow_up,factory_id
+		)  
+	    values
+	    (
+	    #{id,jdbcType=INTEGER},
+		#{userid,jdbcType=VARCHAR},
+		#{requiredTime,jdbcType=DATE},
+		#{comments,jdbcType=VARCHAR},
+		#{reOrderState,jdbcType=INTEGER},
+		#{totalAmount,jdbcType=DOUBLE},
+		#{createTime,jdbcType=TIMESTAMP},
+		#{followUp,jdbcType=VARCHAR},
+		#{factoryId,jdbcType=VARCHAR}
+        ) 
+	</insert>
+	
+	<select id="totalAmount" resultType="int" parameterType="string">
+	    select count(*) from 
+	    (
+	    select
+		<include refid="ReOrderColumnList" />
+		from reorder
+		where userid = #{userid,jdbcType=VARCHAR}
+		)d     
+	
+	</select>
+	
+
+</mapper>

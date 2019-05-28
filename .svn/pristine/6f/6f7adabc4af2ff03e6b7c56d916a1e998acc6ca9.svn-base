@@ -1,0 +1,274 @@
+package com.cbt.controller;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.cbt.entity.FactoryOrder;
+import com.cbt.entity.OrderPayLog;
+import com.cbt.entity.Quality;
+import com.cbt.service.FactoryOrderService;
+import com.cbt.service.QualityService;
+import com.cbt.util.IdGen;
+import com.cbt.util.OperationFileUtil;
+import com.cbt.util.UploadAndDownloadPathUtil;
+import com.cbt.util.WebCookie;
+
+/**
+ * 工厂质量要求Controller 
+ * @author Administrator
+ *
+ */
+@Controller
+@RequestMapping("/quality")
+public class QualityController {
+    
+	@Autowired
+	private QualityService qualityService;
+	
+	@Autowired 
+	private FactoryOrderService factoryOrderService;
+	
+	private static final Logger log=Logger.getLogger(QualityController.class);
+	
+	@RequestMapping("/toAddQuality.do")
+	public String toIndex(HttpServletRequest request,HttpServletResponse response){
+		String userId=request.getParameter("userId");
+		if(userId == null || "".equals(userId)){
+			userId = WebCookie.getUserid(request);
+		}
+		request.setAttribute("userId",userId);
+		return "/quality_controller.jsp";
+	} 
+	/**
+	 * 添加选择工厂附件
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/addQualityFile.do")
+	@ResponseBody
+	public String addFactoryFile(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		 String qualityFileName = request.getParameter("qualityFileName");
+		 String path = UploadAndDownloadPathUtil.getFactoryFilePath();
+		 File file = new File(path);
+		 if  (!file.exists()  && !file .isDirectory())       {         
+				file .mkdir();     
+		 }  	
+		 //调用保存文件的帮助类进行保存文件(文件上传，form表单提交)
+		try {
+			Map<String, String> multiFileUpload = OperationFileUtil.multiFileUpload(request, path+File.separator);
+			String fileName = multiFileUpload.get(qualityFileName);
+			return fileName;
+		} catch (Exception e) {
+			e.printStackTrace();
+			log.error("=======QualityController   addQualityFile===="+e.getMessage());
+			throw new Exception(e.getMessage());
+		}
+	}
+	/**
+	 * 保存客户提交的信息去toPay
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/addQualityToPay.do")
+	@ResponseBody
+	public String addQualityToPay(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		int type=0;
+		int count=0;
+		int complexity=0;
+		int number=0;
+		int partsCount=0;
+		String typeStr=request.getParameter("type");
+		if(typeStr!=null && typeStr!=""){
+			 type=Integer.parseInt(typeStr);
+		}
+		String countStr=request.getParameter("count");
+		if(StringUtils.isNotBlank(countStr)){
+			 count=Integer.parseInt(countStr);
+		}
+		String partsCountStr=request.getParameter("partsCount"); 
+		if(StringUtils.isNotBlank(partsCountStr)){
+		     partsCount=Integer.parseInt(partsCountStr);
+		}
+		String complexityStr=request.getParameter("complexity");
+		if(StringUtils.isNotBlank(complexityStr)){
+			 complexity=Integer.parseInt(complexityStr);
+		}
+		String numberStr=request.getParameter("number");
+		if(StringUtils.isNotBlank(numberStr)){
+		    number=Integer.parseInt(numberStr);
+		}		
+		String userId=request.getParameter("userId");
+		String province=request.getParameter("province");
+		String other=request.getParameter("other");
+		String comment=request.getParameter("comment");
+		String fileUrl=request.getParameter("questionFile");
+		String address=request.getParameter("address");
+		String phone=request.getParameter("phone");
+		String email=request.getParameter("email");
+		String priceStr=request.getParameter("price");
+		String price=priceStr.replaceAll("\\$", "");
+		Quality quality=new Quality();
+		quality.setId(IdGen.uuid());
+		quality.setUserId(userId);
+		quality.setOrderId(IdGen.uuid());
+		quality.setProvince(province);
+		quality.setType(type);
+		quality.setCount(count);
+		quality.setPartsCount(partsCount);
+		quality.setComplexity(complexity);
+		quality.setOther(other);
+		quality.setNumber(number);
+		quality.setComment(comment);
+		quality.setFileUrl(fileUrl);
+		quality.setAddress(address);
+		quality.setPhone(phone);
+		quality.setEmail(email);
+		quality.setPrice(Float.parseFloat(price));
+		quality.setCreateDate(new Date());
+		try {
+			   OrderPayLog orderPayLog=qualityService.addQualityToPay(quality);//调用方法处理业务逻辑
+		       return orderPayLog.getOrderId();
+			} catch (Exception e) {
+			   e.printStackTrace();
+			   log.error("=======FactoryAuditController   addAuditToPay===="+e.getMessage());
+			   throw new Exception(e.getMessage());
+		}
+	}
+	
+	/**
+	 * 查询订单详情跳转到支付确认页面
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping("/orderDetailPay.do")
+	public String orderDetailPay(HttpServletRequest request,HttpServletResponse response){
+		String orderId=request.getParameter("orderId");
+		FactoryOrder factoryOrder=factoryOrderService.findQualityOrderDetail(orderId);
+		String other=factoryOrder.getOther();
+		String[] otherData=null;
+		if(StringUtils.isNotBlank(other)){
+			 otherData = other.split(",");
+		}
+		List<String> otherList=new ArrayList<String>();
+		if(otherData!=null){
+			otherList=Arrays.asList(otherData);
+		}
+	    request.setAttribute("otherList", otherList);
+		request.setAttribute("factoryOrder", factoryOrder);
+		return "/quality_pay_ment.jsp";
+	}
+	
+	
+	/**
+	 * 计算客户选择的价格
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/calculatePrice.do")
+	@ResponseBody
+	public String calculatePrice(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		int type=0;
+		int count=0;
+		int complexity=0;
+		int number=0;
+		int partsCount=0;
+		String province=request.getParameter("province"); //在上海： $0 , 在 江苏、浙江：$100，在 其他地区, $200
+		String typeStr=request.getParameter("type");//如果是 Check Appearance & Basic Function & Count; 价格 = $200	  type=0, type=1
+		if(typeStr!=null && typeStr!=""){
+			 type=Integer.parseInt(typeStr);
+		}
+		String countStr=request.getParameter("count");// Total Units to be Checked: 数量
+		if(StringUtils.isNotBlank(countStr)){
+			 count=Integer.parseInt(countStr);
+		}
+		String partsCountStr=request.getParameter("partsCount"); //有多少种这样的零件
+		if(StringUtils.isNotBlank(partsCountStr)){
+		     partsCount=Integer.parseInt(partsCountStr);
+		}
+		String complexityStr=request.getParameter("complexity");//零件的复杂度
+		if(StringUtils.isNotBlank(complexityStr)){
+			 complexity=Integer.parseInt(complexityStr);
+		}
+		String numberStr=request.getParameter("number");//Chemical Composition Check, Input number of elements 数量
+		if(StringUtils.isNotBlank(numberStr)){
+		    number=Integer.parseInt(numberStr);
+		}		
+		String other=request.getParameter("other");
+		//其他的检查
+		String[] otherData=null;
+		if(StringUtils.isNotBlank(other)){
+			 otherData = other.split(",");
+		}
+		//判断选择的省份
+		float priceSum;
+		float price=0;  //客户选择城市的价格
+		float typePrice=0; //客户选择需求的价格
+		float otherPrice=0; //客户选择其他检查的价格
+		
+			//根据选择的城市计算价格
+			if(province.equals("Shanghai")){// 0
+				price=price+0;
+			}
+			if(province.equals("Jiangsu Province") || province.equals("Zhejiang Province")){  //100
+				price=price+100;
+			}
+			if(province.equals("Others")){//200
+				price=price+200;
+			}
+			//根据客户的需求计算价格
+			if(type==0){// Check Appearance & Basic Function & Count  $200
+				typePrice=typePrice+200;
+			}
+			if(type==1){ // Check Part-Level Dimensions 单独计算
+				//1.得到数量   Total Units to be Checked: count
+				if(complexity == 0){//正常零件    $1.5
+					typePrice=(float) (typePrice+count*1.5);	
+				}			
+				if(complexity == 1){//复杂零件  $2.5
+					typePrice=(float) (typePrice+count*2.5);	
+				}
+				if(typePrice <= 200){//最少200
+					typePrice=200;
+				}
+			}
+			//是否还有其他的检查
+			if(otherData == null || otherData.length == 0){//没有其他的检查
+				otherPrice=otherPrice+0;
+			}else{
+				//遍历数组判断选中的其他检查
+				for (int i = 0; i < otherData.length; i++) {
+				  if(otherData[i].equals("0")){//Chemical Composition Check, Input number of elements
+					  otherPrice= otherPrice+number*50;
+				  }
+				  if(otherData[i].equals("1") || otherData[i].equals("2") || otherData[i].equals("3")){//Salt Spray Test || UV Stability Test || X-Ray Check
+					  otherPrice=otherPrice+200;			  
+				  }	
+				}
+			}
+			//计算总的价格
+			priceSum=price+typePrice+otherPrice;
+		    String priceSumStr="$"+priceSum;
+		    return priceSumStr;		
+	}	
+}

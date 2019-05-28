@@ -1,0 +1,365 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%> 
+<%@page import="com.cbt.util.WebCookie"%>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>Request Valid Price From Selected Factories</title>
+		<link rel="stylesheet" href="${ctx}/css/bootstrap.css">
+	    <link type='image/x-ico' rel='icon' href='${ctx}/img/favicon.ico' />
+	    <link type="text/css" rel="stylesheet" href="${ctx}/css/progressBar.css">
+		
+		
+		<script src="${ctx}/js/jquery.min.js"></script>
+		<script src="${ctx}/js/bootstrap.min.js"></script>
+	    <script type="text/javascript" src="${ctx}/js/jquery-1.3.2.min.js"></script>
+	    <script type="text/javascript" src="${ctx}/js/progressBar.js"></script>
+	    <script type="text/javascript" src="${ctx}/js/jquery-form.js"></script>
+		<script type="text/javascript">
+		    //删除文本框
+		    function del_input(obj){
+		    	$(obj).parent("li").remove();
+		    	 var urlSize=$(".factories_form li").length;
+				 var price=0;
+				 if(url==""){
+					price=0;
+				 }else{
+					price="$"+(urlSize-1)*30;
+				 }
+				 $("#showPrice").text(price);
+				 $("#price").val(price);
+		    }
+		    //关闭提示框
+			function alert_dialog(){
+		      $('#alert').fadeOut();
+			}
+		    //计算价格
+		    function add_input(obj) {
+		    	var flag=true
+				$(obj).parent().prev().find('li').find('input').each(function () {
+					var addr = $(this).val();
+					 if(addr==null || addr=='' || addr==undefined){
+						 $("#alert").fadeIn();
+						 $("#alert").text("Please fill in factory url");
+						 var t=setTimeout("alert_dialog()",1000)
+						 flag=false;
+						 return false;
+					 } 
+				 });
+		        if(flag){
+		          $(obj).parent().prev().append("<li><input type=\"text\" class=\"form-control\"><input type=\"button\" value=\"-DEL\" class=\"btn btn-default del-btn w-btn\" onclick=\"del_input(this)\"/></li>");
+		        }		   
+			    var urlSize=$(".factories_form li").length;
+			    var price=0;
+			    if(url==""){
+				  price=0;
+			    }else{
+				  price="$"+(urlSize-1)*30;
+			    }
+			    $("#showPrice").text(price);
+			    $("#price").val(price);
+			}
+            //判断是否选择checkbox
+            function selectCheckbox(){
+            	if($('#isCheckbox').is(':checked')) {
+            	   $("#checkboxValue").val(1);
+            	}else{
+            	   $("#checkboxValue").val(0);
+            	}
+            }
+		</script>
+		<style type="text/css">
+			.container {
+				width: 970px;
+			}
+			#myModal{color:#fff;}
+			.wrap-bg {
+				width: 100%;
+				position: absolute;
+				background: url(${ctx}/images/project-1-1.jpg);
+				filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='${ctx}/images/project-1-1.jpg)', sizingMethod='scale');
+				background-size: cover;
+				height: auto;
+				left: 0;
+				bottom: 0px;
+				top: 0px;
+				right: 0px;
+				overflow: hidden;
+			} 
+			.form-group{padding-bottom:15px;}
+			.factories_form {
+				list-style: none;
+				color: #fff;
+			}
+			
+			.factories_form li {
+			   clear:both;
+			    position: relative;
+				margin-bottom: 10px;
+			}
+			.del-btn{position: absolute;right: -27%;top: -2%;}
+			.row,
+			.form-horizontal .form-group {
+				padding: 15px 0px 0;
+				margin: 0 0;
+			}
+			
+			.modal-dialog {
+				margin-top:5%;
+				width:auto;
+			}
+			.w-btn{padding: .375rem 1.25rem; background: #f00;}
+			.btn-sel {
+				color: #333;
+				background-color: #fff;
+				border: 1px solid #ccc;
+				display: inline-block;
+				margin-bottom: 0;
+				font-weight: normal;
+				text-align: center;
+				vertical-align: middle;
+				touch-action: manipulation;
+				cursor: pointer;
+				white-space: nowrap;
+				padding: 10px 20px;
+				font-size: 14px;
+				line-height: 1.42857;
+				border-radius: 4px;
+			}
+			
+			.question {
+				background: #fff;
+				border-radius: 6px;
+				padding: 20px;
+				-webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+                 box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+			}
+			.col-md-3 {
+				padding-left: 0px;
+			}
+			.green_btn {
+				background: #28b779;
+				color: #fff;
+				font-weight: bold;
+				border: 1px solid #16a768;
+			}
+			.blue_btn {
+				background: #08c;
+				color: #fff;
+				font-weight: bold;
+				border: 1px solid #0272aa;
+			}
+			
+			.green_btn:hover {
+				background: #16a768;
+				color: #fff;
+				border: 1px solid #28b779;
+			}
+			
+			.blue_btn:hover {
+				background: #0272aa;
+				color: #fff;
+				border: 1px solid #08c;
+			}
+			
+			label {
+				color: #fff;
+			}
+			
+			.a-file-style{
+			 opacity: 0;
+             position: absolute;
+             width: 104px;
+             margin-top: 6px;
+			}
+			.ui-label{color:red;width:200px;display: inline-block;}
+			#upload_title h1{font-size: 1.5rem;margin-top: 10px;}
+			#file_upload_id{color:#fff}
+			.col-md-4,.col-sm-4{padding-left:0px;width:30%;}
+			.col-md-6,.col-sm-7{padding-left:0px;}
+			#alert{display:none;position:absolute;left:0;top:200px;right:0;margin:auto;width:300px;height:100px;line-height:100px;text-align:center;background:pink;z-index:999;border-radius:8px;}
+		</style>
+	</head>
+
+	<body>
+	    <div id="alert"></div>
+		<div class="wrap-bg">
+			<div class="container" style="margin-top:10%; background:#2E363F;margin:0 0;padding:3% 5%;margin: 2% auto;">
+				<p style="color:#fff;">If you have found many potential suppliers online, but need to ask some questions and confirm latest price</p>
+				<form id="file_upload_id"  onsubmit="return false;" method="post" enctype="multipart/form-data">
+				<input type="hidden" name="userId" id="userId" value="${userId}">
+				    <div class="form-group">
+				    <input type="hidden" name="url" id="url" value="">
+					<div class="row">
+						<div class="col-md-4 ">
+							<label for="url" class="control-label" style="margin-bottom:0px;">Factory URL:</label>
+							<p class="help-block" style="color:#d4d4d4;margin-bottom:0px;    font-style: italic;">(We will call each one to check)</p>
+						</div>
+						<ul class="col-md-6 factories_form">
+							<li><input type="text" class="form-control"/></li>
+						</ul>
+ 						<div class="col-md-2">
+							<input type="button" value="+ADD" class="btn btn-default green_btn" onclick="add_input(this)" />
+						</div>
+					</div>
+					<div class="row" style="padding-top:0px;">
+						<div class="col-md-4 ">
+							<label for="url" class="control-label">Which product?</label>
+						</div>
+						<div class="col-md-6">
+							<input type="text" class="form-control" id="productName" name="productName"/>
+						</div>
+						<div class="factories_add  col-md-2">
+						</div>
+					</div>
+					<div class="row" style="padding-top: 0px;margin-top:25px;">
+						<div class="col-md-4 ">
+						<label>What verification questions do you want us to ask:</label>
+						</div>
+						<div class="col-md-6">
+							<textarea style="width: 100%;height: 80px;" class="form-control" name="description" id="description"></textarea>
+						</div>
+						<div class="factories_add  col-md-2">
+						</div>
+					</div>
+					</div>
+					<div class=" row form-group" style="text-align: center;display:inline;">
+						<div class="col-md-4" style="text-align:left;">Upload Attachment:</div>
+						<div class="col-md-4" style="width:25%;">
+						<input type="text" value="" class="form-control" id="questionFileName" name="questionFileName">
+                         </div>
+						<div class="col-md-4" style="text-align:left;"> <input type="file" id="file_upload" name="file_upload"  class="a-file-style" onchange="doUploadFileName(this)">
+                          <button type="button" class="btn   green_btn" style="margin-right: 10px;padding-left:5px;padding-right:5px;">Attach File</button>
+                          <input name="questionFile" id="questionFile"  type="hidden" value="">
+						  <button type="button" class="btn  blue_btn" onclick="doUploadFile()">Submit</button></div>
+					</div>
+				  <div class="clearfixed" style="margin-top: 10px;"></div>
+                  <div style="border-radius:5px;">
+					<div class="row">
+					    <div class="col-sm-4" style="margin-right:0px;padding-right:0px;">What's your order value?</div>
+						<div class="col-sm-6" style="padding-left:0px;">
+						    <select class="btn-sel"	id="orderValueSelect"  style="width:100%;">
+									<option value="<$10,000" selected="selected"><$10,000</option>
+									<option value=">$10,000">>$10,000</option>
+									<option value=">$20,000">>$20,000</option>
+									<option value=">$50,000">>$50,000</option>
+									<option value=">$100,000">>$100,000</option>
+							</select>
+						    <input type="hidden" id="orderValue" name="orderValue" value="">
+                        </div>
+                   </div>
+				   <div class="row">
+					 <p style="margin-bottom:5px;padding-left:30%;color:#CBD633"><input type="checkbox" style="width:20px;height:20px;float:left;margin-right:5px;" id="isCheckbox" onchange="selectCheckbox()"><em  style="wheight:20px;float:left;">Require skype conference call to discuss your request first</em></p>
+				     <input type="hidden" name="checkboxValue" id="checkboxValue" value="0">
+				   </div>
+				   <div class="row" style="padding-top:10px;">
+				     <b class="col-md-4" style="font-size:20px;">Price:</b>
+				      
+				      <b class="col-md-6" style="color:#FF6C00;font-size:20px;" id="showPrice">$0</b>
+				      <input type="hidden" id="price" name="price" value="$0">
+				   </div>	
+                      <div class="clearfix"></div>
+				 </div>
+		         <div class="row" style=" text-align: center;margin-top:10px;"><button type="button" class="btn  blue_btn" onclick="toFactoryPayPage()">Submit</button></div>
+					 <!-- <div class="modal-dialog question" id="myquestion">
+						<p>We are processing your payment and will work on your requests ASAP. And will contact you in case of problems.</p>
+						<p style="    font-weight: bold;text-align: center;">Questionsï¼ï¼ You can email us at contact@csmfg.com</p>
+						<p style="text-align: center;"><button type="button" class="btn btn-default" style=" padding-left:5%;   background: #197ec5;color: #fff;" onclick="mysure()">Close</button></p>
+					</div> -->
+				</form>
+			</div>
+		</div>
+		<!-- 上传文件进度条div -->	
+		<div class="w-out-box" id="show_upload_dialog" style="display:none;">
+	       <div class="weui_mask"></div>
+	       <div class="w-weui_dialog" style="width:510px;background:#fff;box-shadow: 1px 5px 5px  #A7A0A0;    border-radius: 3px;
+	         border: 1px solid #28b779;height:100px;top:40%;text-align: center;">
+	       <div id="container">
+		   <div class="content" id="upload_title">
+			<h1>Progress</h1>
+		   </div>
+		  <div id="progress_bar" class="ui-progress-bar ui-container">
+		     <div class="ui-progress" style="width: 0%;" id="ui-progress-upload">
+		     <span class="ui-label" style="display:none;">Uploading...<b class="value">0%</b></span>
+	      </div>
+		  </div>
+		  <div class="content" id="main_content" style="display: none;">
+			<p>Uploaded!</p>
+		  </div>
+	    </div>
+	   </div>
+	   </div>
+	</body>
+    <script type="text/javascript">
+	    function doUploadFileName(){
+			 var path =  $("#file_upload").val();	
+			 sppath = path.split("\\");
+			 var questionFile = sppath[sppath.length-1];	
+			 $('#questionFileName').val(questionFile);	
+		}
+        //上传文件
+	    function doUploadFile(){
+		  var path =  $("#file_upload").val();	
+		  sppath = path.split("\\");
+		  var questionFile = sppath[sppath.length-1];	
+		  $('#questionFile').val(questionFile);	
+		  autTime(); 
+          //发送ajax请求,提交form表单    
+		  $("#file_upload_id").ajaxSubmit({
+			type : "post",
+			url : "${ctx}/factory/addFactoryFile.do",
+			dataType : "text",
+			success : function(result) {
+				$('#questionFile').val(result);
+			},
+			error : function() {
+				easyDialog.open({
+					container : {
+						content : '  Upload failed'
+					},
+					autoClose : 1000
+			  });
+			}
+		   });
+		  }
+        
+	    //保存信息支付页面
+	    function toFactoryPayPage(){
+			 var orderValue=$("#orderValueSelect").find('option:selected').attr('value');
+			 $("#orderValue").val(orderValue);
+			 var url="";
+			 $(".factories_form li").each(function () {
+				 url +=$(this).find("input").val()+",";
+			 });
+			 $("#url").val(url);
+			 var questionFile=$("#questionFile").val();
+			 if(questionFile==""){
+				 $("#alert").fadeIn();
+				 $("#alert").text("Please select a file upload");
+				 var t=setTimeout("alert_dialog()",1000)
+				 return false;
+			 }
+			 $("#file_upload_id").ajaxSubmit({
+				type : "post",
+				url : "${ctx}/factory/addFactoryToPay.do",
+				dataType : "text",
+				success : function(result) {
+					window.location.href = "${ctx}/factory/orderDetailPay.do?orderId="+result;
+				},
+				error : function() {
+					easyDialog.open({
+						container : {
+							content : 'Add Failed'
+						},
+						autoClose : 1000
+				  });
+				}
+			});
+	 }  
+    </script>
+</html>

@@ -1,0 +1,512 @@
+<%@ page language="java" contentType="text/html; charset=utf-8"
+	pageEncoding="utf-8"%>
+<%@page import="com.cbt.util.WebCookie"%>	
+<%@page import="java.util.List"%>
+<%@page import="com.cbt.entity.UpdateDrawing"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%> 
+<%
+	List<UpdateDrawing> list = (List<UpdateDrawing>) request.getAttribute("list");
+%>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>ImportX</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/uniform.css" />
+  <link rel="stylesheet" href="css/bootstrap-responsive.min.css" />
+  <link rel="stylesheet" href="css/fullcalendar.css" />
+  <link rel="stylesheet" href="css/font-awesome.css" />
+  <link rel="stylesheet" href="css/matrix-style.css" />
+  <link rel="stylesheet" href="css/matrix-media.css" />
+  <link rel="stylesheet" href="css/select2.css" />
+  <link href="font-awesome/css/font-awesome.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/jquery.gritter.css" />
+  <link rel="stylesheet" href="css/easydialog.css" />
+  <link type='image/x-ico' rel='icon' href='img/favicon.ico' />
+  <link rel="stylesheet" href="css/ui.css">
+  <link rel="stylesheet" href="css/ui.progress-bar.css">
+  <link rel="stylesheet" href="css/upload-base.css">
+ 
+  <script type="text/javascript" src="js/upload-base.js"></script>
+  <script type="text/javascript" src="js/jquery-1.10.2.js"></script>
+  <script type="text/javascript" src="js/easydialog.min.js"></script> 
+   <script type="text/javascript">
+        $(function(){
+        	$('#sidebar_ul').find('li').eq(1).addClass('active');
+        })
+        
+        function history(id){
+        	
+            $('#drawing_tbody').find("tr").remove();
+        	$('#dialog2').show().on('click', '.weui_btn_dialog', function () {
+                $('#dialog2').off('click').hide();
+            });
+        	
+        	$.post("${ctx}/listUpdateDrawing.do", 
+        		   { "id": id },
+        		   function(result){
+        	        		   
+                    		   var list = result.data;                   		
+                    		   var tbody = $('#drawing_tbody');
+                    		   for(i=0;i<list.length;i++){
+                    			   var drawing = list[i];
+                    			   var j = i+1;
+                    			   var tr = '<tr class="gradeA odd">'+
+				                    		        '<td>'+j+'</td>'+
+				                    		        '<td>'+drawing.drawingName+'</td>'+
+				                    		        '<td>'+drawing.updateTime+'</td>'+
+				                    		       '<td class="center"><a href="#" onclick="download_drawing('+drawing.id+')">Download</a>'+
+				                    		       '</td>'+
+				                    		      '</tr>';
+                    			   tr = $(tr);
+                    			  tbody.append(tr);
+                    			  $('#drawing_tbody').find("tr:eq(0)").css("background-color","rgb(137, 228, 159)"); 
+                    	     }		
+			   
+        		    });
+        	
+        }
+        //点击下载图纸
+        function download_drawing(id){      
+         					
+        window.location.href = "${ctx}/fileDownload_updateDrawing.do?id="+id;      					
+
+       }
+        	   
+
+        
+        
+        
+        function dispose(){
+        	$('#dialog2').off('click').hide();
+        }
+    </script>
+  <script type="text/javascript">
+    
+	  
+	    /*
+	     * 查询单个图纸信息，展示在reOrder界面
+	     */    
+	    function listReOrder(id){		  
+		   window.location.href = "${ctx}/queryById.do?id="+id;
+	     }
+	    
+	    /*
+	     * 根据选择的ids，展示图纸在reOrder界面
+	     */
+	    var ids ={};
+	    function listSelectReOrders(){
+	    	    var id = [];    	    
+	    	    $('.drawing-checkbox').each(function(){
+	    	    	if($(this).is(':checked')) {
+	    	    	  id.push($(this).val());
+	    	    	}
+	    	    })
+	    	    if(id.length == 0){
+	    	    	easyDialog.open({
+  					  container : {
+  						header :  ' Prompt message',
+  					    content : 'Please select a drawing'
+  					  },
+  					  drag : false,
+  					  overlay : false,
+  					  autoClose : 1000
+  					});
+	    	    	return false;
+	    	    }else{
+		            ids = JSON.stringify(id); 	
+	    	    }	           
+	    	    
+	    	    $.ajax({
+	    			url:"${ctx}/queryDrawingsByIds.do",
+	    			data:{"ids":ids},
+	    			type:"post",
+	    			dataType:"text",
+	    			success:function(res){   				
+	                    window.location.href = "${ctx}/queryDrawingsByIds.do?ids="+ids;
+	    				
+	    				},
+	    			error:function(){
+
+	    				easyDialog.open({
+	    					  container : {
+	    						header :  ' Prompt message',
+	    					    content : ' Sorry,some problems happened.'
+	    					  },
+	    					  drag : false,
+	    					  overlay : false,
+	    					  autoClose : 1000
+	    					});
+	    			}
+	    		});      	       	    
+	    }    
+	    
+	    
+	  //得到行对象  
+		function getRowObj(obj)  
+		{  
+		var i = 0;  
+		while(obj.tagName.toLowerCase() != "tr"){  
+		obj = obj.parentNode;  
+		if(obj.tagName.toLowerCase() == "table")return null;  
+		}  
+		return obj;  
+		}  
+		//根据得到的行对象得到所在的行数  
+		function getRowNo(obj){  
+		var trObj = getRowObj(obj);  
+		var trArr = trObj.parentNode.children;  
+		for(var trNo= 0; trNo < trArr.length; trNo++){  
+		if(trObj == trObj.parentNode.children[trNo]){  
+		alert(trNo+1);  
+		}  
+		}  
+		}  
+	            
+	    
+	      //获取上传的文件名
+	       function doUpload(obj,id){
+	    	  $('#drawingId').val(id);
+	    	  var path = $(obj).val();
+	    	  sppath = path.split("\\");
+	    	  var drawingName = sppath[sppath.length-1];
+	    	  $('#getDrawingName').val(drawingName);  
+	    	  if(drawingName == null || drawingName == '' || drawingName == undefined){
+	              	easyDialog.open({
+	             		   container : {
+	                 		     header : '  Prompt message',
+	                 		     content : '  Please select a file'
+	             		   },
+	    					  drag : false,
+		 					  overlay : false,
+		 					  autoClose : 1000
+	             		 });   
+	 		    	return false;
+	 		    }else{
+		 		    autTime();
+	 		    }	 		    	                          
+
+              $("#file_upload_id").ajaxSubmit({
+	    			type: "post",
+	    			url: "${ctx}/updateDrawingsById.do",
+	    	     	dataType: "text",
+	    	     	success: function(result){
+	    	     		 easyDialog.open({
+	                     	  container : {
+	                     		header :  '  Prompt message',
+	                     	    content : 'Upload complete , 1 seconds after the closure...'
+	                     	  },
+	      				      drag : false,
+	    					  overlay : false,
+	    					  autoClose : 2000
+	                     	});   
+	    	     		 //设置定时器，1s后刷新界面
+	    		     	setTimeout(function(){location.reload()},1000);
+	    		     	$('#show_upload_dialog').hide(); 
+	    	     	},
+	    			error: function(){
+	    				 easyDialog.open({
+	             		   container : {
+	                 		     header : '  Prompt message',
+	                 		     content : '  Upload failed. Please try again !'
+	             		   },
+	    					  drag : false,
+	 					  overlay : false,
+	 					  autoClose : 1000
+	             		 });  
+	    				 $('#show_upload_dialog').hide();
+	    			}
+	    	 	}); 	 
+	  
+	       }  
+	    
+	        
+	     //点击下载图纸
+           function drawing_download(id){      
+           		   
+//            	    	//使用ajax提交下载
+           			$.ajax({
+           				url:"/crm/fileDownload_clientDrawing.do",
+           				data:{
+           					  "id":id
+           					  },
+           				type:"post",
+           				dataType:"text",
+           				success:function(res){
+           					
+           					window.location.href = "${ctx}/fileDownload_clientDrawing.do?id="+id;
+           					
+           					},
+           			    error:function(){
+           			    	
+           			    	easyDialog.open({
+           			    		  container : {
+           			    		    header : 'Prompt message',
+           			    		    content : 'Download failed !'
+           			    		  },
+           			    		  overlay : false,
+           			    		  autoClose : 1000
+           			    		});
+           			    }
+           			});
+           	   }  
+
+    
+</script>
+<style>
+.center .a2 {
+    color: #08c;
+    text-decoration: underline;
+    position: absolute!important;
+    z-index: 66;
+    width: 100px;
+}
+div.uploader{width:120px;height:30px; margin-left: 10px;background:#F9F9F9;color:#fff !important;overflow:hidden; 
+    opacity:0;fill-opacity:0;cursor: pointer;    position: absolute;
+    z-index: 88;
+}
+.a3 a{ color: #08c;
+    text-decoration: underline;height:30px;display:block}
+.filename{position: static !important;}
+.action{ display: none !important;}
+/* .filename{display:none !important;} */
+.weui_mask {
+    position: fixed;
+    z-index: 1000;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+.weui_dialog {
+    position: fixed;
+    z-index: 5000;
+    width: 35%;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    background-color: #FAFAFC;
+    text-align: center;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.weui_dialog_hd {
+    padding: 2.5em 0 .5em;
+}
+.weui_dialog_title {
+    font-weight: bold;
+    font-size: 17px;
+}
+.close-reveal-modal {
+    font-size: 18px;
+    line-height: .5;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #aaa;
+    text-shadow: 0 -1px 1px rbga(0,0,0,.6);
+    font-weight: bold;
+    cursor: pointer;
+}
+.weui_dialog_ft {
+    position: relative;
+    line-height: 42px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-size: 17px;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+}
+.weui_btn_dialog.primary {
+    color: #08c;
+}
+.weui_dialog_ft a {
+    display: block;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+    color: #08c;
+    text-decoration: none;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+}
+.weui_dialog table{width:90%;margin: auto;}
+.gradeA td{text-align:center;}
+</style>
+</head>
+<body>
+<jsp:include page="base.jsp"></jsp:include>
+
+<div id="content">
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#" class="tip-bottom"><i class="icon icon-inbox"></i> Drawings</a> <a href="#" class="current"></a>
+    </div>
+  	<a href="${ctx}/toCreateRfqInfo.do">
+    	<button class="btn btn-primary btn-large" style="margin:20px 0px 10px 20px;">Send New RFQ</button>
+    </a>
+  </div>
+  <div class="container-fluid">
+    <hr>
+    <div class="row-fluid">
+      <div class="span12">
+        <div class="widget-box">
+         
+          <div class="widget-content " style="padding: 0px;">
+           <!-- 采用 fileUpload_multipartFile ， file.transferTo 来保存上传的文件 -->
+            <form id="file_upload_id" action="${ctx}/updateDrawingsById.do" method="post" enctype="multipart/form-data">
+            <input name="drawingName" id="getDrawingName" value="" type="hidden">
+            <input name="id" id="drawingId" value="" type="hidden"> 
+            <table class="table table-bordered table-striped with-check" style="margin-bottom: 0px;border-right: none;border-left: none;">
+              <thead>
+              <tr>
+                <th>
+                  <div class="checker" id="uniform-title-checkbox">
+                    <span class="icon">
+                         <input type="checkbox" id="title-checkbox" name="title-checkbox" />
+                     </span>
+                  </div>
+                </th>
+<!--                 <th>State</th> -->
+                <th>Product Name</th>
+                <th>File Name</th>
+                <th>Uploaded On</th>
+                <th>Mold Price</th>
+                <th>Unit Price</th>
+                <th>Quote Date</th>
+                <th>Operation</th>
+              </tr>
+              </thead>
+              <tbody>
+              <c:forEach var="clientDrawing" items="${clientDrawing}" varStatus="i">   
+              <tr>
+                <td><input type="checkbox" value = '${clientDrawing.id}' class="drawing-checkbox" name="clientDrawingsName"/></td>
+<%--                 <td>${clientDrawing.status}</td> --%>
+                <td>${clientDrawing.productName}</td>
+                <td><a class="a2" style="text-decoration:underline;color: #08c;cursor: pointer;" onclick="drawing_download('${clientDrawing.id}');">${clientDrawing.drawingsName}</a></td>
+                <td><fmt:formatDate value='${clientDrawing.updateTime}' pattern='MM/dd/yyyy'/></td>
+                <td>${clientDrawing.moldPrice}</td>
+                <td>${clientDrawing.unitPrice}</td>
+                <td><fmt:formatDate value='${clientDrawing.quoteTime}' pattern='MM/dd/yyyy'/></td>
+                <td class= "center">             
+                 <div style="float:left;width:120px;margin-right:30px;background:#F9F9F9;">
+                  <span class="a2" style=" position: absolute;background:#F9F9F9;width:120px;cursor: pointer;;">Update Drawing</span> 
+<%--                   <a href="javascript:volid(0);" class="a2"><input type="file" name="file_AjaxFile1" id="file_upload${clientDrawing.id}" onChange="doUpload('${clientDrawing.id}')"/>Update Drawing</a>        --%>
+                  <input type="file" id="file_upload_drawing" name="file_upload_drawing" onChange="doUpload(this,'${clientDrawing.id}')" style="cursor:hand;width:120px;height:20px; z-index: 999;color:#fff; background: rgb(255, 255, 255);cursor: pointer;border: 1px #fff solid; fill-opacity: 0;opacity: 0;" />
+                 </div> 
+                 <a href="#" class="a2" id="cancelButton${clientDrawing.id}" onclick="history('${clientDrawing.id}')" style="margin-left:170px;color: #08c;white-space: nowrap;">Revision History</a>                            
+                  <div class="a3"><a href="#" onclick="listReOrder('${clientDrawing.id}');" class="" style="margin-left:320px;">ReOrder</a>
+                  </div>
+                </td>
+              </tr>
+              </c:forEach>
+              </tbody>
+            </table>
+            </form>
+            <div class="fg-toolbar ui-toolbar ui-widget-header ui-corner-bl ui-corner-br ui-helper-clearfix" style="background: #efefef;">
+
+              <div class="dataTables_paginate fg-buttonset ui-buttonset fg-buttonset-multi ui-buttonset-multi paging_full_numbers" id="#" style="    padding: 10px 0px; margin-top: 0px;">
+                <div class="checker" id="uniform-undefined" style="float: left;margin: 5px 10px;"><!--<span><input type="checkbox" style="opacity: 0;"></span>--><input type="checkbox" /></div>
+                <a href="#"><button type="submit" class="btn btn-info" style="float: left;padding: 4px 30px;" onclick="listSelectReOrders()">ReOrder</button></a>
+
+                <!--<a class="btn" data-wysihtml5-command="underline" title="CTRL+U" href="javascript:;" unselectable="on" style="float: left;padding: 4px 20px;> ReOrder</a>-->
+                <div class="dataTables_paginate fg-buttonset ui-buttonset fg-buttonset-multi ui-buttonset-multi paging_full_numbers" id="DataTables_Table_0_paginate">
+                  ${pager }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="weui_dialog_alert" id="dialog2" style="display:none;">
+  <div class="weui_mask"></div>
+  <div class="weui_dialog">
+    <div class="weui_dialog_hd">
+      <strong class="weui_dialog_title">Drawing Update List</strong>
+    </div>
+    <table class="table table-bordered">
+      <thead>
+      <tr role="row">
+        <th>version</th>
+        <th>name</th>
+        <th>upate time</th>
+        <th>operation</th>
+      </tr>
+      </thead>
+      <tbody role="alert" aria-live="polite" aria-relevant="all" id="drawing_tbody">
+
+<!--       <tr class="gradeA odd"> -->
+<!--         <td>1</td> -->
+<!--         <td>file.png</td> -->
+<!--         <td>2016-12-20 16:20</td> -->
+<!--        <td class="center"> -->
+<!--                   <a href="#">download</a> -->
+<!--        </td> -->
+<!--       </tr> -->
+      
+
+      </tbody>
+    </table>
+    <a class="close-reveal-modal" href="javascript:void(0);" onclick="dispose()">×</a>
+    <!--<a class="close-reveal-modal">×</a>-->
+    <div class="weui_dialog_ft">
+      <a href="javascript:;" onclick="dispose()"><button class="weui_btn_dialog btn btn-primary">Close</button></a>
+    </div>
+  </div>
+</div>
+
+<div class="row-fluid">
+  <div id="footer" class="span12"> 
+  </div>
+</div>
+
+<!-- 上传进度显示 -->
+<div class="w-out-box" id="show_upload_dialog" style="display:none;">
+<div class="weui_mask"></div>
+<div class="w-weui_dialog" style="width:510px;">
+  <div id="container">
+
+	<div class="content">
+		<h1>Upload Progress</h1>
+	</div>
+	
+	<!-- Progress bar -->
+	<div id="progress_bar" class="ui-progress-bar ui-container">
+	<div class="ui-progress" style="width: 0%;" id="ui-progress-upload">
+	<span class="ui-label" style="display:none;">loading...<b class="value">0%</b></span>
+	</div>
+	</div>
+	<!-- /Progress bar -->
+    <a class="close-reveal-modal" style="color:#eee;font-size:22px;" href="javascript:void(0);" onclick="cancel_upload()">×</a>
+	<div class="content" id="main_content" style="display: none;">
+		<p>Upload completed</p>
+	</div>
+   </div>
+   </div>
+ </div>
+
+
+ <script src="js/jquery.min.js"></script>
+<script src="js/jquery.uniform.js"></script>
+<script src="js/select2.min.js"></script>
+<script src="js/jquery.dataTables.min.js"></script>
+<script src="js/matrix.tables.js"></script> 
+<script type="text/javascript" src="js/jquery-form.js"></script>
+<script type="text/javascript">
+ $(function(){
+	 $('.checker:last').hide();
+ })
+
+</script>
+</body>
+</html>

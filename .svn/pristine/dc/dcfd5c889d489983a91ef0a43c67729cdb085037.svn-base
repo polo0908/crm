@@ -1,0 +1,342 @@
+package com.cbt.entity;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+
+public class FactoryOrder implements Serializable {
+    private String id;
+
+    private String userId;
+
+    private String type;
+
+    private Integer status;
+
+    private String fileUrl;
+
+    private float money;
+
+    private Date createDate;
+    
+    private String orderId;
+    /**选择工厂*/
+    private String questionFile;
+
+    private String productName;
+
+    private String orderValue;
+
+    private String remark;
+    
+    private String factoryId;
+
+    private String url;
+    
+    private String description;
+    
+    private String checkboxValue;
+    
+    /**采购支持*/
+    private String requirement;
+
+    private Integer productType;
+    
+    /**质量需求*/
+    private String province;
+
+    private Integer quaType;//质量需求类型
+
+    private Integer count;
+
+    private Integer partsCount;
+
+    private Integer complexity;
+
+    private String other;
+    
+    private Integer number;
+
+    private String comment;
+
+    private String address;
+
+    private String phone;
+
+    private String email;
+    /**工厂审核*/
+    private Integer auditType;
+
+    private Date endDate;
+    
+    private List<Address> addressList;
+    
+    private List<UrlInfo> urlInfoList;
+    
+    private static final long serialVersionUID = 1L;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id == null ? null : id.trim();
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId == null ? null : userId.trim();
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type == null ? null : type.trim();
+    }
+
+    public Integer getStatus() {
+        return status;
+    }
+
+    public void setStatus(Integer status) {
+        this.status = status;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl == null ? null : fileUrl.trim();
+    }
+
+    public float getMoney() {
+		return money;
+	}
+
+	public void setMoney(float money) {
+		this.money = money;
+	}
+
+	public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+	public String getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
+	}
+
+	public String getQuestionFile() {
+		return questionFile;
+	}
+
+	public void setQuestionFile(String questionFile) {
+		this.questionFile = questionFile;
+	}
+
+	public String getProductName() {
+		return productName;
+	}
+
+	public void setProductName(String productName) {
+		this.productName = productName;
+	}
+
+	public String getOrderValue() {
+		return orderValue;
+	}
+
+	public void setOrderValue(String orderValue) {
+		this.orderValue = orderValue;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+
+	public String getFactoryId() {
+		return factoryId;
+	}
+
+	public void setFactoryId(String factoryId) {
+		this.factoryId = factoryId;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public void setUrl(String url) {
+		this.url = url;
+	}
+
+	public String getRequirement() {
+		return requirement;
+	}
+
+	public void setRequirement(String requirement) {
+		this.requirement = requirement;
+	}
+
+	public Integer getProductType() {
+		return productType;
+	}
+
+	public void setProductType(Integer productType) {
+		this.productType = productType;
+	}
+
+	public String getProvince() {
+		return province;
+	}
+
+	public void setProvince(String province) {
+		this.province = province;
+	}
+
+	public Integer getQuaType() {
+		return quaType;
+	}
+
+	public void setQuaType(Integer quaType) {
+		this.quaType = quaType;
+	}
+
+	public Integer getCount() {
+		return count;
+	}
+
+	public void setCount(Integer count) {
+		this.count = count;
+	}
+
+	public Integer getPartsCount() {
+		return partsCount;
+	}
+
+	public void setPartsCount(Integer partsCount) {
+		this.partsCount = partsCount;
+	}
+
+	public Integer getComplexity() {
+		return complexity;
+	}
+
+	public void setComplexity(Integer complexity) {
+		this.complexity = complexity;
+	}
+
+	public String getOther() {
+		return other;
+	}
+
+	public void setOther(String other) {
+		this.other = other;
+	}
+
+	public Integer getNumber() {
+		return number;
+	}
+
+	public void setNumber(Integer number) {
+		this.number = number;
+	}
+
+	public String getComment() {
+		return comment;
+	}
+
+	public void setComment(String comment) {
+		this.comment = comment;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public Integer getAuditType() {
+		return auditType;
+	}
+
+	public void setAuditType(Integer auditType) {
+		this.auditType = auditType;
+	}
+
+	public Date getEndDate() {
+		return endDate;
+	}
+
+	public void setEndDate(Date endDate) {
+		this.endDate = endDate;
+	}
+
+	public List<Address> getAddressList() {
+		return addressList;
+	}
+
+	public void setAddressList(List<Address> addressList) {
+		this.addressList = addressList;
+	}
+
+	public List<UrlInfo> getUrlInfoList() {
+		return urlInfoList;
+	}
+
+	public void setUrlInfoList(List<UrlInfo> urlInfoList) {
+		this.urlInfoList = urlInfoList;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getCheckboxValue() {
+		return checkboxValue;
+	}
+
+	public void setCheckboxValue(String checkboxValue) {
+		this.checkboxValue = checkboxValue;
+	}
+    
+}

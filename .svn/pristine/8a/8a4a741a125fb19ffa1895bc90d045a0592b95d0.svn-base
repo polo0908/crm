@@ -1,0 +1,287 @@
+package com.cbt.controller;
+
+import javax.annotation.Resource;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import com.cbt.entity.ShippingInfo;
+import com.cbt.entity.User;
+import com.cbt.service.NbMailCountryService;
+import com.cbt.service.ShippingInfoService;
+import com.cbt.service.UserRelationEmailService;
+import com.cbt.service.UserService;
+import com.cbt.util.DateFormat;
+import com.cbt.util.Md5Util;
+import com.cbt.util.SecurityHelper;
+import com.cbt.util.WebCookie;
+
+
+
+@Controller
+public class ShippingInfoController {
+
+	  @Resource
+      private ShippingInfoService shippingInfoService;
+	  @Resource
+      private UserService userService;
+	  @Resource
+	  private UserRelationEmailService userRelationEmailService;
+	  
+	  public static final Logger Log = Logger.getLogger(ShippingInfoController.class);
+	  
+	  @Resource
+	  private NbMailCountryService nbMailCountryService;
+	  public static final String NBmailURL = "http://192.168.1.199:8080/NBEmail/helpServlet?action=updateCustomerInfo&className=CustomerServlet";
+      
+	  /**
+	   * 查询客户shipping地址信息
+	   * @param request
+	   * @param response
+	   * @return
+	 * @throws Exception 
+	   */
+      @RequestMapping("/queryShippingInfo.do")
+      public String queryShippingInfo(HttpServletRequest request,HttpServletResponse response) throws Exception{
+    	    	  
+              String userId = request.getParameter("userId");
+              ShippingInfo shippingInfo = null;
+              String loginEmail = "";
+              String pwd = "";
+              try {
+                  String[] userinfo = WebCookie.getUser(request);
+                  if(userinfo.length != 0){
+                	  loginEmail = WebCookie.getLoginEmail(request); 
+                  }else{
+                	  loginEmail = request.getParameter("loginEmail");
+                  }
+				  shippingInfo = shippingInfoService.queryByUserId(userId);      
+				  User user = userService.queryByLoginMail(loginEmail);
+	              userId = userRelationEmailService.queryUseridByEmail(loginEmail);  
+	            
+	              if(userinfo.length == 0){
+				  //保存cookie token
+				  String now = String.valueOf(System.currentTimeMillis());
+				  String token = Md5Util.encoder(now);
+				  Cookie cookie = new Cookie("token",now+"|"+token);
+				  cookie.setPath("/");
+				  cookie.setMaxAge(60*60*24*365);
+				  response.addCookie(cookie);
+	    		  pwd = user.getPwd();
+//	  			  String encryptTxt = SecurityHelper.encrypt("token", pwd);    		  
+	    		  String str = userId +"&"+loginEmail +"&"+pwd +"&"+(user.getTempUser() == null ? "1" : user.getTempUser()).toString();
+                  //使用request对象的getSession()获取session，如果session不存在则创建一个
+                  //HttpSession session = request.getSession();
+				  //将数据存储到session中
+				  //将数据存储到session中
+	    		  //存放cookie
+	    		  Cookie userCookie = new Cookie("userInfo",SecurityHelper.encrypt("userInfo", str));           
+	    		  userCookie.setPath("/");
+	    		  userCookie.setMaxAge(60*60*24*365);
+	    		  response.addCookie(userCookie);
+	    		  
+	    		  
+	    		  //客户登录信息存放到session
+	    		  HttpSession session = request.getSession();
+	    		  session.setAttribute("userInfo",SecurityHelper.encrypt("userInfo", str));
+	    		  session.setMaxInactiveInterval(60*60*24*365);
+	              }
+	    		  
+	    		  
+				  request.setAttribute("shippingInfo", shippingInfo);
+				  request.setAttribute("userId",userId);
+				  request.setAttribute("user",user);
+			} catch (Exception e) {				
+				e.printStackTrace();
+				Log.error("===============ShippingInfoController   queryShippingInfo==============="+e.getMessage());
+				throw new Exception(e.getMessage());
+
+			}
+    		  return "customer_info.jsp";   		  
+      }
+   
+      
+      /**
+       * 更新客户shipping地址信息
+       * @param request
+       * @param response
+       * @return
+       * @throws Exception 
+       */
+      @ResponseBody
+      @RequestMapping("/updateShippingInfo.do")
+      public JsonResult<String> updateShippingInfo(HttpServletRequest request,HttpServletResponse response) throws Exception{
+    	  
+    	  
+ 	         try {
+				 String userid = request.getParameter("userId");
+				 String userName = request.getParameter("userName");
+				 String telephone1 = request.getParameter("telephone1");
+				 String detailedAddress = request.getParameter("detailedAddress");
+				 String country = request.getParameter("country");
+				 String state = request.getParameter("state");
+				 String city = request.getParameter("city");
+				 String postcode = request.getParameter("postcode");
+				 String customerName = request.getParameter("customerName");
+				 String tel = request.getParameter("tel");
+				 String mainBusiness = request.getParameter("mainBusiness");
+				 
+				 
+				 ShippingInfo shippingInfo = new ShippingInfo();
+				 if(!(shippingInfoService.queryByUserId(userid) == null || "".equals(shippingInfoService.queryByUserId(userid)))){
+					 shippingInfo = shippingInfoService.queryByUserId(userid);
+				 }
+												 
+				 User user = userService.queryByUserId(userid);
+				 if(!(tel == null || "".equals(tel))){
+					 user.setTel(tel); 
+				 }
+				 if(!(mainBusiness == null || "".equals(mainBusiness))){
+					 user.setMainBusiness(mainBusiness); 
+				 }
+				 if(!(customerName == null || "".equals(customerName))){
+					 user.setUserName(customerName); 
+				 }
+				 user.setUpdateTime(DateFormat.format()); 
+				 userService.updateCustomerInfo(user);
+				 
+				 if(!(userName == null || "".equals(userName))){
+					 shippingInfo.setUserName(userName);
+				 }    	 
+				shippingInfo.setUserid(userid);	 
+				shippingInfo.setRegisterEmail(user.getEmail()); 
+				
+				if(!(telephone1 == null || "".equals(telephone1))){
+					shippingInfo.setTelephone1(telephone1);
+				}					 
+				 if(!(detailedAddress == null || "".equals(detailedAddress))){
+					 shippingInfo.setDetailedAddress(detailedAddress);
+				 }
+
+				 if(!(country == null || "".equals(country))){
+					 shippingInfo.setCountry(country);
+				 }
+				 if(!(state == null || "".equals(state))){
+					 shippingInfo.setState(state);
+				 }
+				 if(!(city == null || "".equals(city))){
+					 shippingInfo.setCity(city);
+				 }
+				 if(!(postcode == null || "".equals(postcode))){
+					 shippingInfo.setPostcode(postcode);
+				 }
+				 
+				  shippingInfo.setUpdateTime(DateFormat.format());				  
+				  
+				  if(!(shippingInfoService.queryByUserId(userid) == null || "".equals(shippingInfoService.queryByUserId(userid)))){
+					  shippingInfoService.updateShippingInfo(shippingInfo);
+				  }else{
+					  shippingInfoService.insertInfo(shippingInfo); 
+				  }
+				  
+				  return new JsonResult<String>(0,"Saved successfully");
+			} catch (Exception e) {
+				e.printStackTrace();
+				Log.error("===============ShippingInfoController   updateShippingInfo==============="+e.getMessage());
+				throw new Exception("Operation failed.Please try again");
+			}
+    	      
+	          
+	          
+	          
+	          //更新到customer对象，回传给NBMail
+	          // 2017/01/03
+//	          Customer c = new Customer();
+//	          c.setAddress(shippingInfo.getDetailedAddress());
+//	          c.setEid(shippingInfo.getUserId);
+//	          c.setCid(shippingInfo.getCid());
+//	          c.setCity(shippingInfo.getCity());
+//	          NbMailCountry nbMailCountry = nbMailCountryService.queryByCountry(shippingInfo.getCountry());
+//              if(!(nbMailCountry == null || "".equals(nbMailCountry))){
+//            	  c.setCountry(nbMailCountry.getId().toString()); 
+//              }
+//              else{
+//            	  c.setCountry("15"); 
+//              }
+//	          c.setEmail2(shippingInfo.getContactEmail());
+//	          c.setFax(shippingInfo.getFax());
+//	          c.setFirstJob(shippingInfo.getJob());
+//	          c.setFirstName(shippingInfo.getUserName());
+//	          c.setGsFullName(shippingInfo.getCompanyName());
+//	          c.setOtherName1(shippingInfo.getOtherName1());
+//	          c.setOtherName2(shippingInfo.getOtherName2());
+//	          c.setPostCode(shippingInfo.getPostcode());
+//	          c.setSiteUrl(shippingInfo.getSiteUrl());
+//	          c.setState(shippingInfo.getState());
+//	          c.setTel(shippingInfo.getTelephone1());
+//	          c.setTel1(shippingInfo.getTelephone2());
+//	          c.setTel2(shippingInfo.getMobilePhone1());
+//	          c.setTel3(shippingInfo.getMobilePhone2());
+//
+//	          String obj = SerializeUtil.ObjToJson(c);
+////	          Map<String,String> map = new HashMap<String, String>();
+////	          map.put("Customer", obj);
+////	          System.out.println(obj);
+////	          Client.sendPost("http://192.168.1.199:8080/NBEmail/helpServlet?action=updateCustomerInfo&className=CustomerServlet", map);
+//    	  
+//	          
+//	          PrintWriter out1 = null;
+//		        BufferedReader in1 = null;
+//		        String result2 = "";
+//		        try {
+//		        		            
+//		            URL realUrl1 = new URL(NBmailURL);
+//		            // 打开和URL之间的连接
+//		            URLConnection conn1 = realUrl1.openConnection();
+//		            // 设置通用的请求属性
+//		           // conn1.setRequestProperty("accept", "*/*");
+//				 conn1.setRequestProperty("connection", "Keep-Alive");
+//		            conn1.setRequestProperty("user-agent",
+//		                    "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+//		            // 发送POST请求必须设置如下两行
+//		            conn1.setDoOutput(true);
+//		            conn1.setDoInput(true);
+//		            // 获取URLConnection对象对应的输出流
+//		            out1 = new PrintWriter(conn1.getOutputStream());
+//		            // 发送请求参数
+//		            out1.print("result="+obj);
+//		            // flush输出流的缓冲
+//		            out1.flush();
+//		            // 定义BufferedReader输入流来读取URL的响应
+//		            in1 = new BufferedReader(
+//		                    new InputStreamReader(conn1.getInputStream()));
+//		            String line;
+//		            while ((line = in1.readLine()) != null) {
+//		                result2 += line;
+//		            }
+//		        } catch (Exception e) {
+//		            System.out.println("发送 POST 请求出现异常！"+e);
+//		            e.printStackTrace();
+//		        }
+//		        //使用finally块来关闭输出流、输入流
+//		        finally{
+//		            try{
+//		                if(out1!=null){
+//		                    out1.close();
+//		                }
+//		                if(in1!=null){
+//		                    in1.close();
+//		                }
+//		            }
+//		            catch(IOException ex){
+//		                ex.printStackTrace();
+//		            }
+//		        }
+
+	          
+	          
+      }
+      
+      
+}

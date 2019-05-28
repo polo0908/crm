@@ -1,0 +1,249 @@
+package com.cbt.controller;
+
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.cbt.entity.FactoryInfo;
+import com.cbt.entity.UserFactoryRelation;
+import com.cbt.entity.RfqInfo;
+import com.cbt.entity.User;
+import com.cbt.service.FactoryInfoService;
+import com.cbt.service.UserFactoryRelationService;
+import com.cbt.service.RfqInfoService;
+import com.cbt.service.UserService;
+import com.cbt.util.OperationFileUtil;
+import com.cbt.util.SplitPage;
+import com.cbt.util.UploadAndDownloadPathUtil;
+import com.cbt.util.WebCookie;
+
+
+
+@Controller 
+public class RfqInfoController {
+	
+  @Resource
+  private RfqInfoService rfqInfoService;
+  @Resource
+  private UserService userService;
+  @Resource
+  private UserFactoryRelationService factoryUserRelationService;
+  @Resource
+  private FactoryInfoService factoryInfoService;
+  
+  public static final Logger Log = Logger.getLogger(RfqInfoController.class);
+  
+  @RequestMapping("/toCreateRfqInfo.do")
+  public String toCreateRfqInfo(HttpServletRequest request, HttpServletResponse response) throws Exception{
+	  
+	  try {
+		  //userid从session获取
+			 String userid = WebCookie.getUserid(request);
+			 if(userid == null || "".equals(userid)){
+				 return "login.jsp";	
+			  }
+		  List<UserFactoryRelation> factoryUserRelation = factoryUserRelationService.queryByUserid(userid);
+		  
+		  
+		  List<FactoryInfo> factoryInfos = new ArrayList<FactoryInfo>();
+		  FactoryInfo factoryInfo = new FactoryInfo();
+		  for (UserFactoryRelation factoryUserRelation2 : factoryUserRelation) { 
+			  String factoryId = factoryUserRelation2.getFactoryId();
+			  factoryInfo = factoryInfoService.queryByFactoryId(factoryId);
+			  factoryInfos.add(factoryInfo);
+		  }
+		  request.setAttribute("factoryInfos",factoryInfos);
+	} catch (Exception e) {
+		e.printStackTrace();
+		Log.error("===============RfqInfoController   toCreateRfqInfo==============="+e.getMessage());
+		throw new Exception(e.getMessage());
+	}
+	  
+	  return "SubmitNewRFQ.jsp";
+  }
+  
+  /**
+   * 新图纸文件上传 返回上传文件地址
+   * @param request
+   * @param response
+   * @return
+   * @throws Exception
+   */
+  @ResponseBody
+  @RequestMapping("/uploadRfqInfo.do")
+  public String uploadRfqInfo(HttpServletRequest request, HttpServletResponse response) throws Exception{
+	 
+	  try {
+		  String drawingName = request.getParameter("drawingName");
+		  Map<String, String> multiFileUpload = OperationFileUtil.multiFileUpload(request, UploadAndDownloadPathUtil.getNewDrawingUpLoadAndDownLoadPath());
+		  String drawingNameTime = multiFileUpload.get(drawingName);
+		  
+		  return drawingNameTime;
+	} catch (Exception e) {
+		e.printStackTrace();
+		Log.error("===============RfqInfoController   uploadRfqInfo==============="+e.getMessage());
+		throw new Exception(e.getMessage());
+	}
+	  
+	  
+  }
+  
+  
+  
+  /**
+   * 保存新图纸信息  
+ * @throws Exception 
+   * @throws IOException 
+   * @throws IllegalStateException 
+   * 
+   */
+  @ResponseBody
+  @RequestMapping("/saveRfqInfo.do")
+  public Map<Object,Object> saveRfqInfo(HttpServletRequest request, HttpServletResponse response) throws Exception{
+	   
+      try {
+		//调用保存文件的帮助类进行保存文件(文件上传，form表单提交)
+       //		  Map<String, String> multiFileUpload = OperationFileUtil.multiFileUpload(request, UploadAndDownloadPathUtil.getNewDrawingUpLoadAndDownLoadPath());
+		  String[] userInfo = WebCookie.getUser(request);
+		  String userid = userInfo[0];//cookie获取
+		  String productName = request.getParameter("productName");
+//		  String requiredTime = request.getParameter("requiredTime");
+		  Integer batchQuantity = 0;
+		  if(!(StringUtils.isBlank(request.getParameter("batchQuantity")))){
+			  batchQuantity = Integer.parseInt(request.getParameter("batchQuantity"));
+		  }
+		  Integer annualQuantity = 0;
+		  if(!(StringUtils.isBlank(request.getParameter("annualQuantity")))){
+			  annualQuantity = Integer.parseInt(request.getParameter("annualQuantity"));
+		  }
+		  
+		  String comment = request.getParameter("comment");
+		  String drawingNameToTime = request.getParameter("drawingNameToTime");
+		  String drawingPath = UploadAndDownloadPathUtil.getNewDrawingUpLoadAndDownLoadPath();
+		  if(drawingNameToTime == null || "".equals(drawingNameToTime)){
+			  drawingNameToTime = "";
+			  drawingPath = "";
+		  }
+		  String factoryName = request.getParameter("factoryName");
+			 FactoryInfo factoryInfo = factoryInfoService.queryByFactoryName(factoryName);
+			 String factoryId = ""; 
+			 if(factoryInfo == null || "".equals(factoryInfo)){
+				 throw new RuntimeException("未获取到厂家信息");
+			 }else{
+				 factoryId = factoryInfo.getFactoryId();
+			 }
+		  		  
+		  RfqInfo rfqInfo = new RfqInfo();
+		  rfqInfo.setComment(comment);
+		  if(!(userid == null || "".equals(userid))){
+		     rfqInfo.setUserid(userid);
+		  }
+//		  if(!(requiredTime == null || "".equals(requiredTime))){
+//			 rfqInfo.setRequiredTime(requiredTime);
+//		  }     
+		  rfqInfo.setBatchQuantity(batchQuantity);
+		  rfqInfo.setAnnualQuantity(annualQuantity);
+		  
+		  rfqInfo.setDrawingPath(drawingPath);
+		  if(!(productName == null || "".equals(productName))){
+			 rfqInfo.setProductName(productName);  
+		  }     
+		  long time = System.currentTimeMillis();
+		  Date date = new Date(time);    	
+		  SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		  String createTime = sdf.format(date);
+		     rfqInfo.setCreateTime(createTime);
+		     rfqInfo.setDrawingName(drawingNameToTime);
+		     rfqInfo.setDrawingState(1);
+		     rfqInfo.setFollowUp("");
+		     rfqInfo.setStatus("Quoted");
+		     rfqInfo.setFactoryId(factoryId);
+		  rfqInfoService.insertRfqInfo(rfqInfo);
+		  
+		  //需要传到NBMail的数据
+		  String data = "&&eid="+userid+"&&productName="+productName+"&&createTime="+rfqInfo.getCreateTime()+"&&batchQuantity="
+		           +batchQuantity+"&&annualQuantity="+annualQuantity+"&&comment="+comment;
+		  Map<Object,Object> map = new HashMap<Object, Object>();
+		  map.put("data", data);
+		  map.put("rfqId", rfqInfo.getId());
+		  
+		  return map;
+		  
+	} catch (Exception e) {
+		e.printStackTrace();
+		Log.error("===============RfqInfoController   saveRfqInfo==============="+e.getMessage());
+		throw new Exception(e.getMessage());
+	}
+	  
+  }
+  
+  
+  /**
+   * 获取 rfq_info表数据，返回前台显示
+   * @param request
+   * @param response
+   * @return
+   */
+//  @RequestMapping("/queryAllRfqInfo.do")
+//  public String queryAllRfqInfo(HttpServletRequest request, HttpServletResponse response){
+//	   String loginEmail = request.getParameter("loginEmail");
+//	   User user = new User();
+//	   String userId = "";
+//	   String uid = request.getParameter("userId");
+//	   if(!(uid == null || "".equals(uid))){
+//		   userId = request.getParameter("userId");
+//		   user = userService.queryByUserId(userId);
+//	   }
+//	   
+//	   if(!(loginEmail == null || "".equals(loginEmail))){
+//	    user = userService.queryByLoginMail(loginEmail);
+//	    userId = user.getUserid();
+//	   } 
+//	     String str1 = request.getParameter("page");
+//	     String str2 = request.getParameter("pageSize");
+//	   
+//	    int page = 1;
+//		if(str1 != null) {
+//			page = Integer.parseInt(str1);
+//		}
+//		int pageSize = 10;		
+//		if(str2 != null) {
+//			pageSize = Integer.parseInt(str2);
+//		}
+//	    int start = (page-1) * pageSize;
+//		List<RfqInfo> list = rfqInfoService.queryByUserId(userId);
+//		for (RfqInfo r : list) {
+//			 String dt = r.getDrawingName();
+//		     String[] dts = dt.split("&");
+//		     String drawingName = dts[0]+FilenameUtils.getExtension(dt);
+//			 r.setDrawingName(drawingName);
+//		}
+//		int total = rfqInfoService.totalAmount(userId);
+//		SplitPage.buildPager(request, total, start, pageSize);
+//		request.setAttribute("rfqInfo", list);
+//		
+//	   return "new-drawings.jsp";
+//  }
+  
+  
+  
+}

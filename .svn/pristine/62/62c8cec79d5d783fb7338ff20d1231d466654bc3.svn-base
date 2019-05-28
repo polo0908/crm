@@ -1,0 +1,8 @@
+package com.cbt.service;
+
+import com.cbt.entity.PaymentSuccessLog;
+
+public interface IPaymentSuccessLogService {
+
+	public void addPaymentSuccessLog(PaymentSuccessLog paymentSuccessLog);
+}

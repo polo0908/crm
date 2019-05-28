@@ -1,0 +1,17 @@
+package com.cbt.dao;
+
+import com.cbt.entity.FactoryAudit;
+
+public interface FactoryAuditMapper {
+    int deleteByPrimaryKey(String id);
+
+    int insert(FactoryAudit record);
+
+    int insertSelective(FactoryAudit record);
+
+    FactoryAudit selectByPrimaryKey(String id);
+
+    int updateByPrimaryKeySelective(FactoryAudit record);
+
+    int updateByPrimaryKey(FactoryAudit record);
+}

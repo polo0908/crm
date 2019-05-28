@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.MessageCenterDao">
+
+	<resultMap id="MessageCenterResultMap" type="com.cbt.entity.MessageCenter">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="userid" property="userid" jdbcType="VARCHAR" />
+		<result column="factory_id" property="factoryId" jdbcType="VARCHAR" />
+		<result column="order_id" property="orderId" jdbcType="VARCHAR" />
+		<result column="message_title" property="messageTitle" jdbcType="VARCHAR" />
+		<result column="message_type" property="messageType" jdbcType="INTEGER" />
+		<result column="quotation_info_id" property="quotationInfoId" jdbcType="INTEGER" />
+		
+			
+		<result column="factory_name" property="factoryName" jdbcType="VARCHAR" />
+		<result column="max_send_time" property="maxSendTime" jdbcType="TIMESTAMP" />
+		<result column="quotation_id" property="quotationId" jdbcType="VARCHAR" />
+	</resultMap> 
+	
+	
+
+    <sql id="MessageCenterColumnList">
+	    id,userid,factory_id,order_id,message_title,message_type,quotation_info_id 
+    </sql>
+
+	<!-- 查询客户的消息 -->
+    <select id="queryMessageByUserId" resultMap="MessageCenterResultMap">
+<!-- 	    select mq.*,max(message_send_time) as max_send_time   -->
+<!-- 		   from      -->
+<!-- 		   ( -->
+<!-- 		    select ms.*,q.quotation_id from -->
+<!-- 			(select m.*,f.factory_name from message_center m left join factory_info f on m.factory_id = f.factory_id) ms  -->
+<!-- 			 left join quotation_info q on ms.quotation_info_id = q.id -->
+<!-- 		   )mq -->
+<!-- 		 left join  -->
+<!-- 		order_message o  -->
+<!-- 		  on  -->
+<!-- 		mq.id = o.message_center_id where userid = #{userid,jdbcType=VARCHAR}  -->
+<!-- 		GROUP BY mq.id,mq.message_type order by max_send_time desc -->
+		
+							
+		 select ms.id,ms.userid,ms.factory_id,ms.order_id,ms.message_title,ms.message_type,ms.quotation_info_id,max(message_send_time) as max_send_time
+                from 
+              ( 
+               select qs.id,qs.userid,qs.factory_id,qs.factory_name,qs.order_id,qs.message_title,qs.message_type,qs.quotation_info_id,o.message_send_time from  
+			             (
+			             select   
+			               m.id,m.userid,m.factory_id,m.order_id,m.message_title,m.message_type,m.quotation_info_id,f.factory_name  
+			             from 
+			             message_center m 
+			               left join
+			             factory_info f 
+			                on 
+			             m.factory_id = f.factory_id 
+	                    )qs
+					left join 
+				order_message o  
+					on   
+				qs.id = o.message_center_id  where  userid = #{userid,jdbcType=VARCHAR} GROUP BY o.message_send_time,qs.id order by o.message_send_time desc
+		       )ms GROUP BY ms.id     
+    </select>
+    
+    
+	<!-- 根据订单号和消息类型查询 -->
+    <select id="queryByOrderIdAndType" resultMap="MessageCenterResultMap">
+          select
+          <include refid="MessageCenterColumnList"/>
+          from message_center
+          where order_id = #{orderId,jdbcType=VARCHAR}
+          and message_type= #{messageType,jdbcType=INTEGER}
+    </select>
+    
+    
+	<!-- 根据订单号查询 -->
+    <select id="queryByOrderId" resultMap="MessageCenterResultMap">
+<!--           select mq.*,max(message_send_time) as max_send_time   -->
+<!-- 		   from      -->
+<!-- 		   ( -->
+<!-- 		    select ms.*,q.quotation_id from -->
+<!-- 			(select m.*,f.factory_name from message_center m left join factory_info f on m.factory_id = f.factory_id) ms  -->
+<!-- 			 left join quotation_info q on ms.quotation_info_id = q.id -->
+<!-- 		   )mq -->
+<!-- 		 left join  -->
+<!-- 		order_message o  -->
+<!-- 		  on  -->
+<!-- 		mq.id = o.message_center_id where order_id = #{orderId,jdbcType=VARCHAR}     -->
+<!-- 		GROUP BY mq.id,mq.message_type order by max_send_time desc -->
+		
+		select   
+        ms.id,ms.userid,ms.factory_id,ms.order_id,ms.message_title,ms.factory_name,ms.message_type,max(ms.message_send_time) as max_send_time    
+	    from 
+		(
+		select m.id,m.userid,m.factory_id,m.order_id,m.message_title,m.message_type,m.factory_name,o.message_send_time from 
+		     (
+			  select mc.id,mc.userid,mc.factory_id,mc.order_id,mc.message_title,mc.message_type,f.factory_name from 
+			   message_center mc left join factory_info f on mc.factory_id = f.factory_id
+		     )m 
+		left join 
+		order_message o  
+		on   
+		m.id = o.message_center_id where   
+		m.order_id = #{orderId,jdbcType=VARCHAR} GROUP BY o.message_send_time,m.id order by o.message_send_time desc
+		)ms GROUP BY ms.id  ORDER BY ms.message_send_time desc      
+    </select>
+    
+    
+    <!-- 根据订单号查询消息未读数 -->
+    <select id="totalUnReadMessageByOrderId" resultType="int">
+          select count(m.id) from message_center m 
+                left JOIN
+                order_message o
+                on 
+                m.id = o.message_center_id where  
+            m.order_id = #{orderId,jdbcType=VARCHAR}  
+            and o.customer_or_factory = 2 and o.read_status = 0
+    </select>
+    
+    
+    <!-- 根据订单号查询所有消息数 -->
+    <select id="totalMessageByOrderId" resultType="int">
+          select count(m.id) from message_center m 
+                left JOIN
+                order_message o
+                on 
+                m.id = o.message_center_id where  
+            m.order_id = #{orderId,jdbcType=VARCHAR}  
+    </select>
+    
+    
+          <!-- 根据ID查询 -->
+      <select id="queryById" resultMap="MessageCenterResultMap" parameterType="int">
+          select 
+          <include refid="MessageCenterColumnList"/>
+          from message_center
+          where id = #{id,jdbcType=INTEGER}
+      </select>
+
+        <!-- 查询客户的消息数-->
+     <select id="total" resultType="int">
+		 select count(id) from 
+               (select o.*,m.userid from message_center m 
+                  LEFT JOIN 
+                  order_message o
+                   on
+                  m.id = o.message_center_id 
+                where  o.read_status = 0 and customer_or_factory = 2 
+                and userid = #{userid,jdbcType=VARCHAR} 
+                <if test="messageType != null">
+			          and m.message_type= #{messageType,jdbcType=INTEGER} 
+                </if>
+                ) ms 
+    </select>
+    
+    
+          <!-- 查询每个类型客户消息未读数 -->
+     <select id="totalByMessageType" resultType="int">                  
+            select count(m.id) from message_center m 
+                left JOIN
+                order_message o
+                on 
+                m.id = o.message_center_id where 
+            m.message_type = #{messageType,jdbcType=INTEGER} and m.id = #{messageCenterId,jdbcType=INTEGER} 
+            and o.customer_or_factory = 2 and o.read_status = 0
+     </select>
+     
+               <!-- 查询每个类型客户消息未读数 -->
+     <select id="totalQuotationMessageById" resultType="int">                  
+            select count(q.id) from message_center m 
+                left JOIN
+                quotation_message q
+                on 
+                m.quotation_info_id = q.quotation_info_id where 
+            m.message_type = #{messageType,jdbcType=INTEGER} and m.id = #{messageCenterId,jdbcType=INTEGER} 
+            and q.customer_or_factory = 2 and q.read_status = 0
+     </select>
+     
+
+		<!-- 根据订单号和消息类型查询 -->
+	    <select id="queryByQuotationId" resultMap="MessageCenterResultMap">
+	          select
+	          <include refid="MessageCenterColumnList"/>
+	          from message_center
+	          where quotation_info_id = #{quotationInfoId,jdbcType=INTEGER}
+	    </select>
+
+
+
+      <!-- 插入消息 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+      insert into message_center
+       (
+        userid,order_id,factory_id,message_title,message_type,quotation_info_id
+       )
+       values
+       (
+       #{userid,jdbcType=VARCHAR},
+       #{orderId,jdbcType=VARCHAR},
+       #{factoryId,jdbcType=VARCHAR},
+       #{messageTitle,jdbcType=VARCHAR},
+       #{messageType,jdbcType=INTEGER},
+       #{quotationInfoId,jdbcType=INTEGER}
+       )      
+    </insert>	
+    
+    
+      
+</mapper>

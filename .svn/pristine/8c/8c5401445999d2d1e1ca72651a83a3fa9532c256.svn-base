@@ -1,0 +1,310 @@
+<%@ page language="java" contentType="text/html; charset=utf-8"
+    pageEncoding="utf-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%> 
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Factory Audit Detail</title>
+		<script src="${ctx}/js/jquery.min.js"></script>
+		<script src="${ctx}/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="${ctx}/css/bootstrap.css">
+		<link type='image/x-ico' rel='icon' href='${ctx}/img/favicon.ico' />
+		<script src="${ctx}/js/jquery.min.js"></script>
+		<script src="${ctx}/js/bootstrap.min.js"></script>
+		<script type="text/javascript">
+			function myModal() {
+				$("#myModal").show();
+				$(".modal-header").show();
+				$(".modal-body").show();
+				$(".modal-footer").show();
+			}
+
+			function myquestion() {
+				$("#myModal").hide();
+				$("#myquestion").show();
+				$(".modal-body").hide();
+				$(".modal-footer").hide();
+				$("#myquestion p").show();
+
+			}
+
+			function mysure() {
+				$("#myquestion").hide();
+			}
+		</script>
+		<style type="text/css">
+			.container {
+				width: 970px;
+			}
+			
+			#myquestion {
+				position: fixed;
+				left: 35%;
+				display: none;
+			}
+			
+			.wrap-bg {
+				width: 100%;
+				position: absolute;
+				background: url(images/project-1-1.jpg);
+				filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/project-1-1.jpg)', sizingMethod='scale');
+				background-size: cover;
+				height: auto;
+				left: 0;
+				bottom: 0px;
+				top: 0px;
+				right: 0px;
+				overflow-x: hidden;
+			}
+			
+			.factories_form {
+				list-style: none;
+			}
+			
+			.factories_form li {
+				margin-bottom: 10px;
+			}
+			
+			.row,
+			.form-horizontal .form-group {
+				padding:0 0;
+				margin: 0 0;
+			}
+			
+			.modal-dialog {
+				top: 25%;
+			}
+			
+			.btn-sel {
+				color: #333;
+				background-color: #fff;
+				border: 1px solid #ccc;
+				display: inline-block;
+				margin-bottom: 0;
+				font-weight: normal;
+				text-align: center;
+				vertical-align: middle;
+				touch-action: manipulation;
+				cursor: pointer;
+				white-space: nowrap;
+				padding: 10px 20px;
+				font-size: 14px;
+				line-height: 1.42857;
+				border-radius: 4px;
+			}
+			
+			.question {
+				background: #fff;
+				border-radius: 6px;
+				padding: 20px;
+				-webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+				box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+			}
+			
+			.col-md-3 {
+				padding: 0 0;
+			}
+			
+			.green_btn {
+				background: #28b779;
+				color: #fff;
+				font-weight: bold;
+				border: 1px solid #16a768;
+			}
+			
+			.blue_btn {
+				background: #08c;
+				color: #fff;
+				font-weight: bold;
+				border: 1px solid #0272aa;
+			}
+			
+			.green_btn:hover {
+				background: #16a768;
+				color: #fff;
+				border: 1px solid #28b779;
+			}
+			
+			.blue_btn:hover {
+				background: #0272aa;
+				color: #fff;
+				border: 1px solid #08c;
+			}
+			.row p{height: 25px;line-height:25px;}
+			.row{padding-top:0px;}
+			.fact_info{text-decoration:underline;font-style:italic;font-weight:bold;color:#fff;}
+		</style>
+	</head>
+
+	<body>
+	   <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" class="payifcondiv" id="payForm">
+		<div class="wrap-bg" style="background: #2E363F;color: #ddd;">
+			<div class="container" style="margin-top:10%; margin:0 0;padding:1% 2%;margin: 3% auto;">
+			<h1 style="text-align: center;font-weight:bold;  padding: 10px;font-size: 1.5rem;">Confirm Page</h1>
+				 <c:forEach items="${factoryOrder.addressList}" var="address" varStatus="i">
+				   <c:if test="${address.province != null}">
+					<div class="form-group">
+					  <div class="form-factpro">
+					     <div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label fact_info">Factory ${(i.index)+1}:</label>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Factory Province:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${address.province}</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Factory Address:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${address.address}</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Factory Phone:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${address.phone}</p>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Factory Email:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${address.email}</p>
+						    </div>
+						</div>
+						<c:if test="${not empty address.fileUrl}">
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Upload File:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${address.fileUrl}</p>
+						   </div>	
+						</div>	
+						</c:if>			
+					 </div>	
+						
+					 <div class="row">
+						 <div class="col-md-3 ">
+							<label for="url" class="control-label">Requirements:</label>
+						 </div>
+						 <c:if test="${address.type==0}">
+							<div class="col-md-7">
+								<p>Take Picture & Video</p>
+							</div>
+						 </c:if>
+						 <c:if test="${address.type==1}">
+							<div class="col-md-7">
+								<p>Fill in a simple stardard audit report</p>
+							</div>
+						 </c:if>
+						 <c:if test="${address.type==2}">
+							<div class="col-md-7">
+								<p>Fill in your own audit report</p>
+							</div>
+						 </c:if>
+						</div>
+					</div>
+				</c:if>
+				
+				<c:if test="${address.province == '' || address.province == null }">
+				   <div class="form-factpro" style="margin-top:10px;">
+					    <div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label fact_info">Factory ${(i.index)+1}:</label>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Factory URL:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${address.factoryUrl}</p>
+							</div>
+						</div>
+                        <c:if test="${not empty address.fileUrl}">
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Upload File:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${address.fileUrl}</p>
+						    </div>	
+						</div>				
+					    </c:if>
+                       <div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Requirements:</label>
+							</div>
+							<c:if test="${address.type==0}">
+								<div class="col-md-7">
+									<p>Take Picture & Video</p>
+								</div>
+							</c:if>
+							<c:if test="${address.type==1}">
+								<div class="col-md-7">
+									<p>Fill in a simple stardard audit report</p>
+								</div>
+							</c:if>
+							<c:if test="${address.type==2}">
+								<div class="col-md-7">
+									<p>Fill in your own audit report</p>
+								</div>
+							</c:if>
+						</div>
+						</div>
+						</c:if>			
+					 </c:forEach>
+                       
+						<div class="row">
+							<div class="col-md-3 ">
+								<p style="font-weight:bold;font-size:20px;color: #FF5400;">Total Price:</p>
+							</div>
+							<div class="col-md-7 ">
+								<b style="color: #FF5400;font-size:20px;">$${factoryOrder.money}</b>
+							</div>
+						</div>
+						<input type="hidden" id="sampleCost" value="${sampleCost}"> 
+						<input type="hidden" id="purl" value="${purl}"> 
+						<input type="hidden" id="fprice" value="${fprice}"> 
+						<input type="hidden" id="comUserId" value="${comUserId}"> 
+						<input type="hidden" id="orderid" value="${orderid}"> 
+						<input type="hidden" id="indexid" value="${indexid}"> 
+						<input type="hidden" id="goodsPid" value="${goodsPid}"> 
+						<input type="hidden" name="cmd" value="_xclick"> 
+						<input type="hidden" name="business" value="584JZVFU6PPVU"> 
+						<input type="hidden" name="lc" value="US">
+					   	<input id="item_number" type="hidden" name="item_number"value="${factoryOrder.orderId}+${factoryOrder.userId}">
+					   	<input id="amount"type="hidden" name="amount" value="${factoryOrder.money}">
+					   	<input type="hidden" name="currency_code" value="USD">
+					   	<input type="hidden" name="button_subtype" value="services">
+					   	<input type="hidden" name="no_note" value="3"> 
+					   	<input type="hidden" name="no_shipping" value="3">
+					   	<input type="hidden" name="rm"value="3"> 
+					   	<input type="hidden" name="return" value="http://116.228.150.218:8086/cbt/paysuccess.jsp">
+					   	<input id="cancel_return" type="hidden" name="cancel_return" value="http://www.importx.com/crm/factory/orderDetailPay.do?orderId==${factoryOrder.orderId}">
+						<input type="hidden" name="shipping" value="0.00"> 
+						<input type="hidden" name="bn"value="PP-BuyNowBF:btn_buynowCC_LG.gif:NonHosted">
+						<div class="form-group " style="text-align: center;margin-top:20px;border-top:1px solid #fff;padding-top:20px;width:80%;">
+						<div class="col-sm-offset-2 col-sm-9 " style="margin-left: 0px; ">
+							<button type="Submit" class="btn blue_btn " onclick="myModal() ">Pay Now</button>
+						</div>
+					</div>
+				</div>
+			</div>
+	 </form>
+	</body>
+</html>

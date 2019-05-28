@@ -1,0 +1,57 @@
+package com.cbt.service.impl;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cbt.dao.AddressMapper;
+import com.cbt.dao.FactoryOrderMapper;
+import com.cbt.dao.UrlInfoMapper;
+import com.cbt.entity.FactoryOrder;
+import com.cbt.service.FactoryOrderService;
+
+@Service
+public class FactoryOrderServiceImpl implements FactoryOrderService{
+    
+	@Autowired
+	private FactoryOrderMapper factoryOrderMapper;
+	
+	@Autowired
+	private AddressMapper addressMapper;
+	
+	@Autowired
+	private UrlInfoMapper urlInfoMapper;
+	
+	@Override
+	public List<FactoryOrder> selectRequestList(String userId) {
+		return factoryOrderMapper.selectRequestList(userId);
+	}
+    /**
+     * 选择工厂订单详情
+     */
+	@Override
+	public FactoryOrder findSelectFactoryOrderDetail(String orderId) {
+		FactoryOrder factoryOrder=factoryOrderMapper.findSelectFactoryOrderDetail(orderId);
+		factoryOrder.setUrlInfoList(urlInfoMapper.selectByPrimaryKey(factoryOrder.getFactoryId()));
+		return factoryOrder;
+	}
+
+	@Override
+	public FactoryOrder findSourceAssistanceOrderDetail(String orderId) {
+		return factoryOrderMapper.findSourceAssistanceOrderDetail(orderId);
+	}
+
+	@Override
+	public FactoryOrder findQualityOrderDetail(String orderId) {
+		return factoryOrderMapper.findQualityOrderDetail(orderId);
+	}
+    
+	@Override
+	public FactoryOrder findAuditOrderDetail(String orderId) {
+		FactoryOrder factoryOrder= factoryOrderMapper.findAuditOrderDetail(orderId);
+		factoryOrder.setAddressList(addressMapper.selectByPrimaryKey(factoryOrder.getId()));
+		return factoryOrder;
+	}
+
+}

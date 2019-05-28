@@ -1,0 +1,222 @@
+package com.cbt.controller;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.io.FilenameUtils;
+import org.apache.log4j.Logger;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.cbt.entity.ClientDrawings;
+import com.cbt.entity.ClientOrder;
+import com.cbt.entity.FactoryInfo;
+import com.cbt.entity.ReOrder;
+import com.cbt.entity.ReOrderDrawings;
+import com.cbt.service.ClientDrawingsService;
+import com.cbt.service.ClientOrderService;
+import com.cbt.service.FactoryInfoService;
+import com.cbt.service.ReOrderDrawingsService;
+import com.cbt.service.ReOrderService;
+import com.cbt.util.DateFormat;
+import com.cbt.util.JsonUtil;
+import com.cbt.util.SerializeUtil;
+import com.cbt.util.WebCookie;
+
+@Controller
+public class ReOrderDrawingsController {
+    
+	@Resource
+	private ReOrderDrawingsService reOrderDrawingsService;
+	@Resource
+	private ReOrderService reOrderService;
+	@Resource
+	private ClientDrawingsService clientDrawingsService;
+	@Resource
+	private ClientOrderService clientOrderService;
+    @Resource
+    private FactoryInfoService factoryInfoService;
+    
+    
+	public static final Logger Log = Logger.getLogger(ReOrderDrawingsController.class);
+	
+	/**
+	 * 插入reOrder(单条)、reOrder_drawing(多条)表
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws Exception 
+	 */
+	 @RequestMapping("/insertReOrderDrawings.do")
+	 public String insertReOrderDrawings(HttpServletRequest request, HttpServletResponse response) throws Exception{
+		 
+		 try {
+			 //userid从session获取
+			 String userid = WebCookie.getUserid(request);
+			 if(userid == null || "".equals(userid)){
+				 return "login.jsp";	
+			  }
+			 //获取总金额
+			 Double totalAmount = Double.valueOf(request.getParameter("totalAmount"));
+			 //根据图纸的id信息获取图纸其他数据			 
+			  String drawingsIds = request.getParameter("ids");
+			  String jsonStr = drawingsIds.replace("\"", "");
+			  Integer[] ids = SerializeUtil.JsonToIntegerArray(jsonStr);
+
+			 ReOrder reOrder = new ReOrder();
+			 reOrder.setUserid(userid);
+			 //获取备注信息
+			 String comments = null;
+			 if(!(request.getParameter("comments") == null || "".equals(request.getParameter("comments")))){
+				 comments = request.getParameter("comments");
+				reOrder.setComments(comments);
+			}else{
+				reOrder.setComments("");
+			}
+			 //获取要求交货时间
+			 if(!(request.getParameter("requiredTime") ==null || "".equals(request.getParameter("requiredTime")))){
+				reOrder.setRequiredTime(request.getParameter("requiredTime"));
+			}  
+			 String factoryName = request.getParameter("factoryName");
+			 FactoryInfo factoryInfo = factoryInfoService.queryByFactoryName(factoryName);
+			 String factoryId = ""; 
+			 if(factoryInfo == null || "".equals(factoryInfo)){
+				 throw new RuntimeException("未获取到厂家信息");
+			 }else{
+				 factoryId = factoryInfo.getFactoryId();
+			 }
+			 
+			   //查询图纸其他信息，并且生成reOrder表
+			  List<ClientDrawings> clientDrawings = clientDrawingsService.queryListByIds(ids);	
+			  Integer oldOrderId = 0;
+			 for(ClientDrawings c:clientDrawings){
+				 
+				 //根据订单编号获取客户订单的主键id
+				 ClientOrder clientOrder = clientOrderService.queryByOrderId(c.getOrderId());
+				 if(!(clientOrder == null || "".equals(clientOrder))){
+					oldOrderId = clientOrder.getId();
+				 }
+				  		           	
+			    }
+			  	  String createTime = DateFormat.format();
+			      reOrder.setCreateTime(createTime);	          
+			      reOrder.setReOrderState(1);
+			      reOrder.setTotalAmount(totalAmount);
+			      reOrder.setFollowUp(null);
+			      reOrder.setFactoryId(factoryId);
+			      
+			  /**
+			   * 
+			   * 多条插入  reOrder_drawing表  
+			   *     
+			   */   
+               	    	 
+			 //获取前台封装的图纸对象
+			 String clientDrawing = request.getParameter("clientDrawings");
+			 ArrayList<Map<Object, Object>> list = new ArrayList<Map<Object,Object>>();
+			 
+			 String status = "Quoted";              //初始为报价状态
+			 if(clientDrawing.endsWith(",")){
+				 clientDrawing = clientDrawing.substring(0,clientDrawing.length()-1);
+				}
+
+			 		String[] split = clientDrawing.split(",");
+				for (int i = 0; i < split.length; i++) {
+					String[] split2 = split[i].split("%");
+					Map<Object,Object> map= new HashMap<Object,Object>();
+					Double price = 0.0;
+					if(!( split2[0].replaceFirst(".", "") == null || "".equals(split2[0].replaceFirst(".", "")))){
+						price = Double.valueOf(split2[0].replaceFirst(".", ""));
+					}
+			        Integer quantity = 0;
+			        if(!( split2[1].replaceFirst(".", "") == null || "".equals(split2[1].replaceFirst(".", "")))){
+			            quantity = Integer.valueOf(split2[1].replaceFirst(".", ""));
+			        }
+			        String drawingsName = "";
+			        if(!(split2[2].replaceFirst(".", "") == null || "".equals(split2[2].replaceFirst(".", "")))){
+			        	drawingsName = split2[2].replaceFirst(".", "");
+			        }
+			        String drawingsPath = "";
+			        if(!(split2[3].replaceFirst(".", "") == null || "".equals(split2[3].replaceFirst(".", "")))){
+			        	drawingsPath = split2[3].replaceFirst(".", "");
+			        }
+					String productName = "";
+					if(!(split2[4].replaceFirst(".", "") == null || "".equals(split2[4].replaceFirst(".", "")))){
+						productName = split2[4].replaceFirst(".", "");
+					}
+
+					Double moldPrice = 0.0;
+					if(!(split2[5].replaceFirst(".", "") == null || "".equals(split2[5].replaceFirst(".", "")))){
+						 moldPrice = Double.valueOf(split2[5].replaceFirst(".", ""));
+					}		
+					String drawingState = "";
+					if(!(split2[6].replaceFirst(".", "") == null || "".equals(split2[6].replaceFirst(".", "")))){
+						drawingState = split2[6].replaceFirst(".", "");
+					}
+					String projectName = null;
+					if(!(split2[7].replaceFirst(".", "") == null || "".equals(split2[7].replaceFirst(".", "")))){
+						projectName = split2[7].replaceFirst(".", "");
+					}
+
+					
+					map.put("unitPrice", price);
+					map.put("quantity", quantity);
+					map.put("drawingsName", drawingsName);
+					map.put("drawingsPath", drawingsPath);
+			        map.put("productName", productName);
+					map.put("moldPrice", moldPrice);
+					map.put("userId", userid);
+					map.put("oldOrderId", oldOrderId);
+					map.put("drawingState", drawingState);
+					map.put("projectName", projectName);
+					map.put("status",status);	
+			        
+					list.add(map);
+				}
+				 reOrderService.insertReOrder(reOrder, list);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.error("===============ReOrderDrawingsController   insertReOrderDrawings==============="+e.getMessage());
+			throw new Exception(e.getMessage());
+		}
+		 
+		 return "redirect:/reOrder-ok.jsp";
+	 }
+	 
+	 
+	 @RequestMapping("/queryReOrderDrawings.do")
+	 public String queryReOrderDrawings(HttpServletRequest request, HttpServletResponse response) throws Exception{
+		 
+		 try {
+			Integer reOrderId = Integer.parseInt(request.getParameter("id"));
+			 List<ReOrderDrawings> list = reOrderDrawingsService.queryReOrderDrawings(reOrderId);
+			 ReOrder reOrder = reOrderService.queryById(reOrderId);
+			   for (ReOrderDrawings c : list) {
+			        /*
+			         *去除时间节点，获取图纸名 
+			         */
+				     String dt = c.getDrawingsName();
+				     String[] dts = dt.split("&");
+				     String drawingName = dts[0]+"."+FilenameUtils.getExtension(dt);
+					 c.setDrawingsName(drawingName);	
+			     }
+
+			 request.setAttribute("reOrder", reOrder);
+			 request.setAttribute("reOrderDrawings", list);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.error("===============ReOrderDrawingsController   queryReOrderDrawings==============="+e.getMessage());
+			throw new Exception(e.getMessage());
+		}
+		 
+		 
+		 return "project.jsp";
+	 }
+}

@@ -1,0 +1,1465 @@
+
+<%@ page language="java" contentType="text/html; charset=utf-8"
+	pageEncoding="utf-8"%>
+<%@page import="com.cbt.util.WebCookie"%>		
+<%@page import="com.cbt.entity.ClientOrder"%>		
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%>
+
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<%@page import="java.util.List"%>
+<%@page import="com.cbt.entity.Milestone"%>
+<%@page import="com.cbt.entity.ProductionPhotoTimeline"%>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>ImportX</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="css/bootstrap.min.css" />
+  <link rel="stylesheet" href="css/uniform.css" />
+  <link rel="stylesheet" href="css/bootstrap-responsive.min.css" />
+  <link rel="stylesheet" href="css/fullcalendar.css" />
+  <link rel="stylesheet" href="css/font-awesome.css" />
+  <link rel="stylesheet" href="css/matrix-style.css" />
+  <link rel="stylesheet" href="css/matrix-media.css" />
+  <link rel="stylesheet" href="css/select2.css" />
+  <link rel="stylesheet" href="css/details.css" />
+  <link rel="stylesheet" href="css/easydialog.css" />
+  <link href="font-awesome/css/font-awesome.css" rel="stylesheet" />
+  <link rel="stylesheet" href="css/jquery.gritter.css" />
+  <link href="css/css.css" rel="stylesheet" type="text/css" />
+  <link type="text/css" href="css/iF.step.css" rel="stylesheet">
+  <link type='image/x-ico' rel='icon' href='img/favicon.ico' />
+  
+<script type="text/javascript" src="js/jquery-1.10.2.js"></script>
+<script type="text/javascript" src="js/easydialog.min.js"></script>  
+<script type="text/javascript" src="js/base64.js"></script>  
+<script src="js/jquery.min.js"></script>
+<script src="js/slider.js" type="text/javascript"></script>  
+<script type="text/javascript">
+//获取session的登录用户id和登录名
+<%-- <% String[] userinfo = WebCookie.getUser(request); %>
+var userid = '<%=userinfo != null ? userinfo[0] : ""%>'; --%>
+<%ClientOrder clientOrder = (ClientOrder)request.getAttribute("clientOrder");%>
+<%List<Milestone> milestones = (List<Milestone>)request.getAttribute("milestones");%>
+<%List<ProductionPhotoTimeline> productionPhotoTimeline = (List<ProductionPhotoTimeline>)request.getAttribute("productionPhotoTimeline");%>
+<%List<List<ProductionPhotoTimeline>> list = (List<List<ProductionPhotoTimeline>>)request.getAttribute("productionPhotoTimelines");%>
+<%Integer tl = milestones.size();%>
+<%Integer p_tl = productionPhotoTimeline.size();%>
+
+<%-- var poPath = '<%=clientOrder.getPoPath()%>'; --%>
+<%-- var qcPath = '<%=clientOrder.getQcReportPath()%>'; --%>
+<%-- var shippingPath = '<%=clientOrder.getShippingDocPath()%>'; --%>
+var outputTime = '<%=clientOrder.getOutputTime()%>';
+var orderStatus = '<%=clientOrder.getOrderStatus()%>';
+
+$(function(){
+	
+$('#sidebar_ul').find('li').eq(0).addClass('active');
+
+// if(orderStatus == 1){	
+// $('.container-fluid:last').show();
+// }else{
+// $('.container-fluid:last').hide();	
+// }
+	
+	
+	
+var curIndex = 0; //当前index
+var imgLen = $(".imgList li").length;
+
+//左箭头点击处理
+$("#prev").click(function(){ 
+  //根据curIndex进行上一个图片处理
+  curIndex = (curIndex > 0) ? (--curIndex) : (imgLen - 1);
+  $('.indexList').find('li:eq(1)').text(curIndex + 1 + "/" + imgLen);
+  changeTo(curIndex);
+});
+
+//右箭头点击处理
+$("#next").click(function(){ 
+  curIndex = (curIndex < imgLen - 1) ? (++curIndex) : 0;
+  $('.indexList').find('li:eq(1)').text(curIndex + 1 + "/" + imgLen);
+  changeTo(curIndex);
+});
+
+function changeTo(num){  
+  imgLen = $(".imgList li").length; //图片总数
+  var goLeft = num * 800;
+  $(".imgList").animate({left: "-" + goLeft + "px"},400);
+//   $(".infoList").find("li").removeClass("infoOn").eq(num).addClass("infoOn");
+}
+$("#wrapper").click(function(){
+    return false;  //阻止事件冒泡到父级DIV
+})
+    
+	
+	
+  
+  
+	 //处理download显示，如果没有上传显示灰色，已上传显示绿色
+// 	 if(poPath != 'null' && poPath != ""){
+// 		 $('.w-widget-a').eq(0).css({"color":"#08c"});
+// 	 }else{
+// 		 $('.w-widget-a').eq(0).removeAttr('onclick').css({"color":"#bbb"}).css({"text-decoration":"none"}); 
+// 	 }
+// 	 if(qcPath != 'null' && qcPath != ""){
+// 		 $('.w-widget-a').eq(2).css({"color":"#08c"});
+// 	 }else{
+// 		 $('.w-widget-a').eq(2).removeAttr('onclick').css({"color":"#bbb"}).css({"text-decoration":"none"}); 
+// 	 }
+// 	 if(shippingPath != 'null' && shippingPath != ""){
+// 		 $('.w-widget-a').eq(3).css({"color":"#08c"});
+// 	 }else{
+// 		 $('.w-widget-a').eq(3).removeAttr('onclick').css({"color":"#bbb"}).css({"text-decoration":"none"}); 
+// 	 }
+	
+
+	 show_milestone();
+	 
+   
+	
+	
+	
+
+	   //鼠标移入事件(延期显示)
+// 	   $('#delay_img').mouseover(function(){
+// 		   $('#delay_img').next().css({"visibility": "visible"}); 		   
+// 	   }).mouseout(function (){  
+// 		   $('#delay_img').next().css({"visibility": "hidden"}); 	
+//         });  	
+	
+})
+
+
+function show_milestone(){
+	 //根据日期计算进度
+ 	var d = new Date();
+ 	var str = d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();
+ 	$('.z-font').text(DateConversion(str));
+
+     //里程碑显示，根据时间计算进度
+    var start = $('#milestone_ul').find("li:first").find("span").eq(1).text();
+	var finish = $('#milestone_ul').find("li:last").find("span").eq(1).text();
+   
+	if(start != null && start != '' && finish != null && finish != ''){
+		total_days = DateDiff(start,finish);
+		now_days = DateDiff(start,str);
+		if(total_days > now_days){
+		 var s_width = Math.floor(now_days / total_days * 76);	
+		 $('#milestone_ul').prev().prev().find('img').css({"margin-left":"98%"});
+		 $('#milestone_ul').prev().prev().css({"width":s_width+"%"});
+		}else{
+		 $('.ui-step-line2').css({"width":"76%"});
+		}	
+	}else{
+	  $('.ui-step-line2').css({"width":"0%"});	  
+	}
+	
+
+	 
+     var mile_tl = $('#milestone_ul').find("li").length;         
+     if(mile_tl == 0 || mile_tl == 1){
+    	 $('.out-box').eq(1).hide();
+     }else{
+    	 $('.out-box').eq(1).show(); 
+    	 
+    	 for(var i = 0;i<mile_tl;i++){
+    		 var milestone_date = $('#milestone_ul').find("li").eq(i).find("span").eq(1).text(); 
+    		 $('#milestone_ul').find("li").eq(i).find("span").eq(0).text(DateConversion(milestone_date));
+    		 
+    		 var flag = DateDiff1(milestone_date);
+    			if(flag == true){
+    				$('#milestone_ul').find("li").eq(i).find("span").eq(0).css({"background-color":"#28b779"});
+    			}else{
+    				$('#milestone_ul').find("li").eq(i).find("span").eq(0).css({"background-color":"#b9b9b9"});
+    			}
+    	
+    		var expectedOrActually = $('#milestone_ul').find("li").eq(i).find("span").eq(2).text();
+    		if(expectedOrActually == 0){
+    			$('#milestone_ul').find("li").eq(i).find("span").eq(0).css({"background-color":"#b9b9b9"});
+    		}else{
+    			$('#milestone_ul').find("li").eq(i).find("span").eq(0).css({"background-color":"#28b779"});
+    		}
+    		 
+    		 //计算li偏移量
+    		 if(i>0){
+    	      var prev_date	= "";
+    	      var next_date	= "";
+    	      var li_left_2 = "";
+    	       if(i>1){
+    	    	prev_date = $('#milestone_ul').find("li").eq(i-1).find("span").eq(1).text();
+    	    	var prev_days = DateDiff(start,  prev_date);  
+    	    	li_left_2 = Math.floor(prev_days / total_days * 98);   
+    	       }
+    	       if(i<mile_tl -1){
+    	    	next_date = $('#milestone_ul').find("li").eq(i+1).find("span").eq(1).text();   
+    	       }		 	
+             var start_currency_days = DateDiff(start,  milestone_date);   
+             var li_left =  Math.floor(start_currency_days / total_days * 98);          
+             
+             //用于处理里程碑距离过近问题，当两个里程碑相距小于5%时，限制最小5%                     
+             if(next_date != ""){   
+                 var next_days = DateDiff(start,  next_date);   
+                 var li_left_1 =  Math.floor(next_days / total_days * 98);
+                 if(li_left_1 != ""){
+                	 if(li_left_1 - li_left < 5){
+                		 li_left = li_left_1 - 5;            		               		 
+                		 if(prev_date != ""){
+                             if(li_left - li_left_2 <5){
+                             	$('#milestone_ul').find("li").eq(i-1).css({"margin-left": (li_left-5)+"%"}); 
+                             }
+                             var top = $('#milestone_ul').find("li").eq(i-1).find('span:last').prev().css("top");
+                             top = top.replace('px','');
+                             if(Number(top) > 0){
+                            	 $('#milestone_ul').find("li").eq(i).find('span:last').prev().prev().addClass('w_img_bottm');
+                        		 $('#milestone_ul').find("li").eq(i).find('span:last').prev().prev().find('img').attr('src','images/w_bottom.png'); 
+                        		 $('#milestone_ul').find("li").eq(i).find('span:last').prev().css({"top":"-42px"}); 
+                             }else{
+
+                             }
+                             
+                         }
+                	 }else{
+                		 if(prev_date != ""){
+                             if(li_left - li_left_2 <5){
+                            	  var top = $('#milestone_ul').find("li").eq(i-1).find('span:last').prev().css("top");
+                                  top = top.replace('px','');
+                                  if(Number(top) > 0){
+                                 	 $('#milestone_ul').find("li").eq(i).find('span:last').prev().prev().addClass('w_img_bottm');
+                             		 $('#milestone_ul').find("li").eq(i).find('span:last').prev().prev().find('img').attr('src','images/w_bottom.png'); 
+                             		 $('#milestone_ul').find("li").eq(i).find('span:last').prev().css({"top":"-42px"}); 
+                                  }else{
+
+                                  }
+                        }
+                	   }      
+                	 }
+                   }
+                 }else{
+                	 if(prev_date != ""){
+                         if(li_left - li_left_2 <5){
+                         	$('#milestone_ul').find("li").eq(i-1).css({"margin-left": (li_left-5)+"%"}); 
+                         }
+                         var top = $('#milestone_ul').find("li").eq(i-1).find('span:last').prev().css("top");
+                         top = top.replace('px','');
+                         if(Number(top) > 0){
+                        	 $('#milestone_ul').find("li").eq(i).find('span:last').prev().prev().addClass('w_img_bottm');
+                    		 $('#milestone_ul').find("li").eq(i).find('span:last').prev().prev().find('img').attr('src','images/w_bottom.png'); 
+                    		 $('#milestone_ul').find("li").eq(i).find('span:last').prev().css({"top":"-42px"}); 
+                         }else{
+
+                         }
+                 }
+             }           
+           
+             $('#milestone_ul').find("li").eq(i).css({"margin-left": li_left+"%"});            
+    	     } 
+    		 
+    		 var delayState = $('#milestone_ul').find("li").eq(i).find(".ui-step-cont").find('span:last').text();
+    		 if(delayState == 1){
+    			 $('#milestone_ul').find("li").eq(i).find(".ui-step-cont").find('span:last').next().show();
+    			 $('#milestone_ul').prev().prev().css({"background-color":"#f74d4d"});
+    			 $('#milestone_ul').prev().prev().find('div').addClass("dot-right-red");
+    		 }
+    		 
+    		 
+    		 //处理图纸下标显示
+//     		    var total_img = $('#milestone_ul').find("li").eq(i).find('span.z-line-span').text();
+//     		    if(total_img == '1/0'){
+//     		    	$('#milestone_ul').find("li").eq(i).find('span.z-line-span').hide();
+//     		    }else{
+//     		    	$('#milestone_ul').find("li").eq(i).find('span.z-line-span').show();
+//     		    }
+    	 }
+ 	 
+    	 
+    	 
+    	 
+    	 
+    	//根据日期计算上传图片的位置
+//    		var upload_days = '';
+//    		var pic_tl = $('.w-div-img').length;
+//      	for(var k = 0;k<pic_tl;k++){
+//      	   	var uploadDate = $('.w-div-img').eq(k).find('span:last').text();
+//      	    $('.w-div-img').eq(k).find('span:last').prev().text(DateConversion(uploadDate));
+//      	   	var upload_days = DateDiff(start,uploadDate);
+//      	   	var pic_width = Math.floor(upload_days/total_days * 94);
+//      	   	if(pic_width < 94){
+//      	   		$('.w-div-img').eq(k).css({"left":pic_width+"%"});  	 	 
+//        		 }else{
+//        			$('.w-div-img').eq(k).css({"left":"94%"}); 
+//        		 }                         	   
+//      	}            		
+     }
+
+
+
+
+
+
+
+
+	
+	/*
+	 *计算船移动js，根据到岗时间和出货时间计算
+	 */	
+	var s_tl = $('.shipping-progress').length; 
+	for(var k = 0;k<s_tl;k++){		
+	This = $('.shipping-progress').eq(k).find('ul');
+	var outputDate = This.find("li:first").find("span").eq(1).text();
+	var arrivalDate = This.find("li:last").find("span").eq(1).text();
+	var width = This.prev().css("width");	
+	
+	if(outputDate != null && outputDate != '' && arrivalDate != null && arrivalDate != ''){
+		
+		    var flag = DateDiff1(outputDate);      //如果还没开始运输，船在起点
+			total_days = DateDiff(outputDate,  arrivalDate);			
+			now_days = DateDiff(outputDate,str);
+			This.prev().prev().find('span').text(DateConversion(str));
+			if(total_days > now_days){
+			 var s_width = Math.floor(now_days / total_days * 72);	
+			 This.prev().prev().find('img').css({"margin-left":"96%"});
+			 This.prev().prev().css({"width":s_width+"%"});
+			}else{
+			 This.prev().prev().css({"width":"76%"});
+			 This.prev().prev().find('img').css({"margin-left":"96%"});
+			}	
+			if(!(flag)){
+				This.prev().prev().css({"width":"0%"});
+			}
+	}else{
+		This.prev().prev().css({"width":"0%"});
+		return false;
+	}
+	
+	var tl = This.find("li").length;
+	var start_currency_days = "";
+	var prev_left = ""; 
+	for(var i = 0;i<tl;i++){
+		var shipping_date = This.find("li").eq(i).find("span").eq(1).text();
+		This.find("li").eq(i).find("span").eq(0).text(DateConversion(shipping_date));
+		var flag = DateDiff1(shipping_date);
+		if(flag == true){
+			This.find("li").eq(i).find("span").eq(0).css({"background-color":"#28b779"});
+			This.find("li").eq(i).find("span").eq(2).css({"color":"#28b779"});
+		}else{
+			This.find("li").eq(i).find("span").eq(0).css({"background-color":"#b9b9b9"});
+			This.find("li").eq(i).find("span").eq(2).css({"color":"#666"});
+		}
+		
+		//计算li偏移量
+        if(i>0){
+//           prev_date = $('#shipping_ul').find("li").eq(i-1).find("span").eq(1).text();	
+          start_currency_days = DateDiff(outputDate,  shipping_date);  
+//           var prev_days = DateDiff(outputDate,  prev_date);  
+          var li_left =  Math.floor(start_currency_days / total_days * 98);
+          if(li_left - prev_left < 5){
+             This.find("li").eq(i).css({"margin-left": (prev_left+5)+"%"}); 
+          }else{            
+             This.find("li").eq(i).css({"margin-left": li_left+"%"});
+          }   
+        }
+		
+	  }	
+	}
+}
+
+
+
+/*
+ *下载PO数据
+ */
+ function doDownload_po(id,obj){
+	   
+ 	//使用ajax提交下载
+		$.ajax({
+			url:"/crm/fileDownload_po.do",
+			data:{
+				  "id":id
+				  },
+			type:"post",
+			dataType:"text",
+			success:function(res){		
+				$(obj).next().text("");
+				window.location.href = "/crm/fileDownload_po.do?id="+id;
+				},
+		    error:function(){
+		    	
+		    	easyDialog.open({
+		    		  container : {
+		    		    header : 'Prompt message',
+		    		    content : 'Download failed !'
+		    		  },
+		    		  overlay : false,
+		    		  autoClose : 2000
+		    		  
+		    		});
+		    }
+		});
+}
+ /*
+  *下载QC数据
+  */
+  function doDownload_qc(id,obj){
+	   
+  	//使用ajax提交下载
+		$.ajax({
+			url:"/crm/fileDownload_qc.do",
+			data:{
+				  "id":id
+				  },
+			type:"post",
+			dataType:"text",
+			success:function(res){
+				$(obj).parent().next().next().text("");
+				window.location.href = "/crm/fileDownload_qc.do?id="+id;
+				
+				},
+		    error:function(){
+		    	
+		    	easyDialog.open({
+		    		  container : {
+		    		    header : 'Prompt message',
+		    		    content : 'Download failed !'
+		    		  },
+		    		  overlay : false,
+		    		  autoClose : 1000
+		    		});
+		    }
+		});
+ }
+ /*
+  *下载Shipping数据
+  */
+  function doDownload_shipping(id){
+	  
+  	//使用ajax提交下载
+		$.ajax({
+			url:"/crm/fileDownload_shipping.do",
+			data:{
+				  "id":id
+				  },
+			type:"post",
+			dataType:"text",
+			success:function(res){
+				$(obj).parent().next().next().text("");
+				window.location.href = "/crm/fileDownload_shipping.do?id="+id;
+				 //设置定时器，1s后刷新界面
+// 	     		setTimeout(function(){location.reload()},1000);
+				
+				},
+		    error:function(){
+
+		    	easyDialog.open({
+		    		  container : {
+		    		    header : 'Prompt message',
+		    		    content : 'Download failed !'
+		    		  },
+		    		  overlay : false,
+		    		  autoClose : 1000
+		    		});
+		    }
+		});
+ }
+ 
+  //查看Invoice
+  function show_invoice(orderId){
+	   var base = new Base64();
+	   orderId=base.encode(orderId);
+	   window.location.href = "/crm/queryInvoiceByOrderId.do?orderId="+orderId;
+  }
+  
+  /*
+   *根据订单号展现所有图纸信息在reOrder界面
+   */
+  function reOrder(orderId){
+	   var base = new Base64();
+	   orderId=base.encode(orderId);
+	   window.location.href = "${ctx}/queryDrawingsByOrderId.do?orderId="+orderId;
+  }
+  
+  //把日期格式化 2012-12-18 转化为12/18
+  function DateConversion(sDate){
+	    var aDate;
+	    var oDate;
+	    aDate  =  sDate.split("-");
+	    oDate = aDate[1]+ '.' + aDate[2];  
+	    if(oDate == 'undefined.undefined'){
+	    	oDate = '';
+	    }
+	    return oDate;
+	} 
+
+  
+//计算时间差
+function  DateDiff(sDate1,  sDate2){    //sDate1和sDate2是2002-12-18格式  
+    var  aDate,  oDate1,  oDate2,  iDays  
+    aDate  =  sDate1.split("-"); 
+    oDate1  =  new  Date(aDate[0]  +  '-'  +  aDate[1]  +  '-'  +  aDate[2]);    //转换为12-18-2002格式  
+    aDate  =  sDate2.split("-");  
+    oDate2  =  new  Date(aDate[0]  +  '-'  +  aDate[1]  +  '-'  +  aDate[2]);  
+    iDays  =  parseInt(Math.abs(oDate1  -  oDate2)  /  1000  /  60  /  60  /24);    //把相差的毫秒数转换为天数  
+    return  iDays;  
+}
+
+//交期日期和当前日期比较
+function  DateDiff1(deliveryTime){     //deliveryTime是2002-12-18格式  
+	   var   d=new   Date(Date.parse(deliveryTime.replace(/-/g,"/")));
+	   var   curDate=new   Date();
+    if(d > curDate){
+ 	   return false; 
+    }else{
+ 	   return true;  
+    }	      
+}
+
+   
+   
+   //点击弹出照片墙
+   function show_photos(orderId,uploadDate,obj){
+	   $('#wrapper').css({"display":"block"});
+	   $("#imgList").empty();
+	   $("#infoList").empty();
+	   $.ajax({
+			url:"/crm/queryPhotoByUploadDate.do",
+			data:{
+				  "orderId":orderId,
+				  "uploadDate":uploadDate
+				  },
+			type:"post",
+			dataType:"text",
+			success:function(data){
+				var result	= eval("("+data+")");
+// 				var remark = $(obj).next().val();
+				$(".infoList").empty();
+   				for(var i=0;i<result.length;i++){
+   					var img_li = '<li><a><img src="'+result[i].photoPath+'" width="400px" height="200px" alt="'+result[i].photoName+'"></a>'+
+   					             '<input type="hidden" value="'+result[i].id+'"/>'+
+   					             '</li>';
+				
+   				    $("#imgList").append(img_li);				    
+   				}	
+//    				var name_li = '<li class="infoOn">'+remark+'</li>';	
+//    				$(".infoList").append(name_li);
+				$('.indexList').find('li').eq(0).text(uploadDate);
+				$('.indexList').find('li').eq(1).text("1/"+result.length);
+				$("#prev").click();
+				$("#next").click();
+				
+			},
+		    error:function(){
+		    	
+		    	easyDialog.open({
+		    		  container : {
+		    		    header : 'Prompt message',
+		    		    content : 'Failed to load'
+		    		  },
+		    		  overlay : false,
+		    		  autoClose : 2000
+		    		  
+		    		});
+		    }
+		});
+   }
+   
+   
+   //查看所有weekly report
+   function show_all_report(orderId,obj){
+ 	  
+ 	  if($(obj).html() == "Pack Up"){
+ 		  var l = $('.w-recent-posts').find('li').length;
+ 		  for(var i=0;i<l;i++){
+ 			  if(i>1 && i<l-1){
+ 			  $('.w-recent-posts').find('li').eq(i).hide(); 
+ 			  }
+ 		  }
+ 		  $(obj).html("Query All");
+ 		  return false;
+ 	  }else{
+ 		  var l = $('.w-recent-posts').find('li').length;
+ 		  if(l < 3){
+ 			 return false; 
+ 		  }
+ 	  }
+ 	  
+ 	  $.ajax({
+  			url:"/crm/queryPhotoByOrderId.do",
+  			data:{
+  				  "orderId":orderId
+  				  },
+  			type:"post",
+  			dataType:"text",
+  			success:function(str){
+  				var strr = eval('('+str+')');
+ 	        	if(strr.state == 0){
+     	        	var result	= strr.data.productionPhotoes;
+     	        	var productionPhotoTimelines = strr.data.productionPhotoTimelines;
+     	        	var tl = result.length;
+                     if(tl != 0){                       	
+                     	$('.w-recent-posts').empty();
+                         for(var i=0;i<tl;i++){			                            
+				             var li = '<li>'+         
+				                 '<span class="z-pro-tl">1/'+productionPhotoTimelines[i].length+'</span>'+     
+				                 '<div class="user-thumb w-user-thumb">'+
+				                 '<img width="100" height="100" src="'+(result[i].photoPathCompress == null ? '' : result[i].photoPathCompress)+'" onclick="show_photos(\''+result[i].orderId+'\',\''+result[i].uploadDate+'\')"></div>'+
+				                 '<div class="article-post"> <span class="user-info"> Upload Date：'+result[i].uploadDate+'</span>'+
+				                   '<p>&nbsp;&nbsp;Remark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;：'+(result[i].remarks == null ? '' : result[i].remarks)+'</p>'+
+				                 '</div>'+
+				               '</li>';               
+
+                         	  $('.w-recent-posts').append(li); 
+                        } 
+                         $('.w-recent-posts').append("<li><button class=\"btn btn-warning btn-mini\" onclick=\"show_all_report(\'"+orderId+"',this)\">Pack Up</button></li>");
+                     }
+ 	        	}
+  			},
+  		    error:function(){
+  		    	
+  		    	easyDialog.open({
+  		    		  container : {
+  		    		    header : 'Prompt message',
+  		    		    content : '查询失败'
+  		    		  },
+  		    		  overlay : false,
+  		    		  autoClose : 1000
+  		    		  
+  		    		});
+  		    }
+  		});
+ 	  
+   }
+   
+   
+   
+   //关闭图片框
+   function close_wrapper(){
+	   $('#wrapper').hide();
+   }
+
+   
+   
+   //=================================消息中心======================================
+
+       
+   //跳转输入消息界面
+      function open_push_message(orderId,factoryId,messageType){
+   	  window.location = "/crm/toInputMessage.do?orderId="+orderId+"&factoryId="+factoryId+"&messageType="+messageType;
+   }
+      
+   
+   
+      //下载图纸
+      function download_drawing(id){
+      	
+      	//使用ajax提交下载
+      	$.ajax({
+      		url:"/crm/fileDownload_clientDrawing.do",
+      		data:{
+      			  "id":id
+      			  },
+      		type:"post",
+      		dataType:"text",
+      		success:function(res){
+      			
+      			window.location.href = "/crm/fileDownload_clientDrawing.do?id="+id;
+      			
+      			},
+      	    error:function(){
+      	    	
+      	    	easyDialog.open({
+      	    		  container : {
+      	    		    header : 'Prompt message',
+      	    		    content : '下载失败'
+      	    		  },
+      	    		  overlay : false,
+      	    		  autoClose : 1000
+      	    		});
+      	    }
+      	});
+      }
+	   
+   
+      
+    //下载发票
+	function doDownload(invoiceId,factoryId){
+		
+		//使用ajax提交下载
+		$.ajax({
+			url:"/crm/fileDownload_invoice.do",
+			data:{
+				  "invoiceId":invoiceId,
+				  "factoryId":factoryId
+				  },
+			type:"post",
+			dataType:"text",
+			success:function(res){
+				
+				window.location.href = "/crm/fileDownload_invoice.do?invoiceId=" + invoiceId +"&factoryId=" +factoryId;
+				
+				},
+		    error:function(){
+		    	
+		    	easyDialog.open({
+		    		  container : {
+		    		    header : 'Prompt message',
+		    		    content : 'Download failed !'
+		    		  },
+		    		  overlay : false,
+		    		  autoClose : 1000
+		    		});
+		    }
+		});
+  }
+      
+      
+</script>
+<style>
+  #slider{
+  z-index: 999;
+  }
+
+</style>
+<style type="text/css">
+
+  body,div,ul,li,a,img{margin: 0;padding: 0;}
+  ul,li{list-style: none;}
+  a{text-decoration: none;}
+ .w-weui_dialog {
+    z-index: 5000;
+    top:45%;
+    left:50%;
+    position: fixed;
+    margin: 30px auto;
+    width: 800px;
+    height: 600px;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    overflow: hidden;
+}
+
+  #banner{
+  	position: relative;
+    width: 800px;
+    height: 600px;
+    overflow: hidden;
+    }
+  .imgList{
+  	position: relative;
+    width: 32000px;
+    height: 600px;
+    z-index: 10;
+    overflow: hidden;
+    }
+  .imgList li{float:left;display: inline;}
+  .imgList li img{width:800px;height:600px;}
+  #prev,
+  #next{ 
+  	position: absolute;
+    top: 250px;
+    z-index: 20;
+    cursor: pointer;
+    opacity: 0.2;
+    filter: alpha(opacity=20);
+    }
+  #prev{left: 10px;}
+  #next{right: 10px;}
+  #prev:hover,
+  #next:hover{opacity: 0.5;filter:alpha(opacity=50);}
+ .bg{position: absolute;bottom:0px;width: 800px;height: 37px;z-index:20;opacity: 0.4;filter:alpha(opacity=40);background: black;}
+ .infoList{position: absolute;left: 10px;bottom: 10px;z-index: 30;}
+  .infoList li{display: none;}
+  .infoList .infoOn{display: inline;color: white;}
+  .indexList{position: absolute;right: 10px;bottom: 5px;z-index: 30;}
+  .indexList li{float: left;margin-right: 5px;padding: 2px 4px;border: 2px solid black;background: grey;cursor: pointer;color: white;}
+  .indexList .indexOn{background: red;font-weight: bold;color: white;}
+  .w-fork{position: absolute;top: 0px;right: 40px;z-index: 9999;}
+  
+  
+  .z-fork{position: absolute;
+    margin-top: -19px;
+    margin-left: -18px;}
+    
+    
+    
+.w-label{
+	background:url(img/new.png) no-repeat !important;
+	position: absolute;
+    margin-left: 5px;
+}
+.w-label1{
+    margin-left: 18px;
+    margin-top: -39px;
+}
+.label{padding: 2px 5px;
+	font-weight: normal;}
+.w-widget-a{text-decoration: underline;}
+.container-fluid .w-row .span12 {
+    width: 100%;
+}
+</style>
+
+</head>
+<body>
+<jsp:include page="base.jsp"></jsp:include>
+
+<div id="content">
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#" onclick="listClientOrder()" class="tip-bottom" data-original-title="Go to Drawings"><i class="icon icon-file"></i>My Orders</a> <a href="#" class="current w_current_a" data-original-title="">Order Details</a>
+    	<div class="w-rt">
+       	 	<button class="btn btn-primary" onclick="open_push_message('${clientOrder.orderId}','${clientOrder.factoryId}','1')">Push for Lead Time</button>
+        	<button class="btn btn-info" onclick="open_push_message('${clientOrder.orderId}','${clientOrder.factoryId}','2')">Report Quality Issues</button>
+        	<button class="btn btn-success" onclick="open_push_message('${clientOrder.orderId}','${clientOrder.factoryId}','3')">Other Issues</button>
+        	<button class="btn btn-warning" onclick= "reOrder('${clientOrder.orderId}')">ReOrder </button>
+        </div>
+<!--         <div class="weui_dialog_alert w-weui_dialog2" id="push_message_dialog" style="display:none;"> -->
+<!-- 			<div class="waimian2"> -->
+<!-- 				<div  class="control-group" > -->
+<!-- 					<div class="con div-controls"> -->
+<!-- 						<textarea id="push_message_remark" cols=50 rows=5></textarea> -->
+<!-- 					</div> -->
+<!-- 				</div> -->
+<!-- 				<div class="control-group"> -->
+<%-- 					<button  class="btn btn-primary" onclick="send_push_message('${clientOrder.orderId}','${clientOrder.factoryId}')">Send</button> --%>
+<!-- 				</div> -->
+<!-- 			</div> -->
+<!-- 			<a class="close-reveal-modal" href="javascript:void(0);" -->
+<!-- 				onclick="closeDialog()">×</a> -->
+<!-- 	   </div> -->
+<%-- 	   <form id="file_upload_id" action="${ctx}/saveQualityMessageByOrderId.do" onsubmit="return false;" method="post" enctype="multipart/form-data"> --%>
+<!--         <div class="weui_dialog_alert w-weui_dialog3" id="quality_message_dialog" style="display:none;"> -->
+<%--             <input type="hidden" value="${clientOrder.orderId}" name="orderId"> --%>
+<%--             <input type="hidden" value="${clientOrder.factoryId}" name="factoryId"> --%>
+<!-- 			<div class="waimian2"> -->
+<!-- 				<div  class="control-group" > -->
+<!-- 					<div class="con div-controls"> -->
+<!-- 						<textarea id="quality_message_remark" name="qualityMessage" cols=50 rows=5></textarea> -->
+<!-- 					</div> -->
+<!-- 				</div> -->
+<!-- 				<div class="control-group"> -->
+<%-- 					<button  class="btn btn-primary" onclick="send_quality_message('${clientOrder.orderId}')">Send</button> --%>
+<!-- 				</div> -->
+<!--                 <div class="control-group"> -->
+<!--                         <input type="file" size="19" multiple name="file_upload" id="file_upload"> -->
+<!--                 </div> -->
+<!-- 			</div> -->
+<!-- 			<a class="close-reveal-modal" href="javascript:void(0);" -->
+<!-- 				onclick="closeDialog1()">×</a> -->
+<!-- 	   </div> -->
+<!-- 	   </form> -->
+    </div>
+    <div class="w-text">
+      <div class="row-fluid w-table">
+       <div class="span4" style="margin-left: 0;">
+        <table>
+          <tbody>
+          <tr>
+            <td class="w-td">Supplier Project# :</td>
+            <td>${clientOrder.projectName}</td>
+          </tr>
+          <tr>
+            <td class="w-td">PO # :</td>
+            <td>${clientOrder.poNumber}</td>
+          </tr>
+          </tbody>
+        </table>
+        </div>
+        <div class="span4">
+          <table>
+            <tbody>
+            <tr>
+              <td class="w-td">Status :</td>
+              <td id="order_state">${clientOrder.orderStatus == 0 ? 'In Process' : 'Finished'}</td>
+            </tr>
+            <tr>
+              <td class="w-td">Create Date :</td>
+              <td>${clientOrder.createTime}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="span4">
+          <table>
+            <tbody>
+            <tr>
+              <td class="w-td">Amount :</td>
+              <td>$${clientOrder.amount}</td>
+            </tr>
+            <tr>
+              <td class="w-td">Delivery Date :</td>
+              <td>${clientOrder.deliveryTime}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="out-box">
+    <div class="w-font">
+      <h2 style="position: static;">Download</h2>
+    </div>
+    <div class="container-fluid">
+
+    </div>
+    <div class="container-fluid">
+      <div class="w-row row-fluid" style="margin-top: 0px;">
+        <div class="control-group  span12" style="width:100%;">
+<!--         <div class="span4" style="width:21%;"> -->
+<%--               <a class="w-widget-a" style="cursor:pointer;" onclick="doDownload_po('${clientOrder.id}')"><span>PO</span></a> --%>
+<%--               <span style="margin-left: 22%;">${clientOrder.poUpdateTime}</span> --%>
+<%--               <span class="label label-important w-label">${clientOrder.oldOrNewPo}</span>  --%>
+<!--         </div> -->
+        
+        <div class="span4" style="width:21%;">
+    		<div class="row-fluid" style="margin-top:0;">   
+				<div class="control-group span12" style="padding: 0;">
+            		<span style="float:left;"> PO:</span>        		    
+         <c:if test="${pos.size() != 0}">  
+           <ul class="span9">
+            <c:forEach var="obj" items="${pos}" varStatus="i">
+            	<li>  
+           	        <div class="row-fluid" style="margin-top:3px;">   
+					   <div class="control-group span12" style="padding: 0;">
+					   <div class="span6 z-download-div" style="width:170px;">
+			            <span style="color:#666;float: left;">File${i.index+1}:</span><a class="z-a2" onclick="doDownload_po('${obj.id}')">${obj.poPath}</a>
+			            </div>
+			            <span style="color:#666;">${obj.uploadDate}</span>
+			            <span class="label label-important w-label">${obj.oldOrNewPo}</span>
+			            </div>  </div>
+			   </li>
+			 </c:forEach>
+          </ul>
+		 </c:if>                 	                 	 	             
+        </div></div></div>
+        
+        
+        <div class="span1">
+           <a class="w-widget-a" style="color:#08c;cursor:pointer;" onclick="show_invoice('${clientOrder.orderId}')"><span>Invoice</span></a>
+        </div>
+        <div class="span4" style="width:24%;">
+    		<div class="row-fluid" style="margin-top:0;">   
+				<div class="control-group span12" style="padding: 0;">
+            		<span style="float:left;"> QC Report:</span>        		    
+         <c:if test="${qcReports.size() != 0}">  
+           <ul class="span9">
+            <c:forEach var="obj" items="${qcReports}" varStatus="i">
+            	<li>  
+           	        <div class="row-fluid" style="margin-top:3px;">   
+					   <div class="control-group span12" style="padding: 0;">
+					   <div class="span6 z-download-div" style="width:170px;">
+			            <span style="color:#666;float: left;">File${i.index+1}:</span><a class="z-a2" onclick="doDownload_qc('${obj.id}')">${obj.qcReportPath}</a>
+			            </div>
+			            <span style="color:#666;">${obj.uploadDate}</span>
+			            <span class="label label-important w-label">${obj.oldOrNewQc}</span>
+			            </div>  </div>
+			   </li>
+			 </c:forEach>
+          </ul>
+		 </c:if>                 	                 	 
+		                
+		             
+        </div></div></div>
+        <%-- <div class="span3">
+           <a href="#" class="w-widget-a" onclick="doDownload_qc('${clientOrder.id}')"><span> QC Report</span></a>
+           <span class="label label-important w-label">${clientOrder.oldOrNewQc}</span> 
+           <span style="margin-left: 22%;">${clientOrder.qcUpdateTime}</span>
+        </div> --%>
+        <div class="span5">
+           <div class="row-fluid" style="margin-top:0;">   
+			<div class="control-group span12" style="padding: 0;">
+           		<span style="float:left;"> Shipping Doc:</span>
+        <c:if test="${shippingDocs.size() != 0}">  
+          <ul class="span9">
+          <c:forEach var="obj" items="${shippingDocs}" varStatus="i">
+           	<li>  
+           	<div class="row-fluid" style="margin-top:3px;">   
+					   <div class="control-group span12" style="padding: 0;">
+					   <div class="span6 z-download-div" style="width:170px;">
+			            <span style="color:#666;float: left;">File${i.index+1}:</span><a class="z-a2" onclick="doDownload_shippingDoc('${obj.id}')">${obj.shippingDocPath}</a>			            
+			            </div>
+			            <span style="color:#666;">${obj.uploadDate}</span>
+			            <span class="label label-important w-label">${obj.oldOrNewShipping}</span> 
+			            </div>  </div>
+			   </li>
+			</c:forEach>   
+           </ul>
+        </c:if>
+            </div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+    <!-- 图纸列表内容 -->
+<c:if test="${clientDrawings.size()>0}">    
+  <div class="out-box">
+    <div class="w-font">
+      <h2 style="position: static;">Parts List</h2>
+    </div>
+    <div class="container-fluid">
+        <div class="control-group">
+            <div class="controls">
+			<div class="row-fluid">
+            <div class="span12">
+                <div class="widget-box">
+
+                    <div class="widget-content nopadding">
+                        <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper" role="grid">
+                            <table class="table table-bordered data-table dataTable" id="DataTables_Table_0">
+                                <thead>
+                                <tr role="row">
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">File Name
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>                      
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">Product Name
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>                      
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">Unit Price(USD)
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">Quantity
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">Mold Price(USD)
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">Operation
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody role="alert" aria-live="polite" aria-relevant="all" id="product_tbody">  
+                                <c:forEach var="obj" items="${clientDrawings}" varStatus="i">  
+                                <tr class="gradeA odd">
+                                    <td>
+                                     <c:if test="${obj.drawingsPath == null || obj.drawingsPath == ''}">
+                                    <a class="w-widget-a" style="text-decoration:none;">${obj.drawingsName}</a>
+                                     </c:if>
+                                     <c:if test="${obj.drawingsPath != null && obj.drawingsPath != ''}">
+                                    <a class="w-widget-a" style="color: #08c;cursor:pointer;" onclick="download_drawing('${obj.id}')">${obj.drawingsName}</a>
+                                     </c:if>
+                                    </td>
+                                    <td>${obj.productName}</td>
+                                    <td>${obj.unitPrice}</td>
+                                    <td>${obj.quantity}</td>
+                                    <td>${obj.moldPrice}</td>
+                                    <td class="center">
+                                        <c:if test="${obj.drawingsPath == null || obj.drawingsPath == ''}">
+                                        <a><button class="btn btn-primary" style="text-align:center;background-color: #bbb;">Download Drawing</button></a>
+                                        </c:if>
+                                        <c:if test="${obj.drawingsPath != null && obj.drawingsPath != ''}">
+                                        <a><button class="btn btn-primary" style="text-align:center;" onclick="download_drawing('${obj.id}')">Download Drawing</button></a>
+                                        </c:if>
+                                    </td>
+                                </tr>
+                                </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                 </div>
+            </div>
+        </div>   
+    </div>
+  </div>
+  </c:if>
+  
+  
+  
+    <!-- 发票列表内容 -->
+    
+<!--     		<div id="content-header"> -->
+<!-- 			<div class="shuru"> -->
+<!-- 				<div class="shuruming"> -->
+<%-- 					<p class="bianhao">Supplier : ${factoryInfo.factoryName}</p> --%>
+<%-- 					<p class="bianhao" style="margin-left: 110px;">Order : ${orderId}</p> --%>
+<%-- 					<p class="bianhao2">Invoice Total : ${total}&nbsp;${currency}</p> --%>
+<!-- 				</div> -->
+<!-- 			</div> -->
+<!-- 		</div> -->
+
+
+  <div class="out-box">
+    <div class="w-font">
+      <h2 style="position: static;">Invoices List</h2>
+    </div>
+    
+      <div class="span4">
+          <table>
+            <tbody>
+            <tr style="color:#f00;">
+              <td class="w-td">Invoice Amount :</td>
+              <td>${total}&nbsp;USD</td>
+            </tr>
+            </tbody>
+          </table>
+     </div>
+    <div class="container-fluid">
+        <div class="control-group">
+            <div class="controls">
+			<div class="row-fluid">
+            <div class="span12">
+                <div class="widget-box">
+
+                    <div class="widget-content nopadding">
+                        <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper" role="grid">
+                            <table class="table table-bordered data-table dataTable" id="DataTables_Table_0">
+                                <thead>
+                                <tr role="row">
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">Serial Number 
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>                      
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">Invoice Number
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>                      
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">Invoice Amount
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">Create Date
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>          
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">Total Paid
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>          
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">Recently Paid
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>          
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">Recently Paid Date
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>          
+                                    <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">
+                                        <div class="DataTables_sort_wrapper">
+                                            <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                                        </div>
+                                    </th>
+                                </tr>
+                                </thead>
+                                <tbody role="alert" aria-live="polite" aria-relevant="all">  
+                                <c:forEach var="obj" items="${invoiceInfos}" varStatus="i">  
+                                <tr class="gradeA odd">
+                                    <td>${i.index+1}</td>
+                                    <td>${obj.invoiceId}</td>
+                                    <td>${obj.amount}&nbsp;<span style="color:red">${amountUnit[i.count-1].currencyShorthand}</span></td>
+                                    <td>${obj.createTime}</td>
+                                    <td>${obj.sumAmountActual}&nbsp;<span style="color:red">${amountUnit[i.count-1].currencyShorthand}</span></td>
+                                    <td>${obj.amountActual}&nbsp;<span style="color:red">${amountUnit[i.count-1].currencyShorthand}</span></td>
+                                    <td>${obj.paymentTime}</td>
+                                    <td class="center">
+                                    <c:if test="${obj.invoicePath == null || obj.invoicePath == ''}">
+                                        <a><button class="btn btn-primary" style="background-color: #bbb;visibility: hidden;">download</button></a>
+                                    </c:if>
+                                    <c:if test="${obj.invoicePath != null && obj.invoicePath != ''}">
+                                        <a><button class="btn btn-primary" onclick="doDownload('${obj.invoiceId}','${obj.factoryId}')">download</button></a>
+                                    </c:if>
+                                    </td>
+                                </tr>
+                                </c:forEach>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                 </div>
+            </div>
+        </div>   
+    </div>
+  </div>
+
+  <c:if test="${clientOrder.orderRequest != '' && clientOrder.orderRequest != null}">
+  <!-- 原始邮件内容 -->
+  <div class="out-box">
+    <div class="w-font">
+      <h2 style="position: static;">Original Order Request</h2>
+    </div>
+    <div class="container-fluid">
+        <div class="control-group">
+            <label class="control-label">Email Content: </label>
+            <div class="controls">
+               
+            </div>
+       		<div class="controls">
+				<textarea style="width:800px;height:200px;">${clientOrder.orderRequest}</textarea>
+			</div>
+        </div>   
+    </div>
+  </div>
+  </c:if>
+  
+  
+<c:if test="${milestones.size() > 1}">
+<div class="out-box">
+<div class="w-font">
+  <h2>Milestone</h2>
+</div>
+  <div class="container-fluid">
+    <hr>
+  </div>
+  <div class="container-fluid">
+    <div class="w-row row-fluid" style="margin-top: 0px;height:250px;">
+         
+     <div class="z-milestone-div" style="width:80%;">
+		<div class="ui-step-line2 z-step-line2">	
+			<img src="img/img4.png" class="w-img z-img"/>
+			<div class="w-item dot-right2"></div>		
+			<span class="w-img z-img z-font"></span>	
+			<p class="w-img z-img" style="margin-top:-81px;">Today</p>		
+		</div>
+		<div class="ui-step-line"></div>
+		<ul class="ui-step ui-step-5"  id="milestone_ul">
+		
+		   <%
+// 		    for(int j=0;j<p_tl;j++){
+		   %> 	
+<!-- 		    	<div class="w-div-img"> -->
+<%-- 				<img src="<%=productionPhotoTimeline.size() == 0 ? "" : productionPhotoTimeline.get(j).getPhotoPathCompress()%>" class="w-image" onclick="show_photos('<%=productionPhotoTimeline.get(j).getOrderId()%>','<%=productionPhotoTimeline.get(j).getUploadDate()%>',this);"> --%>
+<%-- 				<input type="hidden" value="<%=productionPhotoTimeline.get(j).getRemarks()%>"/> --%>
+<%-- 				<span class="z-line-span">1/<%=list.get(j).size()%></span> --%>
+<%-- 				<span style="color:#666;"><%=productionPhotoTimeline.get(j).getUploadDate()%></span> --%>
+<%-- 				<span style="display:none;"><%=productionPhotoTimeline.get(j).getUploadDate()%></span> --%>
+<!-- 				</div> -->
+		  <%
+// 		    }		   
+		   %>
+		
+		
+		
+		   <%
+		   if(tl > 1){
+              for(int i = 0;i<tl;i++){           	
+               if(i == 0){	
+           %>  	
+            	 <li class="step-start step-done">
+					<div class="ui-step-cont">
+						<span class="ui-step-cont-number"><%=milestones.get(i).getMilestoneDate() == null ? "" : milestones.get(i).getMilestoneDate()%></span>
+						<span style="display:none;"><%=milestones.get(i).getMilestoneDate()%></span>
+						<span style="display:none;"><%=milestones.get(i).getExpectedOrActually()%></span>
+						 <span class="w_img_s"><img src="images/w_top.png"/></span>
+						<span class="ui-step-cont-text w-top-text" style="color:#666;"><%=milestones.get(i).getMilestoneName()%></span>
+						
+	<span style="display:none;"><%=milestones.get(i).getDelayStatus()%></span>
+						<div style="display:none;" class="z-img-div">
+			              <img src="img/img2.png" class="z-img-delay"/>
+			              <textarea disabled>Delay reason : <%=milestones.get(i).getDelayRemark() == null ? "" : milestones.get(i).getDelayRemark()%></textarea>
+			            </div>
+					</div>				
+			     </li>
+			  <%
+               }
+			  if(i>0 && i<tl-1){
+			  %>   
+			     <li class="step-start z-step-done">
+					<div class="ui-step-cont">
+						<span class="ui-step-cont-number"><%=milestones.get(i).getMilestoneDate() == null ? "" : milestones.get(i).getMilestoneDate()%></span>
+						<span style="display:none;"><%=milestones.get(i).getMilestoneDate()%></span>
+						<span style="display:none;"><%=milestones.get(i).getExpectedOrActually()%></span>
+<!-- 							 <div class="w_bottom_div"> -->
+							 <span class="w_img_s"><img src="images/w_top.png"></span>
+							 <span class="ui-step-cont-text w-top-text" style="color:#666;"><%=milestones.get(i).getMilestoneName()%></span>
+							
+				        <span style="display:none;"><%=milestones.get(i).getDelayStatus()%></span>
+						<div style="display:none;" class="z-img-div">
+			              <img src="img/img2.png" class="z-img-delay"/>
+			              <textarea disabled>Delay reason : <%=milestones.get(i).getDelayRemark() == null ? "" : milestones.get(i).getDelayRemark()%></textarea>
+			            </div>
+					</div>
+			    </li>
+			  <%	  
+			   }
+			  if(i == tl-1){
+			  %>  
+			     <li class="step-end">
+					<div class="ui-step-cont">
+						<span class="ui-step-cont-number"><%=milestones.get(i).getMilestoneDate() == null ? "" : milestones.get(i).getMilestoneDate()%></span>
+						<span style="display:none;"><%=milestones.get(i).getMilestoneDate()%></span>					
+						<span style="display:none;"><%=milestones.get(i).getExpectedOrActually()%></span>					
+								<span class="w_img_s"><img src="images/w_top.png"></span>
+								<span class="ui-step-cont-text w-top-text" style="color:#666;"><%=milestones.get(i).getMilestoneName()%></span>
+							
+			            <span style="display:none;"><%=milestones.get(i).getDelayStatus()%></span>
+						<div style="display:none;" class="z-img-div">
+			              <img src="img/img2.png" class="z-img-delay"/>
+			              <textarea disabled>Delay reason : <%=milestones.get(i).getDelayRemark() == null ? "" : milestones.get(i).getDelayRemark()%></textarea>
+			            </div>
+					</div>
+				 </li>	          		  	   
+		     <% 			  
+              }
+             }
+		    }
+		   %>
+
+		</ul>
+	</div>	
+  </c:if>        
+         
+         
+         
+         
+        <!--图片轮播 -->
+         <div id="wrapper" style="display:none;">
+        <div class="weui_mask" onclick="close_wrapper()"></div>
+        <div class="w-fork"><img src="images/fork.png" onclick="close_wrapper()"></div>
+        <div class="w-weui_dialog"><!-- 最外层部分 -->
+          <div class="bg"></div> <!-- 图片底部背景层部分-->
+	      <ul class="infoList"><!-- 图片左下角文字信息部分 -->
+	         <li></li>
+	      </ul>
+	      <ul class="indexList"><!-- 图片右下角序号部分 -->
+	        <li></li>
+	        <li>1/N</li>
+	      </ul>
+		    <div id="banner"><!-- 轮播部分 -->
+		      <ul class="imgList" id="imgList"><!-- 图片部分 -->
+		      
+		      </ul>
+		      <img src="images/arrow-left.png" width="20px" height="40px" id="prev">
+		      <img src="images/arrow-right.png" width="20px" height="40px" id="next">
+      
+		    </div>
+		  </div>         
+         </div>
+    </div>
+
+
+        <div class="container-fluid"><hr style="clear:both;">
+        <div class="row-fluid">
+            <div class="span12">
+                <h1 style="font-size:16px;margin: 0;">Weekly Report</h1>
+                
+            </div>
+        </div>
+        <a href="javascript:;"><button class="btn btn-info" onclick="show_upload_pic()" style="margin:15px 0;display:none;">上传图片</button></a>
+        <div class="row-fluid">
+       
+            <div class="span12">
+            
+            <ul class="recent-posts w-recent-posts">
+              <c:forEach var="obj" items="${productionPhotoTimeline}" varStatus="i"> 
+              <c:if test="${i.index == 0}">
+              <li>         
+                <span class="z-pro-tl">1/${productionPhotoTimelines.get(i.count-1).size()}</span>     
+                <div class="user-thumb w-user-thumb">
+                <img width="100" height="100"  src="${obj.photoPathCompress == null ? '' : obj.photoPathCompress}" onclick="show_photos('${obj.orderId}','${obj.uploadDate}');"> </div>
+                <div class="article-post"> <span class="user-info"> Upload Date：${obj.uploadDate}</span>
+                  <p>&nbsp;&nbsp;Remark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;：${obj.remarks == null ? '' : obj.remarks}</p>
+                </div>
+              </li>
+              </c:if>
+              <c:if test="${i.index == 1}">
+              <li>         
+                <span class="z-pro-tl">1/${productionPhotoTimelines.get(i.count-1).size()}</span>     
+                <div class="user-thumb w-user-thumb">
+                <img width="100" height="100"  src="${obj.photoPathCompress == null ? '' : obj.photoPathCompress}" onclick="show_photos('${obj.orderId}','${obj.uploadDate}');"> </div>
+                <div class="article-post"> <span class="user-info"> Upload Date：${obj.uploadDate}</span>
+                  <p>&nbsp;&nbsp;Remark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;：${obj.remarks == null ? '' : obj.remarks}</p>
+                </div>
+              </li>
+              </c:if>
+              </c:forEach>
+             <c:if test="${productionPhotoTimeline.size() > 2}">
+              <li>
+                <button class="btn btn-warning btn-mini" onclick="show_all_report('${clientOrder.orderId}',this)">Query All</button>
+              </li>
+              </c:if>
+            </ul>             
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+<c:if test="${shippingDocs.size() != 0}">
+<div class="container-fluid" style="margin-bottom:100px;">
+        <div class="row-fluid">
+            <div class="span12">
+                <h1 style="font-size:16px;margin: 0;">Shipping</h1>
+                
+            </div>
+        </div>
+<c:forEach var="obj" items="${shippingDocs}" varStatus="i">
+<div class="shipping-progress" style="width:80%;">
+		<div class="ui-step-line2">	
+			<img src="img/img3.png" class="w-img" style="position: relative;"/>
+			<span style="position: absolute;top: -40px;margin-left: 98%;color: #666;"></span>
+		</div>
+		<div class="ui-step-line"></div>
+		<ul class="ui-step ui-step-5"  id="shipping_ul">
+			<li class="step-start step-done">
+				<div class="ui-step-cont">
+					<span class="ui-step-cont-number">${obj.shippingStartDate == null ? '' : obj.shippingStartDate}</span>
+					<span style="display:none;">${obj.shippingStartDate}</span>
+					<span class="ui-step-cont-text w-top-text" style="top:32px;">Start</span>
+				</div>
+			</li>
+			<li class="step-start z-step-done">
+				<div class="ui-step-cont">
+					<span class="ui-step-cont-number">${obj.ISFDate == null ? '' : obj.ISFDate}</span>
+					<span style="display:none;">${obj.ISFDate}</span>
+					<span class="ui-step-cont-text w-top-text" style="color:#28b779;top:32px;">ISF Date</span>
+				</div>
+			</li>
+			<li class="step-start z-step-done1">
+				<div class="ui-step-cont">
+					<span class="ui-step-cont-number">${obj.BLAvailableDate == null ? '' : obj.BLAvailableDate}</span>
+					<span style="display:none;">${obj.BLAvailableDate}</span>
+					<span class="ui-step-cont-text w-top-text" style="color:#28b779;top:32px;">BL Date</span>
+				</div>
+			</li>
+			<li class="step-end">
+				<div class="ui-step-cont">
+					<span class="ui-step-cont-number">${obj.shippingArrivalDate == null ? '' : obj.shippingArrivalDate}</span>
+					<span style="display:none;">${obj.shippingArrivalDate}</span>					
+					<span class="ui-step-cont-text w-ui-step-cont-text" style="top:32px;">Arrival Date</span>
+				</div>
+			</li>
+		</ul>
+	</div>	
+ </c:forEach>	
+  </div>
+</c:if>
+
+<div class="row-fluid">
+  <div id="footer" class="span12"> 
+  </div>
+</div>
+<!--end-Footer-part-->
+</body>
+
+
+</html>

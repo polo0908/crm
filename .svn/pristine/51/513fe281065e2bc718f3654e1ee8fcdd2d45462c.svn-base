@@ -1,0 +1,93 @@
+package com.cbt.service.impl;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cbt.dao.FactoryMapper;
+import com.cbt.dao.FactoryOrderMapper;
+import com.cbt.dao.OrderPayLogMapper;
+import com.cbt.dao.UrlInfoMapper;
+import com.cbt.entity.Factory;
+import com.cbt.entity.FactoryOrder;
+import com.cbt.entity.OrderPayLog;
+import com.cbt.entity.UrlInfo;
+import com.cbt.enums.OrderTypeEnum;
+import com.cbt.service.FactoryService;
+import com.cbt.util.IdGen;
+@Service
+public class FactoryServiceImpl implements FactoryService {
+    
+	@Autowired
+	private FactoryMapper factoryMapper;
+	@Autowired
+	private UrlInfoMapper urlInfoMapper;
+	@Autowired
+	private FactoryOrderMapper factoryOrderMapper;
+	@Autowired
+	private OrderPayLogMapper orderPayLogMapper;
+	/**
+	 * 选择工厂订单并支付
+	 */
+	@Override
+	@Transactional
+	public OrderPayLog addFactoryPay(Factory factory) {
+		//1.添加工厂信息
+		factoryMapper.insertSelective(factory);
+		//2.添加工厂网址
+		List<String> urlList=factory.getUrlList();
+		List<UrlInfo> urlInfoList=new ArrayList<UrlInfo>();
+		for (int i = 0; i < urlList.size(); i++) {
+			UrlInfo urlInfo=new UrlInfo();
+			urlInfo.setId(IdGen.uuid());
+			urlInfo.setFactoryId(factory.getId());
+			urlInfo.setUrl(urlList.get(i));
+			urlInfo.setCreateDate(new Date());
+			urlInfoList.add(urlInfo);
+		}
+		urlInfoMapper.batchInsertUrlInfo(urlInfoList);
+		//3.创建客户订单
+		FactoryOrder factoryOrder=new FactoryOrder();
+		factoryOrder.setId(IdGen.uuid());
+		factoryOrder.setOrderId(factory.getOrderId());
+		factoryOrder.setUserId(factory.getUserId());
+		factoryOrder.setType(OrderTypeEnum.FACTORIES_SELECTED.getCode());
+		factoryOrder.setFileUrl(factory.getQuestionFile());
+		factoryOrder.setMoney(factory.getPrice());
+		factoryOrder.setStatus(0);
+		factoryOrder.setCreateDate(new Date());
+		System.out.println(factoryOrder);
+		factoryOrderMapper.insertSelective(factoryOrder);
+		//4.创建订单支付日志
+		OrderPayLog payLog=new OrderPayLog();
+		payLog.setId(IdGen.uuid()); 
+		payLog.setUserId(factory.getUserId());
+		payLog.setOrderId(factory.getOrderId());
+		payLog.setType(factoryOrder.getType());
+		payLog.setOrderAmount(factory.getPrice());
+		payLog.setPaymentAmount(factory.getPrice());
+		payLog.setPayStatus(factoryOrder.getStatus());
+		payLog.setPaymentCc("美元");
+		payLog.setPayType("paypal");
+		payLog.setOperateTime(new Date());
+		payLog.setCreateDate(new Date());
+		payLog.setOrderDesc("");
+		payLog.setRemark("");
+		orderPayLogMapper.insertSelective(payLog);
+		OrderPayLog orderPayLog =orderPayLogMapper.selectByPrimaryKey(payLog.getId()); 
+		return orderPayLog;
+	}
+	/**
+	 * 添加选择工厂信息
+	 */
+	@Override
+	public void addSelectFactory(Factory factory) {
+		factoryMapper.insertSelective(factory);
+	}
+	
+}

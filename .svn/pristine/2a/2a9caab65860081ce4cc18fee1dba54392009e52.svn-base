@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.ReOrderDrawingsDao">
+
+
+	<resultMap id="ReOrderDrawingsResultMap" type="com.cbt.entity.ReOrderDrawings">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="reOrder_id" property="reOrderId" jdbcType="INTEGER" />
+		<result column="userid" property="userId" jdbcType="VARCHAR" />
+		<result column="old_order" property="oldOrderId" jdbcType="INTEGER" />
+		<result column="project_name" property="projectName" jdbcType="VARCHAR" />
+		<result column="drawings_path" property="drawingsPath" jdbcType="VARCHAR" />
+		<result column="drawings_name" property="drawingsName" jdbcType="VARCHAR" />
+		<result column="quantity" property="quantity" jdbcType="INTEGER" />
+		<result column="unit_Price" property="unitPrice" jdbcType="DOUBLE" />
+		<result column="mold_price" property="moldPrice" jdbcType="DOUBLE" />
+		<result column="drawing_state" property="drawingState" jdbcType="VARCHAR" />
+		<result column="product_name" property="productName" jdbcType="VARCHAR" />
+		<result column="status" property="status" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="ReOrderDrawingsColumnList">
+		id, reOrder_id, userid, old_order, project_name, drawings_path,
+		drawings_name, quantity, unit_Price, mold_price, drawing_state,
+	    product_name,status
+	</sql>
+    <!-- 批量插入数据 -->
+	<insert id="insertReOrders" parameterType="ArrayList">
+<!-- userId=10000, requiredTime=2016-09-09, oldOrderId=10, moldPrice=23.0, quantity=1, unitPrice=5.3, drawingsPath=312, drawingsName=1210, projectName=001, comments= -->
+	    insert into reorder_drawing 
+		    (
+		    reOrder_id, userid, old_order, project_name,
+		    drawings_path, 
+			drawings_name,  
+		    quantity,
+			unit_Price, mold_price, drawing_state,product_name,status 
+            )
+	    values
+	    <foreach collection="list" item="item" index="index" separator=",">
+	      (           
+		    #{item.reOrderId},#{item.userId},#{item.oldOrderId},#{item.projectName},
+		    #{item.drawingsPath},
+		    #{item.drawingsName}, 
+		    #{item.quantity}, 
+		    #{item.unitPrice},#{item.moldPrice},#{item.drawingState},#{item.productName},#{item.status}
+	      )
+	    </foreach>
+	  </insert>
+	  
+	  
+    <!-- 批量插入数据 -->
+	<insert id="insertReOrderDrawings" parameterType="java.util.List">
+	    insert into reorder_drawing 
+		    (
+		    reOrder_id, userid, 
+		    drawings_path, 
+			drawings_name,  
+		    quantity,
+			unit_Price, mold_price, drawing_state,product_name,status 
+            )
+	    values
+	    <foreach collection="list" item="item" index="index" separator=",">
+	      (           
+		    #{item.reOrderId},#{item.userId},
+		    #{item.drawingsPath},
+		    #{item.drawingsName}, 
+		    #{item.quantity},
+		    #{item.unitPrice},#{item.moldPrice},#{item.drawingState},#{item.productName},#{item.status}
+	      )
+	    </foreach>
+	  </insert>
+	       
+	    <!-- 根据reOrderId查询图纸详情 -->
+    <select id="queryReOrderDrawings" parameterType="int" resultMap="ReOrderDrawingsResultMap">
+      select 
+      <include refid="ReOrderDrawingsColumnList" /> 
+      from reorder_drawing  
+      where reOrder_id = #{reOrderId,jdbcType=INTEGER}    
+    </select>
+    
+    
+        	<!-- 根据id查询新图纸信息 -->
+	<select id="queryById" resultMap="ReOrderDrawingsResultMap" parameterType="int">
+	   select 
+	   <include refid="ReOrderDrawingsColumnList" /> 
+	   from reorder_drawing  
+	   where id = #{id,jdbcType=INTEGER}
+	</select>
+</mapper>

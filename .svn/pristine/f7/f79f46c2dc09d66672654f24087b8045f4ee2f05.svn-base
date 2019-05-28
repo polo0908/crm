@@ -1,0 +1,356 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%> 
+<%@page import="com.cbt.util.WebCookie"%>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Quality Control Detail</title>
+		<script src="${ctx}/js/jquery.min.js"></script>
+		<script src="${ctx}/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="${ctx}/css/bootstrap.css">
+		<link type='image/x-ico' rel='icon' href='img/favicon.ico' />
+		<script src="${ctx}/js/jquery.min.js"></script>
+		<script src="${ctx}/js/bootstrap.min.js"></script>
+		<script type="text/javascript">
+			function myModal() {
+				$("#myModal").show();
+				$(".modal-header").show();
+				$(".modal-body").show();
+				$(".modal-footer").show();
+			}
+
+			function myquestion() {
+				$("#myModal").hide();
+				$("#myquestion").show();
+				$(".modal-body").hide();
+				$(".modal-footer").hide();
+				$("#myquestion p").show();
+
+			}
+
+			function mysure() {
+				$("#myquestion").hide();
+			}
+		</script>
+		<style type="text/css">
+			.container {
+				width: 970px;
+			}
+			
+			#myquestion {
+				position: fixed;
+				left: 35%;
+				display: none;
+			}
+			
+			.wrap-bg {
+				width: 100%;
+				position: absolute;
+				background: url(images/project-1-1.jpg);
+				filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/project-1-1.jpg)', sizingMethod='scale');
+				background-size: cover;
+				height: auto;
+				left: 0;
+				bottom: 0px;
+				top: 0px;
+				right: 0px;
+			}
+			
+			.factories_form {
+				list-style: none;
+			}
+			
+			.factories_form li {
+				margin-bottom: 10px;
+			}
+			
+			.row,
+			.form-horizontal .form-group {
+				padding:0 0;
+				margin: 0 0;
+			}
+			
+			.modal-dialog {
+				top: 25%;
+			}
+			
+			.btn-sel {
+				color: #333;
+				background-color: #fff;
+				border: 1px solid #ccc;
+				display: inline-block;
+				margin-bottom: 0;
+				font-weight: normal;
+				text-align: center;
+				vertical-align: middle;
+				touch-action: manipulation;
+				cursor: pointer;
+				white-space: nowrap;
+				padding: 10px 20px;
+				font-size: 14px;
+				line-height: 1.42857;
+				border-radius: 4px;
+			}
+			
+			.question {
+				background: #fff;
+				border-radius: 6px;
+				padding: 20px;
+				-webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+				box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+			}
+			
+			.col-md-3 {
+				padding:0 0;
+			}
+			
+			.green_btn {
+				background: #28b779;
+				color: #fff;
+				font-weight: bold;
+				border: 1px solid #16a768;
+			}
+			
+			.blue_btn {
+				background: #08c;
+				color: #fff;
+				font-weight: bold;
+				border: 1px solid #0272aa;
+			}
+			
+			.green_btn:hover {
+				background: #16a768;
+				color: #fff;
+				border: 1px solid #28b779;
+			}
+			
+			.blue_btn:hover {
+				background: #0272aa;
+				color: #fff;
+				border: 1px solid #08c;
+			}
+			
+			.row p {
+				height: 30px;
+				line-height: 30px;
+			}
+	
+    a{color:#9DD2FF}
+			a:focus, a:hover{color:#5BBBFF}
+.text_over{ width: 100%;
+    min-height: 25px;
+    display: inline-block;
+    background: none;
+    color: #fff;
+    text-overflow: ellipsis;
+    word-break: break-all;border:none;}
+    .line-style{text-align: center;margin-top:30px;padding-top: 20px;border-top: 1px solid #fff;width:78%}
+		</style>
+	</head>
+
+	<body style="background: #2E363F;color: #fff;">
+	<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" class="payifcondiv" id="payForm">
+		<div class="">
+			<div class="container" style="margin-top:10%; margin:0 0;padding:1% 2%;margin: 3% auto;">
+				<h1 style="text-align: center;font-weight:bold;  padding: 10px;font-size: 1.5rem;">Confirm Page</h1>
+
+					<div class="form-group">
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Requriements:</label>
+							</div>
+							<c:if test="${factoryOrder.quaType==0}">
+								<div class="col-md-7">
+									<p >Check Appearance & Basic Function & Count</p>
+								</div>
+							</c:if>
+							<c:if test="${factoryOrder.quaType==1}">
+								<div class="col-md-7">
+									<p>Check Part-Level Dimensions</p>
+								</div>
+							</c:if>
+							<div class="factories_add  col-md-2">
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">How many kinds of parts:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${factoryOrder.partsCount}</p>
+							</div>
+							<div class="factories_add  col-md-2">
+
+							</div>
+
+						</div>
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">How complex are these parts:</label>
+							</div>
+							<c:if test="${factoryOrder.complexity==0}">
+								<div class="col-md-7">
+									<p> Normal Parts</p>
+								</div>
+							</c:if>
+							<c:if test="${factoryOrder.complexity==1}">
+								<div class="col-md-7">
+									<p> Complex Parts</p>
+								</div>
+							</c:if>
+							<div class="factories_add  col-md-2">
+
+							</div>
+
+						</div>
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Need other special checking:</label>
+							</div>
+							<ul class="col-md-7">
+							   <c:forEach items="${otherList}" var="other">
+							        <c:if test="${other eq '0'}">
+										<li>
+											<p>Chemical Composition Check</p>
+										</li>
+									</c:if>
+									<c:if test="${other eq '1'}">
+										<li>
+											<p>Salt Spray Test</p>
+										</li>
+									</c:if>
+									<c:if test="${other eq '2'}">
+										<li>
+											<p>UV Stability Test</p>
+										</li>
+									</c:if>
+									<c:if test="${other eq '3'}">
+										<li>
+											<p>X-Ray Check</p>
+										</li>
+									</c:if>
+								</c:forEach>
+							</ul>
+
+						</div>
+						<div class="row">
+							<div class="col-md-3 ">
+								<label>Add Comments:</label>
+							</div>
+
+							<div class="col-md-7 " style="padding-left: 0px;">
+
+								<p class="form-control text_over">${factoryOrder.comment}</p>
+							</div>
+							<div class="col-md-2">
+
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Upload File:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${factoryOrder.fileUrl}</p>
+							</div>
+							<div class="factories_add  col-md-2">
+
+							</div>
+
+						</div>
+<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Factory Province:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${factoryOrder.province}</p>
+							</div>
+							<div class="col-md-2">
+
+							</div>
+
+						</div>
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Factory  Address:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${factoryOrder.address}</p>
+							</div>
+							<div class="factories_add  col-md-2">
+
+							</div>
+
+						</div>
+
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Factory Phone:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${factoryOrder.phone}</p>
+							</div>
+							<div class="factories_add  col-md-2">
+
+							</div>
+
+						</div>
+
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Factory Email:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${factoryOrder.email}</p>
+							</div>
+							<div class="factories_add  col-md-2">
+
+							</div>
+
+						</div>
+                    
+						<div class="row">
+
+							<b style="font-weight:bold;font-size:20px;">Price:</b><b style="color: #FF5400;font-size:20px;margin-left:20%;">$${factoryOrder.money}</b>
+							
+						</div>
+						<input type="hidden" id="sampleCost" value="${sampleCost}"> 
+						<input type="hidden" id="purl" value="${purl}"> 
+						<input type="hidden" id="fprice" value="${fprice}"> 
+						<input type="hidden" id="comUserId" value="${comUserId}"> 
+						<input type="hidden" id="orderid" value="${orderid}"> 
+						<input type="hidden" id="indexid" value="${indexid}"> 
+						<input type="hidden" id="goodsPid" value="${goodsPid}"> 
+						<input type="hidden" name="cmd" value="_xclick"> 
+						<input type="hidden" name="business" value="584JZVFU6PPVU"> 
+						<input type="hidden" name="lc" value="US">
+					   	<input id="item_number" type="hidden" name="item_number"value="${factoryOrder.orderId}+${factoryOrder.userId}">
+					   	<input id="amount"type="hidden" name="amount" value="${factoryOrder.money}">
+					   	<input type="hidden" name="currency_code" value="USD">
+					   	<input type="hidden" name="button_subtype" value="services">
+					   	<input type="hidden" name="no_note" value="3"> 
+					   	<input type="hidden" name="no_shipping" value="3">
+					   	<input type="hidden" name="rm"value="3"> 
+					   	<input type="hidden" name="return" value="http://116.228.150.218:8086/cbt/paysuccess.jsp">
+					   	<input id="cancel_return" type="hidden" name="cancel_return" value="http://localhost:8084/crm/factory/orderDetailPay.do?orderId==${factoryOrder.orderId}">
+						<input type="hidden" name="shipping" value="0.00"> 
+						<input type="hidden" name="bn"value="PP-BuyNowBF:btn_buynowCC_LG.gif:NonHosted">
+						<div class="form-group line-style" >
+							<div class="col-sm-offset-2 col-sm-9 " style="margin-left: 0px; ">
+								<button type="button " class="btn blue_btn " onclick="myModal() ">Pay Now</button>
+							</div>
+						</div>
+
+					</div>
+</div>
+			</div>
+
+	
+		</form>
+	</body>
+
+</html>

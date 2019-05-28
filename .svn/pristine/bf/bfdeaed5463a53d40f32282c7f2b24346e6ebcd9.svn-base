@@ -1,0 +1,1234 @@
+<%@ page language="java" contentType="text/html; charset=utf-8"
+	pageEncoding="utf-8"%>
+<%@page import="com.cbt.util.WebCookie"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt"%> 
+<%@page import="java.util.List"%>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<%List<Object> emailReceive = (List<Object>)request.getAttribute("emailReceive");%>
+<%List<Object> emailSend = (List<Object>)request.getAttribute("emailSend");%>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>ImportX</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="stylesheet" href="css/bootstrap.min.css" />
+<link rel="stylesheet" href="css/bootstrap-responsive.min.css" />
+<!--<link rel="stylesheet" href="css/fullcalendar.css" />-->
+<link rel="stylesheet" href="css/font-awesome.css" />
+<link rel="stylesheet" href="css/matrix-style.css" />
+<link rel="stylesheet" href="css/matrix-media.css" />
+ <link rel="stylesheet" href="css/select2.css" />
+<link href="font-awesome/css/font-awesome.css" rel="stylesheet" />
+<link rel="stylesheet" href="css/jquery.gritter.css" />
+<link rel="stylesheet" href="css/easydialog.css" />
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/orders.css" />
+<link type='image/x-ico' rel='icon' href='img/favicon.ico' />
+<!-- <link rel="stylesheet" href="css/box.css" /> -->
+<link rel="stylesheet" type="text/css" href="css/highchart/BigDataShow.css" />
+
+<script type="text/javascript" src="js/jquery-1.10.2.js"></script>
+<script type="text/javascript" src="js/easydialog.min.js"></script>  
+<script type="text/javascript" src="js/base64.js"></script>  
+<script type="text/javascript">
+
+
+
+    $(function(){
+    	
+       $('#sidebar_ul').find('li').eq(0).addClass('active');
+    	
+//        $('base').attr('href','');
+    	
+    	//页面加载后,收发邮件隐藏
+ 	    $('#show_send_content').hide();
+ 	    $('#show_receive_content').hide();
+ 	    //状态是In Process的页面显示处理
+    	var tl= $("#tab1").find("div.w-box").length;
+ 	    
+ 	    //当 In process无数据时，显示finished
+ 	    if(tl == 0){  
+ 	    $('#li_tab1').removeClass("active");
+ 	    $('#li_tab2').addClass("active");
+  	    $('#tab1').removeClass("active");
+  	    $('#tab2').addClass("active");   	
+ 	    }
+ 	    
+ 	  	 for(var i=0;i<tl;i++){
+ 		   var trl = $("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").length;
+ 		   var rfq_trl =  $("#tab1").find(".w-box").eq(i).find("tbody").eq(1).find("tr").length;
+ 		   
+ 		   if(trl == 0){
+ 			  $("#tab1").find(".w-box").eq(i).css({"display":"none"});
+ 		   }else{
+ 			  $("#tab1").find(".w-box").eq(i).show(); 
+ 		   }
+ 		   
+ 		   //判断新图纸是否存在，如不存在则不显示
+ 		   if(rfq_trl == 0){
+ 			  $("#tab1").find(".w-box").eq(i).find(".row-fluid").css({"display":"none"});
+ 		   }else{
+ 			  $("#tab1").find(".w-box").eq(i).find(".row-fluid").show(); 
+ 		   }
+ 		   
+ 		   //循环新图纸询盘显示
+ 		  for( var q =0; q<rfq_trl; q++){
+ 			   var status = $("#tab1").find(".w-box").eq(i).find("tbody").eq(1).find("tr").eq(q).children("td:eq(3)").text();  
+ 			   if(status == 3){
+ 				  $("#tab1").find(".w-box").eq(i).find("tbody").eq(1).find("tr").eq(q).children("td:eq(3)").text("Closed"); 
+ 			   }
+ 			   if(status == 2){
+ 				  $("#tab1").find(".w-box").eq(i).find("tbody").eq(1).find("tr").eq(q).children("td:eq(3)").text("Processed"); 
+ 			   }
+ 			   if(status == 1){
+ 				  $("#tab1").find(".w-box").eq(i).find("tbody").eq(1).find("tr").eq(q).children("td:eq(3)").text("Untreated"); 
+ 			   }
+ 		   }
+ 		   
+ 		   
+ 		   
+ 		   for(var j=0;j<trl;j++){			  
+ 			  //判断处理中的订单是否延期（提醒）
+ 			 var deliveryTime =  $("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(4)").find("input").val(); 
+ 			 var str = DateDiff(deliveryTime); 
+ 			 if(str == false){
+ 				$("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(0)").find("img").css({"display":"inline-block"}); 				 				
+ 			 }else{
+ 				$("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(0)").find("img").css({"display":"none"});				
+ 				
+ 			 } 
+ 			 //处理图纸名显示，当有图纸可点击查看
+//  			 var drawingNames = $("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(3)").find("span").text();
+//  			 if(drawingNames == "" || drawingNames == null){
+//  				$("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(3)").find("span").next().css({"display":"none"}); 
+//  			 }
+ 			 
+//  			 var poPath = $("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(5)").find("input").val(); 
+//  			 if(poPath == "" || poPath == null){
+//  				$("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(7)").find('div:eq(0)').css('display','none');
+	 		   	
+//  			 }
+//  			var qcReportPath = $("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(2)").find("input").val();  
+//  			if(qcReportPath == "" || qcReportPath == null){
+//  				$("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(7)").find("div:eq(1)").removeAttr('onclick').css({color:"#888"}).css('display','none');
+// 	 			}	  
+//  			var shippingDocPath = $("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(6)").find("input").val();
+//  			if(shippingDocPath == "" || shippingDocPath == null){
+//  				$("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(7)").find("div:eq(3)").removeAttr('onclick').css({color:"#888"}).css('display','none');
+//  				}
+//  			var status = $("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(6)").find("span").text();
+// 		 			//显示订单状态  
+// 		 			//订单状态(0：In Process，1：Finished)
+// 		    	        if(status == 0){
+// 		    	        	$("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(6)").find("span").text("In Process");	
+// 		    	        }
+// 		    	        if(status == 1){
+// 		    	        	$("#tab1").find(".w-box").eq(i).find("tbody").eq(0).find("tr").eq(j).children("td:eq(6)").find("span").text("Finished");	
+// 		    	        }						
+ 		   }
+ 		   
+ 		   
+ 	     }
+ 	  	check_clientOrders2();	
+ 	  		  	
+ 	  	var factoryName = $('#factory_name').val();
+ 	  	if(factoryName != null && factoryName != ''){
+ 	  	$("#select1").find("option[value='"+factoryName+"']").attr("selected",true);	
+ 	  		select_factory();
+ 	  		$(".container-fluid").eq(0).show();
+ 	  	}else{
+ 	  		$(".container-fluid").eq(0).show();
+ 	  	}
+		
+    });
+    
+    //处理已结束订单显示
+    function check_clientOrders2(){
+		//状态是Finished的页面显示处理
+		var tl= $("#clientOrders2").find("tr").length;
+		for(var i=0;i<tl;i++){			
+			
+// 			 var drawingNames = $("#clientOrders2 tr:eq("+i+")").children("td:eq(3)").find("span").text();
+//  			 if(drawingNames == "" || drawingNames == null){
+//  				$("#clientOrders2 tr:eq("+i+")").children("td:eq(3)").find("span").css({"display":"none"}); 
+//  			 }
+			
+// 			var poPath = $("#clientOrders2 tr:eq("+i+")").children("td:eq(4)").find("input").val();
+// 			if(poPath == "" || poPath == null){
+// 			  $("#clientOrders2 tr:eq("+i+")").children("td:eq(6)").find("div:eq(0)").removeAttr("href").removeAttr('onclick').css({"color":"#666"}).hide();
+// 			}
+			
+// 			var qcReportPath = $("#clientOrders2 tr:eq("+i+")").children("td:eq(2)").find("input").val(); 
+// 			if(qcReportPath == "" || qcReportPath == null){
+// 			  $("#clientOrders2 tr:eq("+i+")").children("td:eq(6)").find("div:eq(1)").removeAttr('onclick').css({color:"#888"}).hide();
+// 			}
+// 			var shippingDocPath = $("#clientOrders2 tr:eq("+i+")").children("td:eq(5)").find("input").val();
+// 			if(shippingDocPath == "" || shippingDocPath == null){
+// 				  $("#clientOrders2 tr:eq("+i+")").children("td:eq(6)").find("div:eq(3)").removeAttr('onclick').css({color:"#888"}).hide();
+// 				}
+			
+// 			var status = $("#clientOrders2 tr:eq("+i+")").children("td:eq(5)").find("span").text();
+// 			//显示订单状态  
+// 			//订单状态(0：In Process，1：Finished)
+//    	        if(status == 0){
+//    	        	$("#clientOrders2 tr:eq("+i+")").children("td:eq(5)").find("span").text("In Process");	
+//    	        }
+//    	        if(status == 1){
+//    	        	$("#clientOrders2 tr:eq("+i+")").children("td:eq(5)").find("span").text("Finished");	
+//    	        }
+		}
+	}
+
+    
+   /*
+    *根据订单号展现所有图纸信息在reOrder界面
+    */
+   function reOrder(orderId){
+	   var base = new Base64();
+	   orderId = base.encode(orderId);
+	   window.location.href = "${ctx}/queryDrawingsByOrderId.do?orderId="+orderId;	
+   }
+   /*查询订单详情*/
+   function order_details(order){
+	   var base = new Base64();
+	   var orderId=base.encode(order);
+	   window.location.href = "${ctx}/queryOrderDetails.do?orderId="+orderId;	   
+   }
+
+   
+   /*
+    *下载PO数据
+    */
+//     function doDownload_po(id){
+	   
+//     	//使用ajax提交下载
+// 		$.ajax({
+// 			url:"/crm/fileDownload_po.do",
+// 			data:{
+// 				  "id":id
+// 				  },
+// 			type:"post",
+// 			dataType:"text",
+// 			success:function(res){
+				
+// 				window.location.href = "/crm/fileDownload_po.do?id="+id;
+// 		 		 //设置定时器，3s后刷新界面
+// 	     		setTimeout(function(){location.reload()},2000);
+// 				},
+// 		    error:function(){
+		    	
+// 		    	easyDialog.open({
+// 		    		  container : {
+// 		    		    header : 'Prompt message',
+// 		    		    content : 'Download failed !'
+// 		    		  },
+// 		    		  overlay : false,
+// 		    		  autoClose : 2000
+		    		  
+// 		    		});
+// 		    }
+// 		});
+//    }
+   /*
+    *下载QC数据
+    */
+//     function doDownload_qc(id){
+	   
+//     	//使用ajax提交下载
+// 		$.ajax({
+// 			url:"/crm/fileDownload_qc.do",
+// 			data:{
+// 				  "id":id
+// 				  },
+// 			type:"post",
+// 			dataType:"text",
+// 			success:function(res){
+				
+// 				window.location.href = "/crm/fileDownload_qc.do?id="+id;
+//  				 //设置定时器，3s后刷新界面
+// 	     		setTimeout(function(){location.reload()},2000);
+				
+// 				},
+// 		    error:function(){
+		    	
+// 		    	easyDialog.open({
+// 		    		  container : {
+// 		    		    header : 'Prompt message',
+// 		    		    content : 'Download failed !'
+// 		    		  },
+// 		    		  overlay : false,
+// 		    		  autoClose : 2000
+// 		    		});
+// 		    }
+// 		});
+//    }
+//    /*
+//     *下载Shipping数据
+//     */
+//     function doDownload_shipping(id){
+	  
+//     	//使用ajax提交下载
+// 		$.ajax({
+// 			url:"/crm/fileDownload_shipping.do",
+// 			data:{
+// 				  "id":id
+// 				  },
+// 			type:"post",
+// 			dataType:"text",
+// 			success:function(res){
+				
+// 				window.location.href = "/crm/fileDownload_shipping.do?id="+id;
+// 				 //设置定时器，3s后刷新界面
+// 	     		setTimeout(function(){location.reload()},2000);
+				
+// 				},
+// 		    error:function(){
+
+// 		    	easyDialog.open({
+// 		    		  container : {
+// 		    		    header : 'Prompt message',
+// 		    		    content : 'Download failed !'
+// 		    		  },
+// 		    		  overlay : false,
+// 		    		  autoClose : 2000
+// 		    		});
+// 		    }
+// 		});
+//    }
+
+   /*
+    *根据点击显示当前发件的邮件信息
+    */
+   function show_send_content(index){
+	   $('#show_send_content').show();
+	   var tl = $('#show_send_content').find("table").length;
+	   for(var i = 0;i<tl;i++){
+		  if(i == index){
+			  $('#show_send_content').find("table").eq(index).show();	
+		  }else{
+			  $('#show_send_content').find("table").eq(i).hide();
+		  }
+	   }	   
+	   $('#client_order_div').hide();
+   }
+   /*
+    *根据点击显示当前收件的邮件信息
+    */
+   function show_receive_content(index){
+	   $('#show_receive_content').show();
+	   var tl = $('#show_receive_content').find("table").length;
+	   for(var i = 0;i<tl;i++){
+		  if(i == index){
+			  $('#show_receive_content').find("table").eq(index).show();	
+		  }else{
+			  $('#show_receive_content').find("table").eq(i).hide();
+		  }
+	   }	   
+	   $('#client_order_div').hide();
+   }
+   
+   //查看reorder订单
+   function show_reorder(){
+	   window.location.href = "/crm/queryAllReOrder.do";
+   }
+   //查看新图纸询盘
+   function show_rfqInfo(){
+	   window.location.href = "/crm/queryAllRfqInfo.do";
+   }
+   //查看新Invoice
+   function show_invoice(orderId){
+	   var base = new Base64();
+	   orderId=base.encode(orderId);
+	   window.location.href = "/crm/queryInvoiceByOrderId.do?orderId="+orderId;
+   }
+   
+   
+   //筛选工厂(处理中)
+   function select_factory(){	   	   	   
+	  var factoryName = $('#select1').val();
+	  var tl= $("#tab1").find("div.w-box").length;
+	  if(factoryName == 'All'){
+		  $("#tab1").children("div.w-box").each(function(){
+			 $(this).css('display','block'); 		  
+		  });  
+		  return false;
+	  }	 
+	  if(factoryName == 'China Synergy Group'){
+		  $('.container-fluid').eq(1).show();
+	  }else{
+		  $('.container-fluid').eq(1).hide();
+	  }
+	  
+      for(var i=0;i<tl;i++){		   
+    	 var f = $("#tab1").find("div.w-box").eq(i).find('.z-factory-name').text();
+         if(factoryName == f){
+        	 $("#tab1").find("div.w-box").eq(i).css({"display":"block"}); 
+         }else{
+        	 $("#tab1").find("div.w-box").eq(i).css({"display":"none"});
+         } 
+         
+       }
+     }
+   
+   
+	   //筛选工厂(已结束)
+	   function select_factory1(){	   	   	   
+		  var factoryName = $('#select2').val();
+		  $('#clientOrders2').empty();
+		  $.ajax({
+				url:"/crm/queryFinishedOrder.do",
+				data:{
+					"factoryName" : factoryName,
+					"userid" : userid
+					  },
+				type:"post",
+				dataType:"text",
+				success:function(data){	
+				var result	= eval("("+data+")");
+				var orders = result.clientOrders;
+				var unRead = result.finishedUnReadCounts;
+				var count = result.finishedMessageCounts;
+				
+				var tl = orders.length;
+					for(var i=0;i<tl;i++){									                    
+		                var message = '';
+	                    if(count[i] != 0){
+	                    	var n_message = '';
+	                    	if(unRead[i] != 0){
+	                    		n_message = '<span class="label label-important w-label" style="margin-right:5px;">new</span>';
+	                    	}
+	                    	message = '<div style="float:right;">     '+                                 
+		                            '<a class="z-line" onclick="queryMessageByOrderId(\''+orders[i].orderId+'\')">view message</a>'+n_message+'</div>';   
+	                       }
+		                    
+		                    
+		                  var tr ='<tr class="gradeA odd">'+
+		                    '<td><a href="#" class="z-line" onclick="order_details(\''+orders[i].orderId+'\');">'+(orders[i].projectName == null ? '' : orders[i].projectName)+'</a></td>'+
+		                      '<td>'+(orders[i].poNumber == null?'':orders[i].poNumber) + message +		                 
+		                      '</td>'+
+		                      '<td>$'+orders[i].amount+'/$'+orders[i].actualAmount+'</td>'+
+		                      '<td>'+orders[i].createTime+'</td>   '+                 
+		                      '<td>'+orders[i].outputTime+'</td> '+                   
+		                      '<td>'+(orders[i].salesName == null ? '' : orders[i].salesName)+'</td>  '+               
+		                      '<td class="center"><a href="#" onclick="reOrder(\''+orders[i].orderId+'\');">ReOrder</a>'+
+		                      '</td></tr>';		                    	                    
+		                    
+		                    
+						     $('#clientOrders2').append(tr);	
+						}	
+						check_clientOrders2();
+					},
+			    error:function(){
+			    	
+			    }
+			});
+	  }
+   
+	 //交期日期和当前日期比较
+	   function  DateDiff(deliveryTime){    //deliveryTime是2002-12-18格式  
+		   var   d=new   Date(Date.parse(deliveryTime .replace(/-/g,"/")));
+		   var   curDate=new   Date();
+	       if(d < curDate){
+	    	   return false; 
+	       }else{
+	    	   return true;  
+	       }	      
+	   }
+	 
+	 
+	 //鼠标移至delay图片提示延期信息 
+	  function show_message(obj){
+		  $(obj).next().next().css({"display":"block"});		  
+	  }
+     function close_message(obj){
+    	  $(obj).next().next().css({"display":"none"});
+      }
+	  
+      //跳转显示订单图纸
+      function show_drawings(orderId){
+    	  window.location.href = "/crm/queryListByOrderId.do?orderId="+orderId; 
+      }
+     
+	  
+</script>
+
+
+<style>
+.table td{
+	    padding:13px 8px;
+}
+.w-label{
+	background:url(img/new.png) no-repeat !important;
+}
+.label{padding: 2px 5px;
+	font-weight: normal;}
+.cusalldiv{
+	padding-left:20px;
+	padding-right:20px;
+}
+.cusalldiv .usermatd1{
+	padding: 5px 0;
+	font-size:14px;
+}
+tr:hover{background:#eee;}
+.link-a{   
+	text-decoration:none;
+    font-size: 14px;
+    margin-left: 20px;
+    color: #08c;
+    } 
+.link-a:hover,.link-a:focus{
+    text-decoration: none;
+    color: #666;
+} 
+.w_link_reorder{    float: right;
+    margin-right: 15px;
+    margin-top:3px;}
+    
+.z-line-float{
+text-decoration:underline;
+color: #08c;
+float: right;
+}    
+.z-line{
+text-decoration:underline;
+color: #08c;
+cursor: pointer;
+}    
+.z-factory-name{color: #000 !important;
+    font-size: 18px !important;
+    line-height: 8px !important;}    
+</style>
+</head>
+<body>
+<jsp:include page="base.jsp"></jsp:include>
+
+
+<div id="content">
+
+<div>
+  <div id="content-header">
+    <div id="breadcrumb"> <a href="#"  onclick="listClientOrder();"class="tip-bottom"><i class="icon icon-file"></i> My Order</a> <a href="#" class="current"></a>
+    </div>
+  
+ <!-- 显示NBmail收、发件信息 -->   
+<div class="cusalldiv" id="show_send_content" style="display:none;">
+<%-- 		 <c:forEach var="obj" items="${emailSend}" varStatus="i">   --%>
+<!-- 		 <table class="eretable">  -->
+<!-- 		      <tr> -->
+<!-- 		        <td class="usermatd1">Sender:</td> -->
+<%-- 				<td><div class="nui-addr"><span class="nui-addr-name"></span><span class="nui-addr-email">${obj.saleName}</span></div></td> --%>
+<!-- 		      </tr> -->
+<!-- 		      <tr> -->
+<!-- 		        <td class="usermatd1">Receive:</td> -->
+<%-- 		        <td><div class="nui-addr"><span class="nui-addr-name"></span>${obj.cName }</div></td> --%>
+<!-- 		      </tr>	 -->
+<!-- 		      <tr> -->
+<!-- 		        <td class="usermatd1">Date:</td> -->
+<%-- 		        <td>${obj.sendDate != null ?fn:substring(obj.sendDate,0,fn:indexOf(obj.sendDate,".")):""}</td> --%>
+<!-- 		      </tr> -->
+<!-- 		      <tr> -->
+<!-- 		      <td valign="top" class="usermatd1">Title :</td> -->
+<%-- 		        <td>${obj.title}</td> --%>
+<!-- 		       </tr> -->
+<!-- 		      <tr> -->
+<!-- 		        <td valign="top" class="usermatd1">Content :</td> -->
+<%-- 		        <td>${obj.content }</td> --%>
+<!-- 		      </tr>		  -->
+<!-- 		   </table> -->
+<%-- 		</c:forEach>   --%>
+</div>
+<div class="cusalldiv" id="show_receive_content" style="display:none;">
+<%-- 		 <c:forEach var="obj" items="${emailReceive}" varStatus="i">   --%>
+<!-- 		 <table class="eretable">  -->
+<!-- 		      <tr> -->
+<!-- 		        <td class="usermatd1">Sender:</td> -->
+<%-- 				<td><div class="nui-addr"><span class="nui-addr-name"></span><span class="nui-addr-email">${obj.saleName}</span></div></td> --%>
+<!-- 		      </tr> -->
+<!-- 		      <tr> -->
+<!-- 		        <td class="usermatd1">Receive:</td> -->
+<%-- 		        <td><div class="nui-addr"><span class="nui-addr-name"></span>${obj.cName }</div></td> --%>
+<!-- 		      </tr>	 -->
+<!-- 		      <tr> -->
+<!-- 		        <td class="usermatd1">Date:</td> -->
+<%-- 		        <td>${obj.sendDate != null ?fn:substring(obj.sendDate,0,fn:indexOf(obj.sendDate,".")):""}</td> --%>
+<!-- 		      </tr> -->
+<!-- 		      <tr> -->
+<!-- 		      <td valign="top" class="usermatd1">Title :</td> -->
+<%-- 		        <td>${obj.title}</td> --%>
+<!-- 		       </tr> -->
+<!-- 		      <tr> -->
+<!-- 		        <td valign="top" class="usermatd1">Content :</td> -->
+<%-- 		        <td>${obj.content }</td> --%>
+<!-- 		      </tr>		  -->
+<!-- 		   </table> -->
+<%-- 		</c:forEach>   --%>
+</div>
+ <!-- 显示NBmail收、发件信息end -->  
+ 
+    
+ </div>
+ <div id="client_order_div" style="margin-bottom:10px;"> 
+	<input id="factory_name" type="hidden" value="${factoryName}"/>     
+  <div class="container-fluid">
+   <!--  <hr> -->
+    <div class="row-fluid" >
+        <div class="span12">
+                  
+           <div class="w-top">
+	         <div class="shuru">
+	           <div class="shuruming">
+	             <p class="bianhao">
+	               Total Active Orders : ${total}
+	             </p>
+	             <p class="bianhao2">
+	               Total Suppliers : ${totalFactory}
+	               ${chart}
+	             </p>
+	           </div>
+	        </div>
+              </div>
+      <!--   <div class="w-link">
+       		 <a href="/crm/toCreateRfqInfo.do" class="link-a"><button class="btn btn-primary">Send New RFQ</button></a>
+        	<a href="#" class="link-a" onclick="show_reorder()"><button class="btn btn-primary">Reorder</button></a>
+        </div> -->
+          <div class="widget-box" style="border-bottom:1px solid #cdcdcd;">
+	          <div class="widget-title">
+	            <ul class="nav nav-tabs" id="ul_toggle">
+	              <li class="active" id="li_tab1"><a data-toggle="tab" href="#tab1">In Process</a></li>
+	              <li class="" id="li_tab2"><a data-toggle="tab" href="#tab2" >Finished</a></li>
+	            </ul>
+	          </div>
+	        <div class="widget-content tab-content" style="padding: 0px;border: none;">
+            <div class="widget-content nopadding tab-pane active" id="tab1">
+          		<div class="w-top">
+          		  
+          		<div class="w-two">
+                  <label class="control-label">Supplier: </label>
+                  <div class="controls">
+                    <select class="xiala_select" name="select" id="select1" onchange="select_factory()">
+                      <option value="All">All</option>
+                       <c:forEach var="obj" items="${factoryInfos}" varStatus="i">  
+                       <option value="${obj.factoryName}">${obj.factoryName}</option>                   
+                       </c:forEach>                     
+                    </select>
+                  </div>
+                </div>
+              </div>
+            <c:forEach var="obj" items="${factoryInfos}" varStatus="i">  
+            <div class="w-box" style="border-top:none;"> 
+            <div class="widget-box" style="margin-top:0;"> 
+             <div class="widget-title" style="background: #fff;">
+                <h5>Order History</h5>
+         <c:if test="${i.index == 0}">      
+                <div class="w_link_reorder">
+       		 <a href="#" class="link-a" onclick="show_reorder()"><button class="btn btn-primary">Reorder</button></a>
+         </div>
+         </c:if>
+              </div>
+            <div class="widget-title">
+                <h5 class="z-factory-name">${obj.factoryName}</h5>
+                <h5 style="color:#d14;font-size:14px;">Total Invoice: $<fmt:formatNumber type="number" value="${amountClientOrders.size() != 0 ? amountClientOrders.get(i.count-1).sumAmount : ''}" maxFractionDigits="0"/>/ Total Paid: $<fmt:formatNumber type="number" value="${amountClientOrders.size() != 0 ? (amountClientOrders.get(i.count-1).sumTotalPaid == null ? 0 : amountClientOrders.get(i.count-1).sumTotalPaid):''}" maxFractionDigits="0"/></h5>
+              </div>
+              <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper" role="grid">
+              	<table class="table table-bordered data-table dataTable"  id="DataTables_Table_0">
+                <thead>
+                  <tr role="row">
+                    <th class="ui-state-default default-th" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">
+                      <div class="DataTables_sort_wrapper">Project Name
+                        <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                      </div>
+                    </th>
+                    <th class="ui-state-default default-th" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">
+                      <div class="DataTables_sort_wrapper">My PO #
+                        <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                      </div>
+                    </th>
+                    <th class="ui-state-default default-th" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                      <div class="DataTables_sort_wrapper">Amount/Actual Payment
+                        <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                      </div>
+                    </th>                
+                    <th class="ui-state-default default-th" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending">
+                      <div class="DataTables_sort_wrapper">Order Date
+                        <span class="DataTables_sort_icon css_right ui-icon ui-icon-triangle-1-n"></span>
+                      </div>
+                    </th>
+                    <th class="ui-state-default default-th" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending" style="width:13%;">
+                      <div class="DataTables_sort_wrapper">Finished Date<span style="font-weight: 300;color: #08c;">(Predicted)</span>
+                        <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                      </div>
+                    </th>
+                    <th class="ui-state-default default-th" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending" style="width:13%;">
+                      <div class="DataTables_sort_wrapper">Contact Person
+                        <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                      </div>
+                    </th>
+                  
+                  </tr>
+                </thead>
+                <tbody role="alert" aria-live="polite" aria-relevant="all">  
+                <c:forEach begin="1" end="${processClientOrder.get(i.count-1).size()}" varStatus="j" step="1">                                                 
+                  <tr class="gradeA odd">
+                    <td><img src="img/img2.png" style="display:none;" onmouseover="show_message(this);" onmouseout="close_message(this);"/>
+                    <a class="z-line" onclick="order_details('${processClientOrder.get(i.count-1).get(j.count-1).orderId}');">${processClientOrder.get(i.count-1).get(j.count-1).projectName}</a>
+                    <div style="display:none;"><span style="color:red;">Warning:Your order has been delayed!</span></div>
+                    
+                    </td>
+                    <td>${processClientOrder.get(i.count-1).get(j.count-1).poNumber}
+                    <c:if test="${messageCounts.get(i.count-1).get(j.count-1) !=0 }">
+                     <div style="float:right;">                  
+                      <a class="z-line" onclick="queryMessageByOrderId('${processClientOrder.get(i.count-1).get(j.count-1).orderId}')">view message</a>
+                        <c:if test="${counts.get(i.count-1).get(j.count-1) !=0 }">
+	                       <span class="label label-important w-label" style="margin-right:5px;">new</span>
+	                    </c:if>  
+                      </div>
+                    </c:if>
+                    </td>
+                    <td><span>$</span><fmt:formatNumber type="number" value="${processClientOrder.get(i.count-1).get(j.count-1).amount}" maxFractionDigits="0"/>/$<fmt:formatNumber type="number" value="${processClientOrder.get(i.count-1).get(j.count-1).actualAmount}" maxFractionDigits="0"/></td>                                 
+                    <td>${processClientOrder.get(i.count-1).get(j.count-1).createTime}</td>
+                    <td>${processClientOrder.get(i.count-1).get(j.count-1).deliveryTime}<input value="${processClientOrder.get(i.count-1).get(j.count-1).deliveryTime}" type="hidden"></td>                  
+                    <td>${processClientOrder.get(i.count-1).get(j.count-1).salesName == null ? "" : processClientOrder.get(i.count-1).get(j.count-1).salesName}</td>                                                                      
+                 </tr>
+                 </c:forEach>
+                </tbody>
+              </table>
+ 
+             </div>
+             </div>
+                <!-- 	rfq订单 开始 -->          
+             <div class="widget-box">
+						<div class="widget-title">
+				            <h5>RFQ History</h5>
+		 <c:if test="${i.index == 0}">		            
+		 <div class="w_link_reorder">				            
+       		<a href="/crm/toCreateRfqInfo.do" class="link-a"><button class="btn btn-primary">Send New RFQ</button></a>
+         </div>
+         </c:if>
+				          </div>
+						<div id="DataTables_Table_0_wrapper" class="widget-content nopadding"
+								role="grid">
+
+								<table class="table table-bordered data-table dataTable"
+									id="DataTables_Table_0">
+									<thead>
+										<tr role="row">	
+										   <th class="ui-state-default" role="columnheader" tabindex="0"
+												aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
+												aria-label="Platform(s): activate to sort column ascending">
+												<div class="DataTables_sort_wrapper">
+													Product Name <span
+														class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+												</div>
+											</th>
+											<th class="ui-state-default" role="columnheader" tabindex="0"
+												aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
+												aria-label="Engine version: activate to sort column ascending">
+												<div class="DataTables_sort_wrapper">
+													Drawing <span
+														class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+												</div>
+											</th>		
+											<th class="ui-state-default" role="columnheader" tabindex="0"
+												aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
+												aria-label="Browser: activate to sort column ascending">
+												<div class="DataTables_sort_wrapper">
+													Create Time<span
+														class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+												</div>
+											</th>
+											
+											<th class="ui-state-default" role="columnheader" tabindex="0"
+												aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
+												aria-label="Engine version: activate to sort column ascending">
+												<div class="DataTables_sort_wrapper">
+													Status <span
+														class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+												</div>
+											</th>
+											<th class="ui-state-default" role="columnheader" tabindex="0"
+												aria-controls="DataTables_Table_0" rowspan="1" colspan="1"
+												aria-label="Engine version: activate to sort column ascending">
+												<div class="DataTables_sort_wrapper">
+													Contact Person <span
+														class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+												</div>
+											</th>						
+										</tr>
+									</thead>
+
+									<tbody role="alert" aria-live="polite" aria-relevant="all"
+										id="rfqTbody">
+										<c:forEach begin="1" end="${rfqInfo.get(i.count-1).size()}" varStatus="p" step="1"> 
+											<tr class="gradeA odd">
+											    <td>${rfqInfo.get(i.count-1).get(p.count-1).productName}</td>
+												<td class="center"><a
+													href="/crm/fileDownload_drawing.do?id=${rfqInfo.get(i.count-1).get(p.count-1).id}">${rfqInfo.get(i.count-1).get(p.count-1).drawingName}</a>
+												</td>
+												<td>
+												<fmt:parseDate value='${rfqInfo.get(i.count-1).get(p.count-1).createTime != null ?fn:substring(rfqInfo.get(i.count-1).get(p.count-1).createTime,0,fn:indexOf(rfqInfo.get(i.count-1).get(p.count-1).createTime,".")):""}' var="date" pattern="yyyy-MM-dd HH:mm:ss"/> 
+												<fmt:formatDate value="${date}" pattern="yyyy-MM-dd" var="createTime"/> 
+												${createTime}										
+												</td>											
+												<td>${rfqInfo.get(i.count-1).get(p.count-1).drawingState}</td>
+												<td>${rfqInfo.get(i.count-1).get(p.count-1).followUp}</td>																							
+											</tr>
+										</c:forEach>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					
+<!-- 	rfq订单 结束 -->
+            </div>        
+            </c:forEach>            
+            </div>             
+            
+              <div class="widget-content nopadding tab-pane" id="tab2">
+              <div class="control-group">
+                  <label class="control-label">Supplier: </label>
+                  <div class="controls">
+                     <select class="xiala_select" name="select" id="select2" onchange="select_factory1()">                      
+                       <c:forEach var="obj" items="${factoryInfos}" varStatus="i">  
+                       <option value="${obj.factoryName}" <c:if test="${obj.factoryName eq factoryInfo.factoryName}"> selected="selected"</c:if>>${obj.factoryName}</option>                   
+                       </c:forEach>
+                    </select>
+                  </div>
+                </div>
+                <div id="DataTables_Table_0_wrapper" class="dataTables_wrapper" role="grid">
+                
+                  <table class="table table-bordered data-table dataTable" id="DataTables_Table_0">
+                    <thead>
+                    <tr role="row">
+                     <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">
+                        <div class="DataTables_sort_wrapper">Project Name
+                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                        </div>
+                      </th>
+                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">
+                        <div class="DataTables_sort_wrapper">My PO #
+                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                        </div>
+                      </th>
+                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                        <div class="DataTables_sort_wrapper">Amount/Actual Payment
+                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                        </div>
+                      </th>      
+                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending">
+                        <div class="DataTables_sort_wrapper">Order Date
+                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-triangle-1-n"></span>
+                        </div>
+                      </th>                
+                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending">
+                        <div class="DataTables_sort_wrapper">Finished Date
+                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-triangle-1-n"></span>
+                        </div>
+                      </th>                
+                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending">
+                        <div class="DataTables_sort_wrapper">Contact Person
+                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-triangle-1-n"></span>
+                        </div>
+                      </th>                
+<!--                       <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending"> -->
+<!--                         <div class="DataTables_sort_wrapper">Status -->
+<!--                           <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span> -->
+<!--                         </div> -->
+<!--                       </th> -->
+                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">
+                        <div class="DataTables_sort_wrapper">
+                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+                        </div>
+                      </th>
+                    </tr>
+                    </thead>
+                    <tbody role="alert" aria-live="polite" aria-relevant="all" id="clientOrders2">
+                    <c:forEach var="order" items="${finishedClientOrder}" varStatus="i">
+                    <tr class="gradeA odd">                      
+                      <td><a href="#" class="z-line" onclick="order_details('${order.orderId}');">${order.projectName}</a></td>
+                      <td>${order.poNumber == null?'':order.poNumber}
+                      <c:if test="${finishedMessageCounts.get(i.count-1) !=0 }">	
+                      <div style="float:right;">                                      
+                       <a class="z-line" onclick="queryMessageByOrderId('${order.orderId}')">view message</a>
+                        <c:if test="${finishedCounts.get(i.count-1) !=0 }">
+	                       <span class="label label-important w-label" style="margin-right:5px;">new</span>
+	                    </c:if>  
+	                   </div>     
+                      </c:if>
+                      </td>
+                      <td>$<fmt:formatNumber type="number" value="${order.amount}" maxFractionDigits="0"/>/$<fmt:formatNumber type="number" value="${order.actualAmount}" maxFractionDigits="0"/></td>
+                      <td>${order.createTime}</td>                    
+                      <td>${order.outputTime}</td>                    
+                      <td>${order.salesName}</td>                 
+                      <td class="center"><a href="#" onclick="reOrder('${order.orderId}');">ReOrder</a>
+                      </td>
+                    </tr> 
+                    </c:forEach> 
+                    </tbody>
+                  </table>
+                <div class="fg-toolbar ui-toolbar ui-widget-header ui-corner-bl ui-corner-br ui-helper-clearfix" style="border-bottom:none;">      
+  
+                </div>
+              </div>
+            </div>
+            
+            <!-- 订单饼状图显示 -->
+                <div class="w-container-fluid" id="show_pie" style="display:none;">
+			      <h4 style="padding-left:20px;">Order Chart</h4>
+			      <div style="padding-left:20px;">
+				      <table id='myTable1'>
+							<caption></caption>
+							<thead>
+								<tr>
+									<th></th>
+									<th>In Process</th>
+									<th>Finished</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<th>${totalProcess + finishedProcess}</th>
+									<td>${totalProcess}</td>
+									<td>${finishedProcess}</td>
+									</tr>
+							</tbody>
+				      </table> 
+
+				 <table id='myTable2'>  
+                    <caption>  
+			         Quarterly Summary of Your Projects(USD)
+		                    </caption>  
+		                    <thead>  
+		                        <tr>  
+		                            <th></th>  
+		                            <th>${quarter4}</th>  
+		                            <th>${quarter3}</th>  
+		                            <th>${quarter2}</th>
+									<th>${quarter1}</th>
+									<th>${quarter}</th> 
+		                    </thead>  
+		                    <tbody>  
+		                        <tr>  
+		                            <th>Amount</th>  
+		                            <td>${sumAmount4}</td>  
+		                            <td>${sumAmount3}</td>  
+		                            <td>${sumAmount2}</td>   
+		                            <td>${sumAmount1}</td>   
+		                            <td>${sumAmount}</td>   
+		                        </tr>  
+		                    </tbody>  
+		                </table>  
+				      
+			      </div>
+			    </div>   
+			    		
+			    
+		    
+			    
+          </div>
+        </div>
+  </div>
+ </div>
+</div>
+</div>
+<!-- <a href="#"  class="link-a"onclick="show_reorder()">Reorder order</a>
+<a href="#"  class="link-a" onclick="show_rfqInfo()">New RFQ order</a> -->
+ 
+<div class="container-fluid" id="nbmail_div" style="clear:both;display:none;">
+        <div class="row-fluid">
+            <div class="span6">
+                <div class="widget-box">
+                    <div class="widget-title w-widget-title"> <span class="icon"> <i class="icon-envelope-alt"></i> </span>
+                        <h5>Recent Emails</h5>
+                    </div>
+                    <div class="widget-title" style="background:#fff;"><span class="icon"> <i class="icon icon-signout"></i> </span>
+                        <h5>Inbox</h5>
+                    </div>
+                    <div class="widget-content nopadding">
+                          <table class="table table-bordered data-table dataTable" id="DataTables_Table_0">
+                           <thead>
+                               <tr role="row">
+			                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending" style="width:15%;">
+			                        <div class="DataTables_sort_wrapper">Sender
+			                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-triangle-1-n"></span>
+			                        </div>
+			                      </th>
+			                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending" style="width:25%;">
+			                        <div class="DataTables_sort_wrapper">Date
+			                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+			                        </div>
+			                      </th>
+			                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending" style="width:45%;">
+			                        <div class="DataTables_sort_wrapper">Subject
+			                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+			                        </div>
+			                      </th>  
+			                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">
+			                        <div class="DataTables_sort_wrapper">
+			                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+			                        </div>
+			                      </th>  
+			                   </tr>
+			               </thead>
+			               <tbody role="alert" aria-live="polite" aria-relevant="all" id="send_tbody">
+			                <c:forEach var="obj" items="${emailSend}" varStatus="i">			                 
+			                  <tr class="gradeA odd">
+			                     <td>${obj.saleName}</td>
+			                     <td>${obj.sendDate != null ?fn:substring(obj.sendDate,0,fn:indexOf(obj.sendDate,".")):""}</td>
+			                     <td>${obj.title}</td>
+			                     <td class="center"><a href="#" onclick="show_send_content('${i.index}')">View More</a></td>
+			                     <td style="display:none"><input value="${obj.content}" type="hidden"></td>	
+			                  </tr>  
+                           </c:forEach>
+			               </tbody>
+			             </table>          
+                    </div>
+                    <div class="widget-title" style="background:#fff;"><span class="icon"> <i class="icon icon-signin"></i> </span>
+                        <h5>Outbox</h5>
+                    </div>
+                    <div class="widget-content nopadding">
+                          <table class="table table-bordered data-table dataTable" id="DataTables_Table_0">
+                           <thead>
+                               <tr role="row">
+			                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Rendering engine: activate to sort column descending" style="width:15%;">
+			                        <div class="DataTables_sort_wrapper">Receive
+			                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-triangle-1-n"></span>
+			                        </div>
+			                      </th>
+			                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending" style="width:25%;">
+			                        <div class="DataTables_sort_wrapper">Date
+			                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+			                        </div>
+			                      </th>
+			                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending" style="width:45%;">
+			                        <div class="DataTables_sort_wrapper">Subject
+			                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+			                        </div>
+			                      </th>  
+			                      <th class="ui-state-default" role="columnheader" tabindex="0" aria-controls="DataTables_Table_0" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">
+			                        <div class="DataTables_sort_wrapper">
+			                          <span class="DataTables_sort_icon css_right ui-icon ui-icon-carat-2-n-s"></span>
+			                        </div>
+			                      </th>  
+			                   </tr>
+			               </thead>
+			               <tbody role="alert" aria-live="polite" aria-relevant="all" id="receive_tbody">
+			                <c:forEach var="obj" items="${emailReceive}" varStatus="i">
+			                  <tr class="gradeA odd">
+			                     <td>${obj.saleName}</td>
+			                     <td>${obj.sendDate != null ?fn:substring(obj.sendDate,0,fn:indexOf(obj.sendDate,".")):""}</td>
+			                     <td>${obj.title}</td>
+			                     <td class="center"><a href="#" onclick="show_receive_content('${i.index}')">View More</a></td>
+			                  </tr>  
+			                 </c:forEach>
+			               </tbody>
+			             </table>          
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div> 
+        <div class="container-fluid">
+        <hr>
+	        <a href="/crm/toCreateRfqInfo.do">
+	    		<button class="btn btn-primary btn-large">Send New RFQ</button>
+	 		</a>
+    	</div>
+        </div>
+    </div>
+
+
+
+<div class="row-fluid">
+  <div id="footer" class="span12"> 
+  </div>
+</div>
+
+<script src="js/jquery.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/chart/jsapi.js"></script>
+<script type="text/javascript" src="js/chart/corechart.js"></script>		
+<script type="text/javascript" src="js/chart/jquery.gvChart-1.0.1.min.js"></script>
+<script type="text/javascript" src="js/chart/jquery.ba-resize.min.js"></script>
+
+<script type="text/javascript">
+
+ $(function(){
+	var tl1= $("#tab1").find("div.w-box").find('tbody').find('tr').length;
+	var tl2= $("#tab2").find("div.w-box").find('tbody').find('tr').length;   
+	if(tl1 != 0 || tl2 != 0){
+	$('#show_pie').show();	
+	gvChartInit();
+	$(document).ready(function(){
+			$('#myTable1').gvChart({
+				chartType: 'PieChart',
+				gvSettings: {
+				vAxis: {title: 'In Process'},
+				hAxis: {title: 'Finished'},
+				width: 600,
+				height: 350
+			}
+		});
+	});
+}
+	
+	
+	
+	
+	
+	
+// 	jQuery('#myTable2').gvChart({  
+//         chartType: 'ColumnChart',  
+//         gvSettings: {  
+//             vAxis: { title: '金额' },  
+//             hAxis: { title: '月份' },  
+//             width: 720,  
+//             height: 300  
+//         }  
+//     });  
+	
+	
+	
+})	
+</script>
+<script type="text/javascript">
+$(function(){
+	var tl1= $("#tab1").find("div.w-box").find('tbody').find('tr').length;
+	var tl2= $("#clientOrders2").find('tr').length;
+    if(tl1 != 0 || tl2 != 0){
+    	$('#show_pie').show();	    	
+    	gvChartInit();
+     	$(document).ready(function(){
+    			$('#myTable2').gvChart({
+     				chartType: 'ColumnChart',
+     				gvSettings: {
+     				vAxis: {title: 'Total Amount'},
+     				hAxis: {title: ''},
+     				width: 600,
+     				height: 350
+     			}
+     		});
+     	});
+    }
+    
+    
+    $.post("/crm/queryNBMail.do",
+     	   function(result){
+     	     if(result.state == 0){
+     	    	 var emailReceive = result.data.emailReceive;
+     	    	 var emailSend = result.data.emailSend;
+     	    	 
+     	    	 if(!(emailReceive == null || emailReceive == "")){
+     	    		$('#show_receive_content').empty();
+     	    		$('#receive_tbody').empty();
+     	    		 var tl = emailReceive.length;  	    		 
+     	    		 for(var i=0;i<tl;i++){
+     	    			 var tab =  '<table class="eretable">'+ 
+				     	  		      '<tr>'+
+				     			        '<td class="usermatd1">Sender:</td>'+
+				     					'<td><div class="nui-addr"><span class="nui-addr-name"></span><span class="nui-addr-email">'+emailReceive[i].saleName+'</span></div></td>'+
+				     			      '</tr>'+
+				     			      '<tr>'+
+				     			        '<td class="usermatd1">Receive:</td>'+
+				     			        '<td><div class="nui-addr"><span class="nui-addr-name"></span>'+emailReceive[i].cName+'</div></td>'+
+				     			      '</tr>'+	
+				     			      '<tr>'+
+				     			        '<td class="usermatd1">Date:</td>'+
+				     			        '<td>'+emailReceive[i].sendDate+'</td>'+
+				     			      '</tr>'+
+				     			      '<tr>'+
+				     			      '<td valign="top" class="usermatd1">Title :</td>'+
+				     			        '<td>'+emailReceive[i].title+'</td>'+
+				     			       '</tr>'+
+				     			      '<tr>'+
+				     			        '<td valign="top" class="usermatd1">Content :</td>'+
+				     			        '<td>'+emailReceive[i].content+'</td>'+
+				     			      '</tr>'+		 
+				     			   '</table>';
+				         $('#show_receive_content').append(tab);  	
+				         
+				         
+				         
+				         var tr =  '<tr class="gradeA odd">'+
+	                     '<td>'+emailReceive[i].saleName+'</td>'+
+	                     '<td>'+emailReceive[i].sendDate+'</td>'+
+	                     '<td>${obj.title}</td>'+
+	                     '<td class="center"><a href="#" onclick="show_send_content('+i+')">View More</a></td>'+
+	                    '</tr>';       
+	                     $('#receive_tbody').append(tr);
+     	    		 }
+     	    		 $('#nbmail_div').show();
+     	    	 }
+     	    	 
+     	    	 
+     	    	 
+     	   	 if(!(emailSend == null || emailSend == "")){
+  	    		$('#show_send_content').empty();
+  	    	    $('#send_tbody').empty();
+  	    		 var tl = emailSend.length;  	    		 
+  	    		 for(var i=0;i<tl;i++){
+  	    			 var tab =  '<table class="eretable">'+ 
+				     	  		      '<tr>'+
+				     			        '<td class="usermatd1">Sender:</td>'+
+				     					'<td><div class="nui-addr"><span class="nui-addr-name"></span><span class="nui-addr-email">'+emailSend[i].saleName+'</span></div></td>'+
+				     			      '</tr>'+
+				     			      '<tr>'+
+				     			        '<td class="usermatd1">Receive:</td>'+
+				     			        '<td><div class="nui-addr"><span class="nui-addr-name"></span>'+emailSend[i].cName+'</div></td>'+
+				     			      '</tr>'+	
+				     			      '<tr>'+
+				     			        '<td class="usermatd1">Date:</td>'+
+				     			        '<td>'+emailSend[i].sendDate+'</td>'+
+				     			      '</tr>'+
+				     			      '<tr>'+
+				     			      '<td valign="top" class="usermatd1">Title :</td>'+
+				     			        '<td>'+emailSend[i].title+'</td>'+
+				     			       '</tr>'+
+				     			      '<tr>'+
+				     			        '<td valign="top" class="usermatd1">Content :</td>'+
+				     			        '<td>'+emailSend[i].content+'</td>'+
+				     			      '</tr>'+		 
+				     			   '</table>';
+				         $('#show_send_content').append(tab);  
+				         
+				     var tr =  '<tr class="gradeA odd">'+
+				                     '<td>'+emailSend[i].saleName+'</td>'+
+				                     '<td>'+emailSend[i].sendDate+'</td>'+
+				                     '<td>${obj.title}</td>'+
+				                     '<td class="center"><a href="#" onclick="show_send_content('+i+')">View More</a></td>'+
+				                 '</tr>';       
+				         $('#send_tbody').append(tr);
+  	    		 }
+  	    		$('#nbmail_div').show();
+  	    	 }
+     	     	 
+     	    	 
+     	 }
+    }); 					
+    
+})	
+
+
+//根据订单号查询消息
+function queryMessageByOrderId(orderId){
+	var base = new Base64();
+	orderId=base.encode(orderId);
+	window.location = "/crm/queryMessageByOrderId.do?orderId="+orderId;	
+}
+
+</script>
+
+<style>
+   .gvChart{
+	   float: left;
+	    width: 50%;
+	    margin-bottom: 20px;
+	   }
+</style>
+</body>
+</html>

@@ -1,0 +1,120 @@
+package com.cbt.controller;
+
+import java.io.File;
+import java.util.Date;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.cbt.entity.FactoryOrder;
+import com.cbt.entity.OrderPayLog;
+import com.cbt.entity.SourceSupport;
+import com.cbt.service.FactoryOrderService;
+import com.cbt.service.SourceSupportService;
+import com.cbt.util.IdGen;
+import com.cbt.util.OperationFileUtil;
+import com.cbt.util.UploadAndDownloadPathUtil;
+import com.cbt.util.WebCookie;
+/**
+ * 采购支持
+ * @author Administrator
+ *
+ */
+@Controller
+@RequestMapping("/support")
+public class SourceSupportController {
+	
+	public static final Logger Log = Logger.getLogger(SourceSupportController.class);
+	
+	@Autowired
+	private SourceSupportService sourceSupportService;
+	@Autowired 
+	private FactoryOrderService factoryOrderService; 
+	
+	@RequestMapping("/toAddSupport.do")
+	public String toSupportIndex(HttpServletRequest request,HttpServletResponse response){
+		String userId=request.getParameter("userId");
+		if(userId == null || "".equals(userId)){
+			userId = WebCookie.getUserid(request);
+		}
+		request.setAttribute("userId",userId);
+		return "/sourcing_support.jsp";
+	}
+	
+	/**
+	 * 添加采购支持模块客户附件
+	 * @param request
+	 * @param response
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/uploadFile.do")
+	@ResponseBody
+	public String addFactoryFile(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		 String supportFileName = request.getParameter("supportFile");
+		 String path = UploadAndDownloadPathUtil.getFactoryFilePath();
+		 File file = new File(path);
+		 if  (!file.exists()  && !file .isDirectory())       {         
+				file .mkdir();     
+		 }  	
+		 //调用保存文件的帮助类进行保存文件(文件上传，form表单提交)
+		try {
+			Map<String, String> multiFileUpload = OperationFileUtil.multiFileUpload(request, path+File.separator);
+			String fileName = multiFileUpload.get(supportFileName);
+			return fileName;
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.error("=======SourceSupportController   uploadFile===="+e.getMessage());
+			throw new Exception(e.getMessage());
+		}
+	}
+	
+	@RequestMapping("/addSupportToPay.do")
+	@ResponseBody
+	public String addSupportToPay(HttpServletRequest request,HttpServletResponse response) throws Exception{
+		String userId=request.getParameter("userId");
+		String fileUrl=request.getParameter("supportFile");
+		String requirement=request.getParameter("requirement");
+		Integer type=Integer.parseInt(request.getParameter("type"));
+		String priceStr=request.getParameter("price");
+		String price=priceStr.replaceAll("\\$", "");
+		SourceSupport support=new SourceSupport();
+		support.setId(IdGen.uuid());
+		support.setRequirement(requirement);
+		support.setFileUrl(fileUrl);
+		support.setType(type);
+		support.setUserId(userId);
+		support.setOrderId(IdGen.uuid());
+		support.setPrice(Float.parseFloat(price));
+		support.setCreateDate(new Date());
+        try {
+        	OrderPayLog orderPayLog=sourceSupportService.addSourceSupportToPay(support);//调用方法处理业务逻辑
+        	return orderPayLog.getOrderId();
+		} catch (Exception e) {
+			e.printStackTrace();
+			Log.error("=======FactoryController   addSupportToPay===="+e.getMessage());	
+			throw new Exception(e.getMessage());
+		}
+	}
+	
+	/**
+	 * 查询订单详情跳转到支付确认页面
+	 * @param request
+	 * @param response
+	 * @throws Exception
+	 */
+	@RequestMapping("/orderDetailPay.do")
+	public String orderDetailPay(HttpServletRequest request,HttpServletResponse response){
+		String orderId=request.getParameter("orderId");
+		FactoryOrder factoryOrder=factoryOrderService.findSourceAssistanceOrderDetail(orderId);
+		request.setAttribute("factoryOrder", factoryOrder);
+		return "/support_pay_ment.jsp";
+	}
+}

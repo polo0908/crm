@@ -1,0 +1,93 @@
+package com.cbt.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.cbt.entity.MessageCenter;
+import com.cbt.entity.OrderMessage;
+
+public interface MessageCenterService {
+
+	
+	
+	/**
+	 * 插入消息
+	 * @param messageCenter
+	 */
+	public void insert(MessageCenter messageCenter,OrderMessage orderMessage)throws Exception;
+	
+	
+	/**
+	 * 查询客户的消息
+	 * @param userid
+	 * @return
+	 */
+	public List<MessageCenter> queryMessageByUserId(String userid);
+	
+    
+	/**
+	 * 查询消息数
+	 * @param userid
+	 * @param readStatus
+	 * @return
+	 */
+	public int total(String userid);
+	
+	
+	
+	/**
+	 * 插入质量问题消息(并且上传图片)
+	 * @param messageCenter
+	 */
+	public void insert(MessageCenter messageCenter,String picNames,OrderMessage orderMessage)throws Exception;
+	
+	
+	
+	
+	/**
+	 * 查询每个类型消息未读数
+	 * @author polo
+	 * 2017年5月19日
+	 *
+	 */
+	public int totalByMessageType(Integer messageCenterId,Integer messageType);
+	
+	
+	
+	/**
+	 * 插入报价单消息
+	 * @param messageCenter
+	 * @param quotationMessage
+	 * @throws Exception
+	 */
+	public OrderMessage insertQuotaionMessage(MessageCenter messageCenter,OrderMessage orderMessage)throws Exception;
+	
+	
+	/**
+	 * 根据报价单id查询
+	 * @author polo
+	 * 2017年6月15日
+	 *
+	 */
+	public MessageCenter queryByQuotationId(Integer quotationInfoId);
+	
+	
+	/**
+	 * 查询每个类型消息未读数
+	 * @author polo
+	 * 2017年6月16日
+	 *
+	 */
+	public int totalQuotationMessageById(Integer messageCenterId,Integer messageType);
+	
+	
+	
+	/**
+	 * 根据报价单id查询消息
+	 * @param quotationId
+	 * @return
+	 */
+	public List<OrderMessage> queryByQuotationInfoId(Integer quotationId);
+}

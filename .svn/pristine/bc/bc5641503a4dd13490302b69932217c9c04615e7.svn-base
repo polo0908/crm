@@ -1,0 +1,134 @@
+package com.cbt.entity;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+/**
+ * 选择工厂 实体信息
+ * @author Administrator
+ *
+ */
+public class Factory implements Serializable {
+    private String id;
+
+    private String userId;
+
+    private String questionFile;
+
+    private String productName;
+
+    private String orderValue;
+
+    private String remark;
+
+    private Date createDate;
+    
+    private List<String> urlList; //工厂网址集合
+    
+    private float price;// 支付金钱
+    
+    private String orderId;
+    
+    private String description;
+    
+    private String checkboxValue; //判断选中的值
+
+    private static final long serialVersionUID = 1L;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id == null ? null : id.trim();
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId == null ? null : userId.trim();
+    }
+
+    public String getQuestionFile() {
+        return questionFile;
+    }
+
+    public void setQuestionFile(String questionFile) {
+        this.questionFile = questionFile == null ? null : questionFile.trim();
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName == null ? null : productName.trim();
+    }
+
+    public String getOrderValue() {
+        return orderValue;
+    }
+
+    public void setOrderValue(String orderValue) {
+        this.orderValue = orderValue == null ? null : orderValue.trim();
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark == null ? null : remark.trim();
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+	public List<String> getUrlList() {
+		return urlList;
+	}
+
+	public void setUrlList(List<String> urlList) {
+		this.urlList = urlList;
+	}
+
+	public float getPrice() {
+		return price;
+	}
+
+	public void setPrice(float price) {
+		this.price = price;
+	}
+
+	public String getOrderId() {
+		return orderId;
+	}
+
+	public void setOrderId(String orderId) {
+		this.orderId = orderId;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public String getCheckboxValue() {
+		return checkboxValue;
+	}
+
+	public void setCheckboxValue(String checkboxValue) {
+		this.checkboxValue = checkboxValue;
+	}
+    
+}

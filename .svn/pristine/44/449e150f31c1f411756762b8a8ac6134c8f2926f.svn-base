@@ -1,0 +1,24 @@
+package com.cbt.service.impl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cbt.dao.PaymentSuccessLogMapper;
+import com.cbt.entity.PaymentSuccessLog;
+import com.cbt.service.IPaymentSuccessLogService;
+
+@Service
+public class PaymentSuccessLogServiceImpl implements IPaymentSuccessLogService {
+    
+	@Autowired
+	private PaymentSuccessLogMapper paymentSuccessLogMapper;
+	@Override
+	public void addPaymentSuccessLog(PaymentSuccessLog paymentSuccessLog) {
+       paymentSuccessLogMapper.insertSelective(paymentSuccessLog);
+	}
+	@Override
+	public PaymentSuccessLog selectByPrimaryKey(String id) {
+		return paymentSuccessLogMapper.selectByPrimaryKey(id);
+	}
+
+}

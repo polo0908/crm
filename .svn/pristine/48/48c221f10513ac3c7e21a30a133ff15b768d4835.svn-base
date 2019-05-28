@@ -1,0 +1,158 @@
+package com.cbt.entity;
+
+import java.io.Serializable;
+import java.util.Date;
+
+public class PaymentSuccessLog implements Serializable {
+    private String id;
+
+    private String userId;
+
+    private String orderId;
+
+    private String paymenntId;
+
+    private Float payAmount;
+
+    private String paymentCc;
+
+    private String orderDesc;
+
+    private Integer payStatus;
+
+    private String payNo;
+
+    private String payType;
+
+    private String type;
+
+    private Float transactionFree;
+
+    private String payPalId;
+
+    private Date payTime;
+
+    private Date createDate;
+
+    private static final long serialVersionUID = 1L;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id == null ? null : id.trim();
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId == null ? null : userId.trim();
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId == null ? null : orderId.trim();
+    }
+
+    public String getPaymenntId() {
+        return paymenntId;
+    }
+
+    public void setPaymenntId(String paymenntId) {
+        this.paymenntId = paymenntId == null ? null : paymenntId.trim();
+    }
+
+    public Float getPayAmount() {
+        return payAmount;
+    }
+
+    public void setPayAmount(Float payAmount) {
+        this.payAmount = payAmount;
+    }
+
+    public String getPaymentCc() {
+        return paymentCc;
+    }
+
+    public void setPaymentCc(String paymentCc) {
+        this.paymentCc = paymentCc == null ? null : paymentCc.trim();
+    }
+
+    public String getOrderDesc() {
+        return orderDesc;
+    }
+
+    public void setOrderDesc(String orderDesc) {
+        this.orderDesc = orderDesc == null ? null : orderDesc.trim();
+    }
+
+    public Integer getPayStatus() {
+        return payStatus;
+    }
+
+    public void setPayStatus(Integer payStatus) {
+        this.payStatus = payStatus;
+    }
+
+    public String getPayNo() {
+        return payNo;
+    }
+
+    public void setPayNo(String payNo) {
+        this.payNo = payNo == null ? null : payNo.trim();
+    }
+
+    public String getPayType() {
+        return payType;
+    }
+
+    public void setPayType(String payType) {
+        this.payType = payType == null ? null : payType.trim();
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type == null ? null : type.trim();
+    }
+
+    public Float getTransactionFree() {
+        return transactionFree;
+    }
+
+    public void setTransactionFree(Float transactionFree) {
+        this.transactionFree = transactionFree;
+    }
+
+    public String getPayPalId() {
+        return payPalId;
+    }
+
+    public void setPayPalId(String payPalId) {
+        this.payPalId = payPalId == null ? null : payPalId.trim();
+    }
+
+    public Date getPayTime() {
+        return payTime;
+    }
+
+    public void setPayTime(Date payTime) {
+        this.payTime = payTime;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+}

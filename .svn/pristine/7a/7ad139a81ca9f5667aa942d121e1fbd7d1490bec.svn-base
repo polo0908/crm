@@ -1,0 +1,56 @@
+package com.cbt.service;
+
+import java.util.List;
+
+import com.cbt.entity.FactoryOrder;
+
+/**
+ * 订单记录Service 
+ * @author Administrator
+ *
+ */
+public interface FactoryOrderService {
+    /**
+     * 查询用户之前的发起的记录
+     * @param userId
+     * @return
+     */
+	List<FactoryOrder> selectRequestList(String userId);
+	/**
+	 * 查询客户选择工厂订单详情记录
+	 * @param orderId
+	 * @return
+	 *//*
+	List<FactoryOrder> findSelectFactoryOrderDetail(String orderId);*/
+	
+	/**
+	 * 查询客户采购支持订单详情记录
+	 * @param orderId
+	 * @return
+	 */
+	FactoryOrder findSourceAssistanceOrderDetail(String orderId);
+	
+	/**
+	 * 查询客户质量需求订单详情记录
+	 * @param orderId
+	 * @return
+	 */
+	FactoryOrder findQualityOrderDetail(String orderId);
+	
+	/**
+	 * 查询客户工厂审核订单详情记录
+	 * @param orderId
+	 * @return
+	 */
+	FactoryOrder findAuditOrderDetail(String orderId);
+	
+	/**
+	 * 查询客户选择工厂订单详情记录
+	 * @param orderId
+	 * @return
+	 */
+	FactoryOrder findSelectFactoryOrderDetail(String orderId);
+	
+	
+	
+}

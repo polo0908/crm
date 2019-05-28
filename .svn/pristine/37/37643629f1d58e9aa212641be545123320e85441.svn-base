@@ -1,0 +1,248 @@
+<%@ page language="java" contentType="text/html; charset=utf-8"
+    pageEncoding="utf-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%> 
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+<c:set var="ctx" value="${pageContext.request.contextPath}" />
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>Request Valid Price From Selected Factories</title>
+		<script src="${ctx}/js/jquery.min.js"></script>
+		<script src="${ctx}/js/bootstrap.min.js"></script>
+		<link rel="stylesheet" href="${ctx}/css/bootstrap.css">
+		<script src="${ctx}/js/jquery.min.js"></script>
+		<script src="${ctx}/js/bootstrap.min.js"></script>
+		<script type="text/javascript">
+			function myModal() {
+				$("#myModal").show();
+				$(".modal-header").show();
+				$(".modal-body").show();
+				$(".modal-footer").show();
+			}
+
+			function myquestion() {
+				$("#myModal").hide();
+				$("#myquestion").show();
+				$(".modal-body").hide();
+				$(".modal-footer").hide();
+				$("#myquestion p").show();
+
+			}
+
+			function mysure() {
+				$("#myquestion").hide();
+			}
+		</script>
+		<style type="text/css">
+		body{line-height:1rem;}
+			.container {
+				width: 970px;
+			}
+			
+			#myquestion {
+				position: fixed;
+				left: 35%;
+				display: none;
+			}
+			
+			.wrap-bg {
+				width: 100%;
+				position: absolute;
+				background: url(images/project-1-1.jpg);
+				filter: progid:DXImageTransform.Microsoft.AlphaImageLoader(src='images/project-1-1.jpg)', sizingMethod='scale');
+				background-size: cover;
+				height: auto;
+				left: 0;
+				bottom: 0px;
+				top: 0px;
+				right: 0px;
+			}
+			
+			.factories_form {
+				list-style: none;
+				margin-bottom:0px;
+			}
+			
+			.factories_form li {
+				margin-bottom: 10px;
+			}
+			
+			.row,
+			.form-horizontal .form-group {
+				padding: 0 0;
+				margin: 0 0;
+			}
+			
+			.modal-dialog {
+				top: 25%;
+			}
+			
+			.btn-sel {
+				color: #333;
+				background-color: #fff;
+				border: 1px solid #ccc;
+				display: inline-block;
+				margin-bottom: 0;
+				font-weight: normal;
+				text-align: center;
+				vertical-align: middle;
+				touch-action: manipulation;
+				cursor: pointer;
+				white-space: nowrap;
+				padding: 10px 20px;
+				font-size: 14px;
+				line-height: 1.42857;
+				border-radius: 4px;
+			}
+			
+			.question {
+				background: #fff;
+				border-radius: 6px;
+				padding: 20px;
+				-webkit-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+				box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+			}
+			
+			.col-md-3 {
+			padding:0 0;
+			}
+			
+			.green_btn {
+				background: #28b779;
+				color: #fff;
+				font-weight: bold;
+				border: 1px solid #16a768;
+			}
+			
+			.blue_btn {
+				background: #08c;
+				color: #fff;
+				font-weight: bold;
+				border: 1px solid #0272aa;
+			}
+			
+			.green_btn:hover {
+				background: #16a768;
+				color: #fff;
+				border: 1px solid #28b779;
+			}
+			
+			.blue_btn:hover {
+				background: #0272aa;
+				color: #fff;
+				border: 1px solid #08c;
+			}
+			
+			
+			.row label{color:#fff}
+			a{color:#9DD2FF}
+			a:focus, a:hover{color:#5BBBFF}
+		</style>
+	</head>
+
+	<body>
+		<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank" class="payifcondiv" id="payForm">
+		<div class="wrap-bg" style="background: #2E363F;color:#fff;">
+			<div class="container" style="margin-top:10%; margin:0 0;padding:1% 2%;margin: 3% auto;">
+<!-- 				<p>If yu have found many potential suppliers online, but need to ask some questions and confirm latest price</p> -->
+					<div class="form-group">
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Factory URL:</label>
+							</div>
+							<ul class="col-md-7 factories_form">
+							  <c:forEach var="urlInfo" items="${factoryOrder.urlInfoList}">
+								<li>
+									<p>${urlInfo.url}</p>
+								</li>
+							</c:forEach>
+							</ul>
+		                  <div class="col-md-2 "></div>
+						</div>
+						<div class="row">
+							<div class="col-md-3 ">
+								<label for="url" class="control-label">Which product:</label>
+							</div>
+							<div class="col-md-7">
+								<p>${factoryOrder.productName}</p>
+							</div>
+							<div class="factories_add  col-md-2">
+
+							</div>
+
+						</div>
+						<div class="row" style="padding-top: 0px;margin-top:5px;">
+							<label>What verification questions do you want us to ask:</label>
+						</div>
+						
+						<div class="row">
+							<div class="col-md-10 " style="padding-left:0px;">
+
+								<textarea style="width: 100%;height: 80px;" class="form-control" readonly="readonly" >${factoryOrder.description}</textarea>
+							</div>
+							<div class="factories_add  col-md-2">
+							</div>
+						</div>
+					<div class="row" style="margin-top:15px;">
+						<div class="col-md-3 ">
+							<p>Upload Attachment:</p></div>
+						<div class="col-md-7 ">
+							<p>${factoryOrder.fileUrl}</p>
+						</div>
+						</div>
+					
+					<div class="row">
+
+						<div class="col-md-3 ">
+							<p>Order Value:</p>
+						</div>
+						<div class="col-md-7 ">
+							<p>${factoryOrder.orderValue}</p>
+						</div>
+						</div>
+						
+						<div class="row ">
+
+						<div class="col-md-3 " style="font-weight:bold;font-size:20px;">Price:</div>
+						<div class="col-md-7 ">
+							<p style="color:#FF6508;font-weight:bold;font-size:20px;">$${factoryOrder.money}</p>
+						</div>
+								<div class="col-md-2"></div>
+						</div>
+						 <div class="row">
+					     <p style=""><em>*</em> Require skype conference call to discuss your request first : <c:if test="${factoryOrder.checkboxValue eq '1'}">Yes</c:if> <c:if test="${factoryOrder.checkboxValue eq '0'}">No</c:if></p>
+				   </div>
+						<input type="hidden" id="sampleCost" value="${sampleCost}"> 
+						<input type="hidden" id="purl" value="${purl}"> 
+						<input type="hidden" id="fprice" value="${fprice}"> 
+						<input type="hidden" id="comUserId" value="${comUserId}"> 
+						<input type="hidden" id="orderid" value="${orderid}"> 
+						<input type="hidden" id="indexid" value="${indexid}"> 
+						<input type="hidden" id="goodsPid" value="${goodsPid}"> 
+						<input type="hidden" name="cmd" value="_xclick"> 
+						<input type="hidden" name="business" value="584JZVFU6PPVU"> 
+						<input type="hidden" name="lc" value="US">
+					   	<input id="item_number" type="hidden" name="item_number"value="${factoryOrder.orderId}+${factoryOrder.userId}">
+					   	<input id="amount"type="hidden" name="amount" value="${factoryOrder.money}">
+					   	<input type="hidden" name="currency_code" value="USD">
+					   	<input type="hidden" name="button_subtype" value="services">
+					   	<input type="hidden" name="no_note" value="3"> 
+					   	<input type="hidden" name="no_shipping" value="3">
+					   	<input type="hidden" name="rm"value="3"> 
+					   	<input type="hidden" name="return" value="http://116.228.150.218:8086/cbt/paysuccess.jsp">
+					   	<input id="cancel_return" type="hidden" name="cancel_return" value="http://localhost:8084/crm/factory/orderDetailPay.do?orderId==${factoryOrder.orderId}">
+						<input type="hidden" name="shipping" value="0.00"> 
+						<input type="hidden" name="bn"value="PP-BuyNowBF:btn_buynowCC_LG.gif:NonHosted">
+						<div class="modal-footer" style="text-align: center;padding-top:30px;width:85% ;margin-top: 20px;">
+							 
+								<button type="submit" class="btn btn-default" style=" background: #197ec5;color: #fff;" value="Pay  Now">Pay  Now</button>
+								<a href="#"><span style="margin-left:40px;">By Credit Card or PayPal</span> 
+							</a>
+						</div>  
+			</div>
+		</div>
+	 </form>
+	</body>
+
+</html>

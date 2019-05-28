@@ -1,0 +1,13 @@
+package com.cbt.service;
+
+import com.cbt.entity.OrderPayLog;
+import com.cbt.entity.Quality;
+
+public interface QualityService {
+    /**
+     * 添加工厂质量toPay
+     * @param quality
+     * @return
+     */
+	public OrderPayLog addQualityToPay(Quality quality);
+}

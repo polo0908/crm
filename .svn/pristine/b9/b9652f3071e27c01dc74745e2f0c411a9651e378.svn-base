@@ -1,0 +1,30 @@
+package com.cbt.service;
+
+import java.io.Serializable;
+import java.util.List;
+
+import com.cbt.entity.QuotationProductionBean;
+import com.cbt.entity.QuotationProductionPriceBean;
+
+public interface QuotationProductionService extends Serializable {
+
+	
+	
+	/**
+	 * 根据报价单id查询
+	 * @author polo
+	 * 2017年5月26日
+	 *
+	 */
+	public List<QuotationProductionBean> queryByQuotationInfoId(Integer quotationInfoId);
+	
+	
+	
+	/**
+	 * 根据产品表id查询
+	 * @author polo
+	 * 2017年5月26日
+	 *
+	 */
+	public List<QuotationProductionPriceBean> queryByProductionId(Integer ProductionId);
+}

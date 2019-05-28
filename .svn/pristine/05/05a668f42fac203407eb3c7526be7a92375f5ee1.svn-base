@@ -1,0 +1,14 @@
+package com.cbt.service;
+
+import java.io.Serializable;
+
+public interface UserRelationEmailService extends Serializable {
+
+	
+	/**
+	 * 根据email查询userid（user_relation_email表）
+	 * @param email
+	 * @return
+	 */
+	public String queryUseridByEmail(String email);
+}

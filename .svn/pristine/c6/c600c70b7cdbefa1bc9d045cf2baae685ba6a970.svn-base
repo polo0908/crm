@@ -1,0 +1,25 @@
+package com.cbt.dao;
+
+import java.util.List;
+
+import com.cbt.entity.UrlInfo;
+
+public interface UrlInfoMapper {
+    int deleteByPrimaryKey(String id);
+
+    int insert(UrlInfo record);
+
+    int insertSelective(UrlInfo record);
+
+    List<UrlInfo> selectByPrimaryKey(String factoryId);
+
+    int updateByPrimaryKeySelective(UrlInfo record);
+
+    int updateByPrimaryKey(UrlInfo record);
+    /**
+     * 选择工厂批量添加工厂网址信息
+     * @param urlInfoList
+     */
+    void batchInsertUrlInfo(List<UrlInfo> urlInfoList);
+    
+}

@@ -1,0 +1,17 @@
+package com.cbt.service;
+
+import com.cbt.entity.UrlInfo;
+
+/**
+ * 工厂网址Service 
+ * @author Administrator
+ *
+ */
+public interface UrlInfoService {
+    
+	/**
+	 * 添加工厂网址
+	 * @param urlInfo
+	 */
+	public void addUrlInfo(UrlInfo urlInfo);
+}

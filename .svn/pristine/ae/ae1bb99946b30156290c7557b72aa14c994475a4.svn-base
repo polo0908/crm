@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.QualityMapper" >
+  <resultMap id="BaseResultMap" type="com.cbt.entity.Quality" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="province" property="province" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="INTEGER" />
+    <result column="count" property="count" jdbcType="INTEGER" />
+    <result column="parts_count" property="partsCount" jdbcType="INTEGER" />
+    <result column="complexity" property="complexity" jdbcType="INTEGER" />
+    <result column="other" property="other" jdbcType="VARCHAR" />
+    <result column="number" property="number" jdbcType="INTEGER" />
+    <result column="comment" property="comment" jdbcType="VARCHAR" />
+    <result column="file_url" property="fileUrl" jdbcType="VARCHAR" />
+    <result column="address" property="address" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <result column="price" property="price" jdbcType="REAL" />
+    <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, user_id,order_id, province, type, count, parts_count, complexity, other, number,comment, file_url, 
+    address, phone, email, price,create_date
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from quality
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from quality
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.cbt.entity.Quality" >
+    insert into quality (id, user_id, province, 
+      type, count, parts_count, 
+      complexity, other, comment, 
+      file_url, address, phone, 
+      email, create_date)
+    values (#{id,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{province,jdbcType=VARCHAR}, 
+      #{type,jdbcType=INTEGER}, #{count,jdbcType=INTEGER}, #{partsCount,jdbcType=INTEGER}, 
+      #{complexity,jdbcType=INTEGER}, #{other,jdbcType=VARCHAR}, #{comment,jdbcType=VARCHAR}, 
+      #{fileUrl,jdbcType=VARCHAR}, #{address,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, 
+      #{email,jdbcType=VARCHAR}, #{createDate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.cbt.entity.Quality" >
+    insert into quality
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="orderId != null" >
+        order_id,
+      </if>
+      <if test="province != null" >
+        province,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="count != null" >
+        count,
+      </if>
+      <if test="partsCount != null" >
+        parts_count,
+      </if>
+      <if test="complexity != null" >
+        complexity,
+      </if>
+      <if test="other != null" >
+        other,
+      </if>
+      <if test="number != null" >
+        number,
+      </if>
+      <if test="comment != null" >
+        comment,
+      </if>
+      <if test="fileUrl != null" >
+        file_url,
+      </if>
+      <if test="address != null" >
+        address,
+      </if>
+      <if test="phone != null" >
+        phone,
+      </if>
+      <if test="email != null" >
+        email,
+      </if>
+      <if test="price != null" >
+        price,
+      </if>
+      <if test="createDate != null" >
+        create_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="province != null" >
+        #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=INTEGER},
+      </if>
+      <if test="count != null" >
+        #{count,jdbcType=INTEGER},
+      </if>
+      <if test="partsCount != null" >
+        #{partsCount,jdbcType=INTEGER},
+      </if>
+      <if test="complexity != null" >
+        #{complexity,jdbcType=INTEGER},
+      </if>
+      <if test="other != null" >
+        #{other,jdbcType=VARCHAR},
+      </if>
+      <if test="number != null" >
+        #{number,jdbcType=INTEGER},
+      </if>
+      <if test="comment != null" >
+        #{comment,jdbcType=VARCHAR},
+      </if>
+      <if test="fileUrl != null" >
+        #{fileUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null" >
+        #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="price != null" >
+        #{price,jdbcType=REAL},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cbt.entity.Quality" >
+    update quality
+    <set >
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="province != null" >
+        province = #{province,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=INTEGER},
+      </if>
+      <if test="count != null" >
+        count = #{count,jdbcType=INTEGER},
+      </if>
+      <if test="partsCount != null" >
+        parts_count = #{partsCount,jdbcType=INTEGER},
+      </if>
+      <if test="complexity != null" >
+        complexity = #{complexity,jdbcType=INTEGER},
+      </if>
+      <if test="other != null" >
+        other = #{other,jdbcType=VARCHAR},
+      </if>
+      <if test="comment != null" >
+        comment = #{comment,jdbcType=VARCHAR},
+      </if>
+      <if test="fileUrl != null" >
+        file_url = #{fileUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="address != null" >
+        address = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null" >
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null" >
+        email = #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null" >
+        create_date = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cbt.entity.Quality" >
+    update quality
+    set user_id = #{userId,jdbcType=VARCHAR},
+      province = #{province,jdbcType=VARCHAR},
+      type = #{type,jdbcType=INTEGER},
+      count = #{count,jdbcType=INTEGER},
+      parts_count = #{partsCount,jdbcType=INTEGER},
+      complexity = #{complexity,jdbcType=INTEGER},
+      other = #{other,jdbcType=VARCHAR},
+      comment = #{comment,jdbcType=VARCHAR},
+      file_url = #{fileUrl,jdbcType=VARCHAR},
+      address = #{address,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      email = #{email,jdbcType=VARCHAR},
+      create_date = #{createDate,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

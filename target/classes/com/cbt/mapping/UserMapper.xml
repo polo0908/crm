@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.UserDao">
+
+
+	<resultMap id="UserMap" type="com.cbt.entity.User">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="userid" property="userid" jdbcType="VARCHAR" />
+		<result column="username" property="userName" jdbcType="VARCHAR" />
+		<result column="pwd" property="pwd" jdbcType="VARCHAR" />
+		<result column="email" property="email" jdbcType="VARCHAR" />
+		<result column="email1" property="email1" jdbcType="VARCHAR" />
+		<result column="login_email" property="loginEmail" jdbcType="VARCHAR" />
+        <result column="tel" property="tel" jdbcType="VARCHAR" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="token" property="token" jdbcType="VARCHAR" />
+        <result column="company_name" property="companyName" jdbcType="VARCHAR" />
+        <result column="main_business" property="mainBusiness" jdbcType="VARCHAR" />
+        <result column="temp_user" property="tempUser" jdbcType="INTEGER" />
+        
+	</resultMap>
+
+	<sql id="UserColumnList">
+		id, userid, username, 
+		pwd, email, email1, login_email, tel, update_time, create_time, token, company_name, main_business,temp_user
+	</sql>
+	     
+    <!-- 查询最大id -->
+    <select id="queryMaxId" resultType="int">
+     select max(id) from user     
+    </select>
+
+
+<!--   批量插入user数据 -->
+	<insert id="insertUser" parameterType="java.util.List">
+	    insert into user 
+		    (    
+	         userid, 
+	         username, pwd,login_email,
+	         email, email1, tel, update_time, create_time, token ,company_name 
+            )
+	    values
+	    <foreach collection="list" item="item" index="index" separator=",">
+	      (           
+		    #{item.userid}, 
+            #{item.userName},#{item.pwd},
+		    #{item.loginEmail}, 
+		    #{item.email}, 
+		    #{item.email1}, 
+		    #{item.tel}, 
+		    #{item.updateTime},  
+		    #{item.createTime},  
+		    #{item.token}, 
+		    #{item.companyName}  
+	      )
+	    </foreach>
+	</insert>
+	
+	<insert id="insert" parameterType="com.cbt.entity.User" useGeneratedKeys="true" keyProperty="id">
+	    insert into user 
+		    (    
+	         id,userid,login_email, pwd,
+	         email, tel, update_time, create_time,main_business
+            )
+	    values
+	        (
+	        #{id,jdbcType=INTEGER}, 
+	        #{userid,jdbcType=VARCHAR}, 
+	        #{loginEmail,jdbcType=VARCHAR}, 
+	        #{pwd,jdbcType=VARCHAR}, 
+	        #{email,jdbcType=VARCHAR}, 
+	        #{tel,jdbcType=VARCHAR}, 
+	        #{updateTime,jdbcType=TIMESTAMP}, 
+	        #{createTime,jdbcType=TIMESTAMP}, 
+	        #{mainBusiness,jdbcType=VARCHAR}            
+	        )
+	</insert>
+	
+
+<!-- 根据userid查询客户数据 -->	
+	<select id="queryByUserId" resultMap="UserMap" parameterType="string">
+	     select  
+	     <include refid="UserColumnList" /> 
+	     from user 
+	     where userid = #{userid,jdbcType=VARCHAR}
+	
+	</select>
+	
+<!-- 根据登录邮箱查询客户数据 -->	
+	<select id="queryByLoginMail" resultMap="UserMap" parameterType="string">
+	     select  
+	     <include refid="UserColumnList" /> 
+	     from user 
+	     where login_email = #{loginEmail,jdbcType=VARCHAR}	
+	</select>
+	
+	<!--更新客户信息  -->
+	<update id="updateCustomerInfo" parameterType="com.cbt.entity.User">
+	    update user 
+		<set> 
+	    <if test="userName != null">
+			username = #{userName,jdbcType=VARCHAR},
+		</if>
+	    <if test="tel != null">
+			tel = #{tel,jdbcType=VARCHAR},
+		</if>
+	    <if test="updateTime != null">
+			update_time = #{updateTime,jdbcType=TIMESTAMP},
+		</if>
+	    <if test="mainBusiness != null">
+			main_business = #{mainBusiness,jdbcType=VARCHAR},
+		</if>
+	    <if test="pwd != null">
+			pwd = #{pwd,jdbcType=VARCHAR},
+		</if>
+
+	    </set>
+		    where id = #{id,jdbcType=INTEGER}	    
+	</update>
+	
+
+</mapper>

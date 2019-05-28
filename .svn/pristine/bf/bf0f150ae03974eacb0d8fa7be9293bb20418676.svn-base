@@ -1,0 +1,17 @@
+package com.cbt.service;
+
+import com.cbt.entity.FactoryAudit;
+import com.cbt.entity.OrderPayLog;
+
+/**
+ * 工厂审核要求Service 
+ * @author Administrator
+ *
+ */
+public interface FactoryAuditService {
+
+	public OrderPayLog addAuditToPay(FactoryAudit factoryAudit);
+	
+	
+	public FactoryAudit selectByPrimaryKey(String id);
+}

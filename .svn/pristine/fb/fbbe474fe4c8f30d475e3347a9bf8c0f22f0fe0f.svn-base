@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.UrlInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.cbt.entity.UrlInfo" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="factory_id" property="factoryId" jdbcType="VARCHAR" />
+    <result column="url" property="url" jdbcType="VARCHAR" />
+    <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, factory_id, url, create_date
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from url_info
+    where factory_id = #{factoryId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from url_info
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.cbt.entity.UrlInfo" >
+    insert into url_info (id, factory_id, url, 
+      create_date)
+    values (#{id,jdbcType=VARCHAR}, #{factoryId,jdbcType=VARCHAR}, #{url,jdbcType=VARCHAR}, 
+      #{createDate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.cbt.entity.UrlInfo" >
+    insert into url_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="factoryId != null" >
+        factory_id,
+      </if>
+      <if test="url != null" >
+        url,
+      </if>
+      <if test="createDate != null" >
+        create_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="factoryId != null" >
+        #{factoryId,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null" >
+        #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cbt.entity.UrlInfo" >
+    update url_info
+    <set >
+      <if test="factoryId != null" >
+        factory_id = #{factoryId,jdbcType=VARCHAR},
+      </if>
+      <if test="url != null" >
+        url = #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null" >
+        create_date = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cbt.entity.UrlInfo" >
+    update url_info
+    set factory_id = #{factoryId,jdbcType=VARCHAR},
+      url = #{url,jdbcType=VARCHAR},
+      create_date = #{createDate,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+   <!--批量添加工厂网址信息 -->
+   <select id="batchInsertUrlInfo" parameterType="java.util.List">
+      INSERT INTO url_info(id,factory_id,url,create_date)  VALUES
+      <foreach collection="list"  item="item" separator=",">
+        (#{item.id,jdbcType=VARCHAR},#{item.factoryId,jdbcType=VARCHAR},#{item.url,jdbcType=VARCHAR},#{item.createDate,jdbcType=TIMESTAMP}
+        )
+     </foreach>
+  </select>
+</mapper>

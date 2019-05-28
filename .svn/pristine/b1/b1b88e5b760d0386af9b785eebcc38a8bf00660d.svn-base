@@ -1,0 +1,37 @@
+package com.cbt.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import com.cbt.entity.ReOrder;
+
+public interface ReOrderService {
+	/**
+	 * 查询客户订单
+	 * @param queryByUserId
+	 * @return
+	 */
+	public List<ReOrder> queryByUserId(String userId);
+
+	/**
+	 * 根据id号查询客户订单详情
+	 * @param id
+	 * @return
+	 */
+	
+	public ReOrder queryById(Integer id);
+	
+    /**
+     * 插入reOrder对象
+     * @param reOrder
+     */
+    public void insertReOrder(ReOrder reOrder,ArrayList<Map<Object, Object>> list)throws Exception;
+    
+	/**
+	 * 查询订单总数
+	 * @return
+	 */
+	public int totalAmount(String userId);
+	
+
+}

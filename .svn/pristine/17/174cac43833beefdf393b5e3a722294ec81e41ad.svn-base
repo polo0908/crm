@@ -1,0 +1,90 @@
+package com.cbt.service.impl;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.cbt.dao.AddressMapper;
+import com.cbt.dao.FactoryAuditMapper;
+import com.cbt.dao.FactoryOrderMapper;
+import com.cbt.dao.OrderPayLogMapper;
+import com.cbt.entity.Address;
+import com.cbt.entity.FactoryAudit;
+import com.cbt.entity.FactoryOrder;
+import com.cbt.entity.OrderPayLog;
+import com.cbt.enums.OrderTypeEnum;
+import com.cbt.service.FactoryAuditService;
+import com.cbt.util.IdGen;
+
+@Service
+public class FactoryAuditServiceImpl implements FactoryAuditService{
+	
+	@Autowired
+	private FactoryAuditMapper factoryAuditMapper;
+	@Autowired
+	private FactoryOrderMapper factoryOrderMapper;
+	@Autowired
+	private OrderPayLogMapper orderPayLogMapper;
+	@Autowired
+	private AddressMapper addressMapper;
+	
+	@Override
+	@Transactional
+	public OrderPayLog addAuditToPay(FactoryAudit factoryAudit) {
+		//1.把客户填写的要求信息保存起来
+		factoryAuditMapper.insertSelective(factoryAudit);
+		//2.保存客户填写的地址信息
+		List<Address> addressList=factoryAudit.getAddressList();
+		List<Address> insertAddressList=new ArrayList<Address>();
+		for (Address address : addressList) {
+			Address insertAddress=new Address();
+			insertAddress.setId(IdGen.uuid());
+			insertAddress.setFactoryAuditId(factoryAudit.getId());
+			insertAddress.setFactoryUrl(address.getFactoryUrl());
+			insertAddress.setFileUrl(address.getFileUrl());
+			insertAddress.setProvince(address.getProvince());
+			insertAddress.setAddress(address.getAddress());
+			insertAddress.setPhone(address.getPhone());
+			insertAddress.setEmail(address.getEmail());
+			insertAddress.setType(address.getType());
+			insertAddress.setPrice(address.getPrice());
+			insertAddress.setCreateDate(new Date());
+			insertAddressList.add(insertAddress);
+		}
+		addressMapper.batchAddAddress(insertAddressList);
+		//2.创建客户订单
+		FactoryOrder factoryOrder=new FactoryOrder();
+		factoryOrder.setId(IdGen.uuid());
+		factoryOrder.setOrderId(factoryAudit.getOrderId());
+		factoryOrder.setUserId(factoryAudit.getUserId());
+		factoryOrder.setType(OrderTypeEnum.FACTORY_AUDIT.getCode());
+		factoryOrder.setMoney(factoryAudit.getPrice());
+		factoryOrder.setStatus(0);
+		factoryOrder.setCreateDate(new Date());
+		factoryOrderMapper.insertSelective(factoryOrder);
+		//3.创建订单日志
+		OrderPayLog payLog=new OrderPayLog();
+		payLog.setId(IdGen.uuid());
+		payLog.setUserId(factoryAudit.getUserId());
+		payLog.setOrderId(factoryAudit.getOrderId());
+		payLog.setType(factoryOrder.getType());
+		payLog.setOrderAmount(factoryAudit.getPrice());
+		payLog.setPaymentAmount(factoryAudit.getPrice());
+		payLog.setPayStatus(factoryOrder.getStatus());
+		payLog.setPaymentCc("美元");
+		payLog.setPayType("paypal");
+		payLog.setOperateTime(new Date());
+		payLog.setCreateDate(new Date());
+		payLog.setOrderDesc("");
+		payLog.setRemark("");
+		orderPayLogMapper.insertSelective(payLog);
+		OrderPayLog orderPayLog =orderPayLogMapper.selectByPrimaryKey(payLog.getId()); 
+		return orderPayLog;
+	}
+
+}

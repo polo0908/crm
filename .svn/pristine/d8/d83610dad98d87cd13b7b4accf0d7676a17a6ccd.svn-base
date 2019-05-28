@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.ProductionPhotoTimelineDao">
+
+	<resultMap id="ProductionPhotoTimelineResultMap" type="com.cbt.entity.ProductionPhotoTimeline">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="order_id" property="orderId" jdbcType="VARCHAR" />
+		<result column="photo_name" property="photoName" jdbcType="VARCHAR" />
+		<result column="upload_date" property="uploadDate" jdbcType="DATE" />
+		<result column="remarks" property="remarks" jdbcType="VARCHAR" />
+		<result column="photo_path" property="photoPath" jdbcType="VARCHAR" />
+		<result column="photo_path_compress" property="photoPathCompress" jdbcType="VARCHAR" />
+		
+		
+		<result column="project_name" property="projectName" jdbcType="VARCHAR" />
+	</resultMap> 
+     
+     <sql id="ProductionPhotoTimelineColumnList">
+     id,order_id,photo_name,upload_date,remarks,photo_path,photo_path_compress
+     </sql>
+
+    <!-- 查询订单各时间点图片-->
+    <select id="queryByOrderIdGroupByDate" resultMap="ProductionPhotoTimelineResultMap">
+<!--           select -->
+<!--           <include refid="ProductionPhotoTimelineColumnList"/>  -->
+<!--           from production_photo_timeline -->
+<!--           where order_id = #{orderId,jdbcType=VARCHAR}    -->
+<!--           GROUP BY upload_date      -->
+          
+	    select * from production_photo_timeline where EXISTS 
+		   (  
+		    select id from 
+		                (  
+				        SELECT max(id) as id FROM production_photo_timeline where order_id = #{orderId,jdbcType=VARCHAR} 
+				         group by upload_date 
+				         ) t   
+		    where t.id=production_photo_timeline.id  
+		   )  order by upload_date desc          
+    </select>
+    
+    
+        <!-- 根据id查询 -->
+    <select id="queryPhotoById" resultType="string" parameterType="int">
+           select  
+           photo_path 
+           from production_photo_timeline where id = #{id,jdbcType=INTEGER}
+    </select>
+    
+    
+    
+    
+    <!-- 根据时间查询图片-->
+    <select id="queryByUploadDate" resultMap="ProductionPhotoTimelineResultMap">
+          select  
+          <include refid="ProductionPhotoTimelineColumnList"/>
+          from production_photo_timeline
+          where order_id = #{orderId,jdbcType=VARCHAR}
+          and upload_date = #{uploadDate,jdbcType=DATE}      
+          order by id desc                
+    </select>
+
+     <!-- 根据订单号查询最近的周报图片 -->
+	  <select id="queryByOrderId" resultMap="ProductionPhotoTimelineResultMap">
+          select  
+          p.order_id,p.photo_name,p.upload_date,p.remarks,p.photo_path,p.photo_path_compress,c.project_name  
+          from production_photo_timeline p left join client_order c on p.order_id = c.order_id 
+          where p.order_id = #{orderId,jdbcType=VARCHAR}              
+          order by p.upload_date desc limit 0,1           
+    </select>
+    
+
+    
+	
+</mapper>

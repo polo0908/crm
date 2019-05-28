@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.ClientOrderDao">
+
+
+	<resultMap id="ClientOrderResultMap" type="com.cbt.entity.ClientOrder">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="userid" property="userid" jdbcType="VARCHAR" />
+		<result column="order_id" property="orderId" jdbcType="VARCHAR" />
+		<result column="amount" property="amount" jdbcType="DOUBLE" />
+		<result column="order_status" property="orderStatus" jdbcType="INTEGER" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="output_time" property="outputTime" jdbcType="DATE" />
+		<result column="po_Path" property="poPath" jdbcType="VARCHAR" />
+		<result column="qc_report_path" property="qcReportPath" jdbcType="VARCHAR" />
+		<result column="shipping_doc_path" property="shippingDocPath" jdbcType="VARCHAR" />
+		<result column="invoice_ids" property="invoiceIds" jdbcType="VARCHAR" />
+		<result column="po_number" property="poNumber" jdbcType="VARCHAR" />
+		<result column="delivery_time" property="deliveryTime" jdbcType="DATE" />
+		<result column="factory_id" property="factoryId" jdbcType="VARCHAR" />
+		<result column="arrival_date" property="arrivalDate" jdbcType="DATE" />
+		<result column="actual_amount" property="actualAmount" jdbcType="DOUBLE" />
+		<result column="order_request" property="orderRequest" jdbcType="LONGVARCHAR" />
+		<result column="sales_name" property="salesName" jdbcType="VARCHAR"/>
+		<result property="projectName" column="project_name" jdbcType="VARCHAR"/>
+		<result property="paymentReceived" column="payment_received" jdbcType="DATE"/>
+		
+		
+		<result column="total_amount" property="sumAmount" jdbcType="DOUBLE" />
+		<result column="total_paid" property="sumTotalPaid" jdbcType="DOUBLE" />
+<!-- 		<result property="quarterDate" column="quarter_date" jdbcType="DATE"/> -->
+<!-- 		<result property="paymentReceived" column="payment_received" jdbcType="DATE"/> -->
+	</resultMap>
+
+	<sql id="ClientOrderColumnList">
+	id, userid, order_id, amount,order_status, create_time,
+	output_time,po_path,qc_report_path,shipping_doc_path,invoice_ids,
+	po_update_time, qc_update_time, shipping_update_time, old_or_new_po, 
+	old_or_new_qc, old_or_new_shipping, po_number, delivery_time,factory_id,
+	arrival_date,BL_available_date,ISF_date,actual_amount,order_request,sales_name,project_name, payment_received 
+	</sql>
+
+	<!-- 根据id查询 -->
+	<select id="queryById" resultMap="ClientOrderResultMap"
+		parameterType="java.lang.Integer">
+		select
+		<include refid="ClientOrderColumnList" />
+		from client_order
+		where id = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 根据订单号查询 -->
+	<select id="queryByOrderId" resultMap="ClientOrderResultMap"
+		parameterType="java.lang.String">
+		select 
+	    <include refid="ClientOrderColumnList" />
+		from client_order
+		where order_id = #{orderId,jdbcType=VARCHAR}
+	</select>
+    <!-- 查询处理中订单数量 -->
+    <select id="total" resultType="Integer">
+	    select count(*) from client_order where userid = #{userid,jdbcType=VARCHAR} 
+			and order_status = #{orderStatus,jdbcType=INTEGER}
+	</select>
+	
+	
+    <!-- 查询最近一年客户订单数-->
+    <select id="total1" resultType="Integer">
+	    select count(*) from client_order where userid = #{userid,jdbcType=VARCHAR} 
+			and create_time &gt; DATE_SUB(CURDATE(), INTERVAL 365 DAY)  
+			<if test="factoryId != null and factoryId != ''">
+			and factory_id = #{factoryId,jdbcType=VARCHAR}  
+		    </if>	
+	</select>
+	
+    <!-- 查询所有订单数量 -->
+    <select id="totalFinished" resultType="int">
+	    select count(*) from client_order where userid = #{userid,jdbcType=VARCHAR} 
+		    and order_status = #{orderStatus,jdbcType=INTEGER} 
+			and factory_id = #{factoryId,jdbcType=VARCHAR} 
+	</select>
+	
+    <!-- 查询用户对应工厂所有订单数量 -->
+    <select id="totalFactoryOrder" resultType="int">
+	    select count(*) from client_order where userid = #{userid,jdbcType=VARCHAR} 
+			and factory_id = #{factoryId,jdbcType=VARCHAR} 
+	</select>
+    
+    <!-- 根据userId查询 -->
+	<select id="queryListByUserId" resultMap="ClientOrderResultMap">
+		select
+		<include refid="ClientOrderColumnList" />
+		from client_order
+		where userid = #{userid,jdbcType=VARCHAR} 
+		<if test="orderStatus != null">
+			and order_status = #{orderStatus,jdbcType=INTEGER}  
+		</if>	
+		and factory_id = #{factoryId,jdbcType=VARCHAR}
+        order by create_time desc
+	</select>
+    <!-- 根据userId查询 -->
+	<select id="queryByFactoryId" resultMap="ClientOrderResultMap">               
+        select 
+        id, userid, order_id, amount,order_status, create_time,
+		output_time,po_path,qc_report_path,shipping_doc_path,invoice_ids,
+		po_update_time, qc_update_time, shipping_update_time, old_or_new_po, 
+		old_or_new_qc, old_or_new_shipping, po_number, delivery_time,client_order.factory_id,
+		arrival_date,BL_available_date,ISF_date,actual_amount ,total_amount,total_paid,order_request,
+		sales_name,project_name, payment_received  
+		from client_order
+			LEFT JOIN 
+			   (
+			    select c.factory_id,SUM(c.amount)as total_amount,sum(c.actual_amount)as total_paid from client_order c
+			    where c.userid = #{userid,jdbcType=VARCHAR}
+		        and c.factory_id = #{factoryId,jdbcType=VARCHAR}
+		        <if test="orderStatus != null">
+				and order_status = #{orderStatus,jdbcType=INTEGER}  
+				</if>	
+		        )total
+		on client_order.factory_id = total.factory_id
+		where client_order.userid = #{userid,jdbcType=VARCHAR} 
+		and client_order.factory_id = #{factoryId,jdbcType=VARCHAR}  
+		<if test="orderStatus != null">
+		and order_status = #{orderStatus,jdbcType=INTEGER}  
+		</if>	
+        order by create_time desc 
+	</select>
+	
+	
+    <!-- 根据最后下单时间 -->
+	<select id="queryLastOrder" resultType="string">
+		select create_time
+		from client_order
+		where userid = #{userid,jdbcType=VARCHAR}		
+		and factory_id = #{factoryId,jdbcType=VARCHAR}
+        order by create_time desc limit 1
+	</select>
+	
+    <!-- 根据最后下单时间 -->
+	<select id="queryLastFinishedFactoryId" resultType="string">
+	     select factory_id from 
+	     client_order WHERE 
+	     userid = #{userid,jdbcType=VARCHAR} 
+	     and order_status = 1 ORDER BY output_time desc limit 1
+	</select>
+	
+    <!-- 根据最后下单时间 -->
+	<select id="totalDelay" resultType="int">
+	     select count(*) from 
+	     client_order WHERE 
+	     userid = #{userid,jdbcType=VARCHAR} 
+	     and output_time &gt; delivery_time 
+	     and order_status = 1
+	</select>
+	
+	
+    <!-- 根据userId查询(分页处理)-->
+	<select id="queryListByPage" resultMap="ClientOrderResultMap">
+		select
+		<include refid="ClientOrderColumnList" />
+		from client_order
+		where userid = #{userid,jdbcType=VARCHAR}
+	    <if test="orderStatus != null">
+			and order_status = #{orderStatus,jdbcType=INTEGER}  
+		</if>
+		and factory_id = #{factoryId,jdbcType=VARCHAR}
+        order by create_time desc limit #{start}, #{pageSize}
+	</select>
+    
+    <!-- 多个orderId查询图纸 -->
+	<select id="queryListByOrderIds" resultMap="ClientOrderResultMap"
+	    parameterType="string">
+	    select
+	    <include refid="ClientOrderColumnList"/> 
+	    from client_order
+	    where order_id in
+	    <foreach collection="array" item="orderId" open="(" close=")" separator=",">
+			#{orderId}
+		</foreach>
+	</select>
+	
+	<!-- 根据订单号查询项目名 -->
+	<select id="queryProjectName" parameterType="string" resultType="string">
+	    select project_name from client_order 
+	    where order_id = #{orderId,jdbcType=VARCHAR}
+	</select>
+	
+	
+	
+	   <!-- 单条插入clientOrder数据 -->
+	<insert id="insertClientOrder" parameterType="com.cbt.entity.ClientOrder">
+	    insert into client_order 
+		    (
+		    userid, order_id, amount,
+			order_status, create_time,
+			output_time,
+			po_path,
+			qc_report_path,shipping_doc_path
+            )
+	    values	    
+	      (           
+		    #{userid},#{orderId},#{amount}, 
+		    #{orderStatus}, 
+		    #{createTime}, 
+		    #{outputTime}, 
+		    #{poPath}, 
+		    #{qcReportPath},#{shippingDocPath} 
+	      )
+
+	</insert>
+<!-- 	   批量插入clientOrder数据 -->
+	<insert id="insertClientOrders" parameterType="java.util.List">
+	    insert into client_order 
+		    (
+		    userid, order_id, amount,
+			order_status, create_time,
+			output_time,
+			po_path,
+			qc_report_path,shipping_doc_path
+            )
+	    values
+	    <foreach collection="list" item="item" index="index" separator=",">
+	      (           
+		    #{item.userid},#{item.orderId},#{item.amount}, 
+		    #{item.orderStatus}, 
+		    #{item.createTime}, 
+		    #{item.outputTime}, 
+		    #{item.poPath},
+		    #{item.qcReportPath},#{item.shippingDocPath} 
+	      )
+	    </foreach>
+	</insert>
+	
+	 <!-- 更新clientOrder -->
+	 <update id="updateClientOrder" parameterType="com.cbt.entity.ClientOrder">
+	    update client_order 
+		<set> 
+	    <if test="poPath != null">
+			po_path = #{poPath,jdbcType=VARCHAR},
+		</if>
+	    <if test="qcReportPath != null">
+			qc_report_path = #{qcReportPath,jdbcType=VARCHAR},
+		</if>
+	    <if test="shippingDocPath != null">
+			shipping_doc_path = #{shippingDocPath,jdbcType=VARCHAR},
+		</if>
+	    <if test="invoiceIds != null">
+			invoice_ids = #{invoiceIds,jdbcType=VARCHAR},
+		</if>
+	    <if test="orderSource != null">
+			order_source = #{orderSource,jdbcType=INTEGER},
+		</if>
+	    <if test="amount != null">
+			amount = #{amount,jdbcType=DOUBLE},
+		</if>
+	    <if test="poUpdateTime != null">
+			po_update_time = #{poUpdateTime,jdbcType=TIMESTAMP},
+		</if>
+	    <if test="qcUpdateTime != null">
+			qc_update_time = #{qcUpdateTime,jdbcType=TIMESTAMP},
+		</if>
+	    <if test="shippingUpdateTime != null">
+			shipping_update_time = #{shippingUpdateTime,jdbcType=TIMESTAMP},
+		</if>
+	    <if test="oldOrNewPo != null">
+			old_or_new_po = #{oldOrNewPo,jdbcType=VARCHAR},
+		</if>
+	    <if test="oldOrNewQc != null">
+			old_or_new_qc = #{oldOrNewQc,jdbcType=VARCHAR},
+		</if>
+	    <if test="oldOrNewShipping != null">
+			old_or_new_shipping = #{oldOrNewShipping,jdbcType=VARCHAR},
+		</if>
+	    <if test="arrivalDate != null">
+			arrival_date = #{arrivalDate,jdbcType=DATE},
+		</if>
+	    </set>
+		    where id = #{id,jdbcType=INTEGER}	    
+	 </update>
+	 
+	 
+	 
+	 <!-- 查询客户当前时间（4个季度内订单金额） -->
+	 <select id="currentQuarter" resultType="map">
+     select sum(amount) as sumAmount,max(create_time) as quarterDate from client_order where QUARTER(create_time)=QUARTER(now()) 
+     and create_time &gt; DATE_SUB(CURDATE(), INTERVAL 100 DAY) and userid = #{userid,jdbcType=VARCHAR} ;
+	 </select>
+	 
+	 <!-- 当前时间前一个季度 -->
+	 <select id="currentQuarter1" resultType="map">
+	 select sum(amount) as sumAmount,max(create_time) as quarterDate from client_order where
+	  QUARTER(create_time)=QUARTER(DATE_SUB(now(),interval 1 QUARTER)) 
+	  and create_time &gt; DATE_SUB(CURDATE(), INTERVAL 200 DAY) and userid = #{userid,jdbcType=VARCHAR} ;
+	 </select>
+	 
+	  <!-- 当前时间前两个季度 -->
+	 <select id="currentQuarter2" resultType="map">
+	 select sum(amount) as sumAmount,max(create_time) as quarterDate from client_order where
+	  QUARTER(create_time)=QUARTER(DATE_SUB(now(),interval 2 QUARTER)) 
+	  and create_time &gt; DATE_SUB(CURDATE(), INTERVAL 300 DAY)  and userid = #{userid,jdbcType=VARCHAR} ;
+	 </select>
+	 
+	  <!-- 当前时间前三个季度 -->
+	  <select id="currentQuarter3" resultType="map">
+	 select sum(amount) as sumAmount,max(create_time) as quarterDate from client_order where
+	  QUARTER(create_time)=QUARTER(DATE_SUB(now(),interval 3 QUARTER)) 
+	  and create_time &gt; DATE_SUB(CURDATE(), INTERVAL 400 DAY)  and userid = #{userid,jdbcType=VARCHAR} ;
+	 </select>
+	 
+	  <!-- 当前时间前四个季度 -->
+	  <select id="currentQuarter4" resultType="map">
+	 select sum(amount) as sumAmount,max(create_time) as quarterDate from client_order where
+	  QUARTER(create_time)=QUARTER(DATE_SUB(now(),interval 4 QUARTER)) 
+	  and create_time &gt; DATE_SUB(CURDATE(), INTERVAL 500 DAY)  and userid = #{userid,jdbcType=VARCHAR}
+	  and  create_time &lt; DATE_SUB(CURDATE(), INTERVAL 100 DAY);
+	 </select>
+	
+</mapper>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.RfqInfoDao">
+
+	<resultMap id="RfqInfoResultMap" type="com.cbt.entity.RfqInfo">
+		<id column="id" property="id" jdbcType="INTEGER" />
+		<result column="userid" property="userid" jdbcType="VARCHAR" />
+		<result column="product_name" property="productName" jdbcType="VARCHAR" />
+		<result column="drawing_path" property="drawingPath" jdbcType="VARCHAR" />
+		<result column="required_time" property="requiredTime" jdbcType="DATE" />
+        <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+        <result column="drawing_state" property="drawingState" jdbcType="INTEGER" />
+        <result column="drawing_name" property="drawingName" jdbcType="VARCHAR" />
+        <result column="follow_up" property="followUp" jdbcType="VARCHAR" />
+        <result column="comment" property="comment" jdbcType="VARCHAR" />
+        <result column="follow_time" property="followTime" jdbcType="TIMESTAMP" />
+        <result column="update_time" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="follow_comment" property="followComment" jdbcType="VARCHAR" />	
+		<result column="status" property="status" jdbcType="VARCHAR" />
+		<result column="factory_id" property="factoryId" jdbcType="VARCHAR" />
+		<result column="batch_quantity" property="batchQuantity" jdbcType="INTEGER" />
+		<result column="annual_quantity" property="annualQuantity" jdbcType="INTEGER" />
+		
+        
+        <result column="drawing_new_or_old" property="drawingNewOrOld" jdbcType="VARCHAR" />
+        
+        <result column="username" property="userName" jdbcType="VARCHAR" />
+	</resultMap>
+
+	<sql id="RfqInfoColumnList">
+		id, userid,product_name, 
+		drawing_path,required_time, comment, create_time, 
+		drawing_state, drawing_name, follow_up,
+		follow_time, update_time, follow_comment, status,factory_id,batch_quantity,annual_quantity
+	</sql>
+	    
+
+    <!-- 插入对象 -->
+	<insert id="insertRfqInfo" parameterType="com.cbt.entity.RfqInfo" useGeneratedKeys="true" keyProperty="id">
+	    insert into rfq_info 
+		    (
+		    id, userid,product_name,
+		    drawing_path,required_time, comment, 
+		    create_time, drawing_state, drawing_name, follow_up,factory_id,
+		    batch_quantity,annual_quantity
+		    )  
+	        values
+	        (
+	        #{id,jdbcType=INTEGER},
+		    #{userid,jdbcType=VARCHAR},
+		    #{productName,jdbcType=VARCHAR},
+		    #{drawingPath,jdbcType=VARCHAR},
+		    #{requiredTime,jdbcType=DATE},
+		    #{comment,jdbcType=VARCHAR},
+		    #{createTime,jdbcType=TIMESTAMP},
+		    #{drawingState,jdbcType=INTEGER},
+		    #{drawingName,jdbcType=VARCHAR},
+		    #{followUp,jdbcType=VARCHAR},
+		    #{factoryId,jdbcType=VARCHAR}, 
+		    #{batchQuantity,jdbcType=INTEGER},
+		    #{annualQuantity,jdbcType=INTEGER}
+            ) 
+	</insert>
+	
+	<select id="queryByUserIdAndFactoryId" resultMap="RfqInfoResultMap">
+		select 
+		<include refid="RfqInfoColumnList" />  
+		from rfq_info where userid = #{userid,jdbcType=VARCHAR} 
+		and factory_id = #{factoryId,jdbcType=VARCHAR}
+		order by create_time desc 
+	</select>
+
+
+	<select id="totalAmount" resultType="int" parameterType="string">
+	    select count(*) from 
+	    (
+	    select
+		<include refid="RfqInfoColumnList" />
+		from rfq_info
+		where userid = #{userid,jdbcType=VARCHAR}
+		and factory_id = #{factoryId,jdbcType=VARCHAR}
+		)d     
+	
+	</select>
+	
+	
+		<!-- 根据id查询新图纸信息 -->
+	<select id="queryById" resultMap="RfqInfoResultMap" parameterType="int">
+	   select 
+	      c.*, u.username as username  from rfq_info c left join user u on c.userid = u.userid 
+	   where c.id = #{id,jdbcType=INTEGER}
+	</select>
+</mapper>

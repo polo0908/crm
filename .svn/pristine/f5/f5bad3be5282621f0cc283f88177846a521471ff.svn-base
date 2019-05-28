@@ -1,0 +1,182 @@
+package com.cbt.service;
+
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.annotations.Param;
+
+import com.cbt.entity.ClientOrder;
+
+public interface ClientOrderService {
+	/**
+	 * 根据发票号查询客户订单详情
+	 * @param invoiceId
+	 * @return
+	 */
+
+	public ClientOrder queryByInvoiceId(String invoiceId);
+	/**
+	 * 根据id查询
+	 * @param id
+	 * @return
+	 */
+	public ClientOrder queryById(Integer id);
+	
+	/**
+	 * 根据订单号查询客户订单详情
+	 * @param orderId
+	 * @return
+	 */	
+	public ClientOrder queryByOrderId(String orderId);
+    /**
+     * 根据用户id查询客户订单
+     * @param userId
+     * @return
+     */
+	
+	public List<ClientOrder> queryByUserId(String userId,Integer orderStatus,String factoryId);
+	
+    /**
+     * 根据工厂id查询用户订单
+     * @param userId
+     * @param start
+     * @param end
+     * @return
+     */
+    public List<ClientOrder> queryByFactoryId(String userId,String factoryId,Integer orderStatus);
+	
+	
+    /**
+     * 根据userid,工厂id查询用户订单，分页处理
+     * @param userId
+     * @param start
+     * @param end
+     * @return
+     */
+    public List<ClientOrder> queryListByPage(String userId,Integer orderStatus,String factoryId,Integer start,Integer pageSize);
+	
+	/**
+	 * 查询用户订单总数
+	 */
+	public int total(String userId,Integer orderStatus) ;
+	
+    /**
+     * 查询最近一年订单数
+     * @param userId
+     * @return
+     */
+    public int total1(String userId,String factoryId);
+	
+	  /**
+     * 查询客户对应工厂结束的订单数
+     * @param userId
+     * @return
+     */
+    public int totalFinished(String userId,Integer orderStatus,String factoryId);
+    
+    /**
+     * 查询客户所有订单中延期的订单数
+     * @param userId
+     * @return
+     */
+    public int totalDelay(@Param("userid")String userId);
+	
+    /**
+     * 根据orderIds查询订单
+     * @param orderIds
+     * @return
+     */
+    public List<ClientOrder> queryListByOrderIds(String... orderIds);
+    
+    /**
+     * 单个插入对象
+     * @param ClientOrder
+     */
+    public void insertClientOrder(ClientOrder clientOrder);
+    /**
+     * 批量插入对象
+     * @param list
+     */
+    public void insertClientOrders(List<Object> list);
+    
+	 /**
+	  * 更新clientOrder po、invoice、qc、shipping数据
+	  * @param clientOrder
+	  */
+    public void updateClientOrder(ClientOrder clientOrder);
+    
+    
+    
+    /**
+     * 查询最近下单时间
+     * @param userId
+     * @param factoryId
+     * @return
+     */
+    public String queryLastOrder(String userId,String factoryId);
+    
+    
+    /**
+     * 查询用户最近完成订单的工厂
+     * @param userId
+     * @return
+     */
+    public String queryLastFinishedFactoryId(String userId);
+    
+    
+    
+    /**
+     * 根据工厂id查询用户订单数
+     * @param userId
+     * @param start
+     * @param end
+     * @return
+     */
+    public int totalFactoryOrder(@Param("userid")String userId,@Param("factoryId")String factoryId);
+    
+    
+    
+    /**
+     * 根据订单号查询项目名
+     * @param orderId
+     * @return
+     */
+    public String queryProjectName(String orderId);
+    
+    
+    
+    
+    
+    
+    /**
+     * 查询当前季度金额
+     * @param userId
+     * @return
+     */
+    public Map<Object,Object> currentQuarter(String userId);
+    /**
+     * 查询当前时间前一个季度
+     * @param userId
+     * @return
+     */
+    public Map<Object,Object> currentQuarter1(String userId);
+    /**
+     * 查询当前时间前两个季度
+     * @param userId
+     * @return
+     */
+    public Map<Object,Object> currentQuarter2(String userId);
+    /**
+     * 查询当前时间前三个季度
+     * @param userId
+     * @return
+     */
+    public Map<Object,Object> currentQuarter3(String userId);
+    /**
+     * 查询当前时间前四个季度
+     * @param userId
+     * @return
+     */
+    public Map<Object,Object> currentQuarter4(String userId);
+
+}

@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.cbt.dao.FactoryOrderMapper" >
+  <resultMap id="BaseResultMap" type="com.cbt.entity.FactoryOrder" >
+    <id column="id" property="id" jdbcType="VARCHAR" />
+    <result column="user_id" property="userId" jdbcType="VARCHAR" />
+    <result column="order_id" property="orderId" jdbcType="VARCHAR" />
+    <result column="type" property="type" jdbcType="VARCHAR" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="file_url" property="fileUrl" jdbcType="VARCHAR" />
+    <result column="money" property="money" jdbcType="REAL" />
+    <result column="create_date" property="createDate" jdbcType="TIMESTAMP" />
+    <!-- 选择工厂 -->
+    <result column="question_file" property="questionFile" jdbcType="VARCHAR" />
+    <result column="factoryId" property="factoryId" jdbcType="VARCHAR" />
+    <result column="product_name" property="productName" jdbcType="VARCHAR" />
+    <result column="description" property="description" jdbcType="VARCHAR" />
+    <result column="order_value" property="orderValue" jdbcType="CHAR" />
+    <result column="remark" property="remark" jdbcType="VARCHAR" />  
+    <result column="factory_id" property="factoryId" jdbcType="VARCHAR" />
+    <result column="url" property="url" jdbcType="VARCHAR" />
+    <result column="checkbox_value" property="checkboxValue" jdbcType="VARCHAR" />
+    <!-- 采购支持 -->
+    <result column="requirement" property="requirement" jdbcType="VARCHAR" /> 
+    <result column="productType" property="productType" jdbcType="INTEGER" />
+    
+    <!-- 质量需求 -->
+    <result column="province" property="province" jdbcType="VARCHAR" />
+    <result column="qua_type" property="quaType" jdbcType="INTEGER" />
+    <result column="count" property="count" jdbcType="INTEGER" />
+    <result column="parts_count" property="partsCount" jdbcType="INTEGER" />
+    <result column="complexity" property="complexity" jdbcType="INTEGER" />
+    <result column="other" property="other" jdbcType="VARCHAR" />
+    <result column="number" property="number" jdbcType="INTEGER" />
+    <result column="comment" property="comment" jdbcType="VARCHAR" />
+    <result column="file_url" property="fileUrl" jdbcType="VARCHAR" />
+    <result column="address" property="address" jdbcType="VARCHAR" />
+    <result column="phone" property="phone" jdbcType="VARCHAR" />
+    <result column="email" property="email" jdbcType="VARCHAR" />
+    <!-- 工厂审核 -->
+    <result column="auditType" property="auditType" jdbcType="INTEGER" />
+    <result column="end_date" property="endDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, user_id, order_id,type, status, file_url, money, create_date
+  </sql>
+  <!-- 查询客户发起请求的记录 -->
+  <select id="selectRequestList" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from factory_order
+    where user_id = #{userId,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from factory_order
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from factory_order
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.cbt.entity.FactoryOrder" >
+    insert into factory_order (id, user_id, type, 
+      status, file_url, money, 
+      create_date)
+    values (#{id,jdbcType=VARCHAR}, #{userId,jdbcType=VARCHAR}, #{type,jdbcType=VARCHAR}, 
+      #{status,jdbcType=INTEGER}, #{fileUrl,jdbcType=VARCHAR}, #{money,jdbcType=REAL}, 
+      #{createDate,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.cbt.entity.FactoryOrder" >
+    insert into factory_order
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="userId != null" >
+        user_id,
+      </if>
+      <if test="orderId != null" >
+        order_id,
+      </if>
+      <if test="type != null" >
+        type,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="fileUrl != null" >
+        file_url,
+      </if>
+      <if test="money != null" >
+        money,
+      </if>
+      <if test="createDate != null" >
+        create_date,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null" >
+        #{userId,jdbcType=VARCHAR},
+      </if>
+       <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="fileUrl != null" >
+        #{fileUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="money != null" >
+        #{money,jdbcType=REAL},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cbt.entity.FactoryOrder" >
+    update factory_order
+    <set >
+      <if test="userId != null" >
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null" >
+        type = #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="fileUrl != null" >
+        file_url = #{fileUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="money != null" >
+        money = #{money,jdbcType=REAL},
+      </if>
+      <if test="createDate != null" >
+        create_date = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cbt.entity.FactoryOrder" >
+    update factory_order
+    set user_id = #{userId,jdbcType=VARCHAR},
+      type = #{type,jdbcType=VARCHAR},
+      status = #{status,jdbcType=INTEGER},
+      file_url = #{fileUrl,jdbcType=VARCHAR},
+      money = #{money,jdbcType=REAL},
+      create_date = #{createDate,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <!--查询客户选择工厂订单详情信息-->
+  <select id="findSelectFactoryOrderDetail" resultMap="BaseResultMap" parameterType="java.lang.String">
+	SELECT
+		  fao.id,
+		  fao.user_id,
+		  fao.order_id,
+		  fao.file_url,
+		  fao.type,
+		  fao.`status`,
+		  fao.money,
+		  fao.create_date,
+		  fac.question_file,
+		  fac.product_name,
+		  fac.order_value,
+		  fac.description,
+		  fac.remark,
+		  fac.checkbox_value,
+		  fac.id as factoryId
+	FROM
+		factory_order fao,
+		factory fac
+	where 
+	    fao.order_id=fac.order_id
+	AND fao.order_id=#{order_id,jdbcType=VARCHAR}
+  </select>
+  <!--查询客户采购支持订单详情信息-->
+  <select id="findSourceAssistanceOrderDetail" resultMap="BaseResultMap" parameterType="java.lang.String">
+	  SELECT
+		  fao.id,
+		  fao.user_id,
+		  fao.order_id,
+		  fao.file_url,
+		  fao.type,
+		  fao.`status`,
+		  fao.money,
+		  fao.create_date,
+		  sos.requirement,
+		  sos.type as productType
+	  FROM
+		  factory_order fao,
+		  source_support sos
+	 where 
+		 fao.order_id=sos.order_id
+	 AND 
+		 fao.order_id=#{order_id,jdbcType=VARCHAR}
+  </select>
+  <!-- 查询客户质量需求订单详情信息 -->
+  <select id="findQualityOrderDetail" resultMap="BaseResultMap" parameterType="java.lang.String">
+    SELECT
+		  fao.id,
+		  fao.user_id,
+		  fao.order_id,
+		  fao.file_url,
+		  fao.type,
+		  fao.`status`,
+		  fao.money,
+		  fao.create_date,
+		  qua.type as qua_type,
+		  qua.count,
+		  qua.number,
+		  qua.complexity,
+		  qua.parts_count,
+		  qua.other,
+		  qua.`comment`,
+		  qua.province,
+		  qua.address,
+		  qua.email,
+		  qua.phone
+	 FROM
+		  factory_order fao,
+		  quality qua
+	where 
+		  fao.order_id=qua.order_id
+	AND 
+		  fao.order_id=#{order_id,jdbcType=VARCHAR}
+  </select>
+  
+  <!--查询客户审核订单详情-->
+  <select id="findAuditOrderDetail" resultMap="BaseResultMap" parameterType="java.lang.String">
+    SELECT
+		  fao.user_id,
+		  fao.order_id,
+		  fao.file_url,
+		  fao.type,
+		  fao.`status`,
+		  fao.money,
+		  fao.create_date,
+		  faa.end_date,
+		  faa.type as auditType,
+		  faa.id
+	FROM
+		  factory_order fao,
+		  factory_audit faa
+	where
+	      fao.order_id=faa.order_id
+	AND 
+	      fao.order_id=#{order_id,jdbcType=VARCHAR}
+  </select>
+</mapper>
